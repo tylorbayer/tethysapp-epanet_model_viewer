@@ -9,8 +9,12 @@ OPTIONS:"[OPTIONS]", COORDINATES:"[COORDINATES]", VERTICES:"[VERTICES]",
 LABELS:"[LABELS]", BACKDROP:"[BACKDROP]", END:"[END]"};
 
 
-function Lexer(file_text) {
-	var input = file_text.split('\r\n');
+function Lexer(file_text, caller) {
+    var input;
+    if (caller == "fileInput")
+        input = file_text.split('\r\n');
+    else
+        input = file_text.split('\n');
 	var curType;
 
 	var nodes = [];
@@ -319,6 +323,7 @@ function Lexer(file_text) {
 					    size: 3
 					};
 					nodes.push(node);
+                    console.log(node);
 				}
 				break;
 
