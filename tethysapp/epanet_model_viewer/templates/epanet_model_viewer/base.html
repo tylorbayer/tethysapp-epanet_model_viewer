@@ -113,57 +113,36 @@ window.onload = function() {
         var reader = new FileReader();
 
         reader.onload = function(e) {
-            var file_text = reader.result;
-            fileDisplayArea.innerText = file_text;
-            var lexer = new Lexer(file_text);
-
-            g.nodes = lexer.getNodes();
-            g.edges = lexer.getEdges();
-
-            s = new sigma({
-              graph: g,
-              renderer: {
-                // IMPORTANT:
-                // This works only with the canvas renderer, so the
-                // renderer type set as "canvas" is necessary here.
-                container: $("#graph-container")[0],
-                type: 'canvas'
-                }
-            });
-
-
-            s.refresh();
-        }
+            fileDisplayArea.innerText = reader.result;
+        };
 
         reader.readAsText(file);
     });
+
+    $('#fileDisplayArea').bind("DOMSubtreeModified",function(){
+        $("#graph-container").remove();
+        $("#container").append("<div id='graph-container'></div>");
+
+        var file_text = fileDisplayArea.innerText;
+
+        var lexer = new Lexer(file_text, "not");
+
+        g.nodes = lexer.getNodes();
+        g.edges = lexer.getEdges();
+
+        s = new sigma({
+          graph: g,
+          renderer: {
+            // IMPORTANT:
+            // This works only with the canvas renderer, so the
+            // renderer type set as "canvas" is necessary here.
+            container: $("#graph-container")[0],
+            type: 'canvas'
+            }
+        });
+
+        s.refresh();
+    });
 }
 </script>
-//    $('#fileDisplayArea').bind("DOMSubtreeModified",function(){
-//        $("#graph-container").remove();
-//        $("#container").append("<div id='graph-container'></div>");
-//
-//        var file_text = fileDisplayArea.innerText;
-//
-//        var lexer = new Lexer(file_text);
-//
-//        g.nodes = lexer.getNodes();
-//        g.edges = lexer.getEdges();
-//
-//        console.log(nodes);
-//
-//        s = new sigma({
-//          graph: g,
-//          renderer: {
-//            // IMPORTANT:
-//            // This works only with the canvas renderer, so the
-//            // renderer type set as "canvas" is necessary here.
-//            container: $("#graph-container")[0],
-//            type: 'canvas'
-//            }
-//        });
-//
-//        s.refresh();
-//    });
-}
 {% endblock %}
