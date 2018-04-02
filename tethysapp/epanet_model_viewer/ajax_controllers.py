@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 
 from hs_restclient import HydroShare
-from utilities import get_hs_auth_obj, validate_res_request, get_res_layers_from_db, process_nongeneric_res
+from utilities import get_hs_auth_obj, validate_res_request, process_nongeneric_res
 import requests
 
 

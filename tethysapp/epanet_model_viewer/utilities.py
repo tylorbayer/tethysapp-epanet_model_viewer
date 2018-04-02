@@ -1,4 +1,3 @@
-from model import Layer
 from tethys_sdk.services import get_spatial_dataset_engine
 
 from hs_restclient import HydroShare as hs_r
@@ -66,40 +65,6 @@ def validate_res_request(hs, res_id):
     return return_obj
 
 
-def get_res_layers_from_db(hs, res_id, res_type, res_title, username):
-    print("getting layers from db")
-    res_layers = []
-    db_res_layers = Layer.get_layers_by_associated_res_id(res_id)
-
-    if db_res_layers:
-        for res_layer in db_res_layers:
-            flag_reload_layer = res_was_updated(res_layer.res_mod_date, get_res_mod_date(hs, res_id))
-
-            if flag_reload_layer:
-                Layer.remove_layers_by_res_id(res_id)
-                remove_layer_from_geoserver(res_id, None)
-                response = process_nongeneric_res(hs, res_id, res_type, res_title, username)
-                if response['success']:
-                    res_layers = response['results']
-                break
-            else:
-                res_layer = {
-                    'res_id': res_id,
-                    'res_type': res_layer.associated_res_type,
-                    'layer_name': res_layer.name,
-                    'layer_id': res_layer.layer_id,
-                    'layer_extents': loads(res_layer.extents) if res_layer.extents else None,
-                    'layer_attributes': res_layer.attributes,
-                    'geom_type': res_layer.geom_type,
-                    'band_info': loads(res_layer.band_info) if res_layer.band_info else None,
-                    'site_info': loads(res_layer.site_info) if res_layer.site_info else None,
-                    'public_fname': res_layer.associated_file_name
-                }
-                res_layers.append(res_layer)
-
-    return res_layers
-
-
 def process_nongeneric_res(hs, res_id, res_type=None, res_title=None, username=None):
     global currently_testing
     return_obj = {
@@ -141,7 +106,6 @@ def process_nongeneric_res(hs, res_id, res_type=None, res_title=None, username=N
                 results.append(result)
 
                 param_obj = prepare_result_for_layer_db(result)
-                Layer.add_layer_to_database(**param_obj)
             return_obj['success'] = True
     except Exception as e:
         exc_type, exc_value, exc_traceback = exc_info()
