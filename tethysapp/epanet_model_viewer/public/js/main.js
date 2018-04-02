@@ -33,13 +33,14 @@
         setStateAfterLastResource,
         addLogEntry,
         showLoadingCompleteStatus,
-        deleteTempfiles,
         addLayerToUI;
 
     //  **********Query Selectors************
     var $modalAddRes,
         $btnAddRes,
-        $modalLog;
+        $modalLog,
+        $fileInput,
+        $fileDisplayArea;
 
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
@@ -67,7 +68,50 @@
                 redrawDataTable(dataTableLoadRes, $(this));
             }
         });
+
         $btnAddRes.on('click', onClickAddRes);
+
+        $fileInput.addEventListener('change', function() {
+            var file = $fileInput.files[0];
+
+            var reader = new FileReader();
+
+            reader.onload = function() {
+                $fileDisplayArea.innerText = reader.result;
+            };
+
+            reader.readAsText(file);
+        });
+
+        $('#fileDisplayArea').bind("DOMSubtreeModified",function(){
+            var g = {
+                nodes: [],
+                edges: []
+            };
+
+            $("#graph-container").remove();
+            $("#container").append("<div id='graph-container'></div>");
+
+            var file_text = $fileDisplayArea.innerText;
+
+            var lexer = new Lexer(file_text, "not");
+
+            g.nodes = lexer.getNodes();
+            g.edges = lexer.getEdges();
+
+            var s = new sigma({
+              graph: g,
+              renderer: {
+                // IMPORTANT:
+                // This works only with the canvas renderer, so the
+                // renderer type set as "canvas" is necessary here.
+                container: $("#graph-container")[0],
+                type: 'canvas'
+                }
+            });
+
+            s.refresh();
+        });
     };
 
     buildHSResTable = function (resList) {
@@ -152,6 +196,8 @@
         $btnAddRes = $('#btn-upload-res');
         $modalAddRes = $('#modalLoadRes');
         $modalLog = $('#modalLog');
+        $fileInput = $("#fileInput")[0];
+        $fileDisplayArea = $("#fileDisplayArea")[0];
     };
 
     onClickAddRes = function () {
@@ -229,7 +275,6 @@
         } else {
             showLoadingCompleteStatus(true, 'Resource(s) added successfully!');
         }
-        // deleteTempfiles();
     };
 
     showMainLoadAnim = function () {
@@ -305,6 +350,7 @@
      ***************INVOKE IMMEDIATELY***************
      ----------------------------------------------*/
     generateResourceList();
+    sigma.utils.pkg('sigma.canvas.nodes');
 
     showLog = false;
 }()); // End of package wrapper
