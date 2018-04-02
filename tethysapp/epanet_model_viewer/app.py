@@ -39,30 +39,30 @@ class EpanetModelViewer(TethysAppBase):
 
         return url_maps
 
-    def dataset_service_settings(self):
-        """
-        Hydroshare dataset_service_settings method.
-        """
-
-        ds_settings = (
-            DatasetServiceSetting(
-                name='hydroshare',
-                description='HydroShare service for app to use.',
-                engine=DatasetServiceSetting.HYDROSHARE,
-                required=False
-            ),
-        )
-
-        return ds_settings
-
-    def persistent_store_settings(self):
-        ps_settings = (
-            PersistentStoreDatabaseSetting(
-                name='epanet_model_viewer_db',
-                description='Primary database for epanet_model_viewer.',
-                initializer='epanet_model_viwer.model.init_epanet_model_viewer_db',
-                required=True
-            ),
-        )
-
-        return ps_settings
+    # def dataset_service_settings(self):
+    #     """
+    #     Hydroshare dataset_service_settings method.
+    #     """
+    #
+    #     ds_settings = (
+    #         DatasetServiceSetting(
+    #             name='hydroshare',
+    #             description='HydroShare service for app to use.',
+    #             engine=DatasetServiceSetting.HYDROSHARE,
+    #             required=False
+    #         ),
+    #     )
+    #
+    #     return ds_settings
+    #
+    # def persistent_store_settings(self):
+    #     ps_settings = (
+    #         PersistentStoreDatabaseSetting(
+    #             name='epanet_model_viewer_db',
+    #             description='Primary database for epanet_model_viewer.',
+    #             initializer='epanet_model_viwer.model.init_epanet_model_viewer_db',
+    #             required=True
+    #         ),
+    #     )
+    #
+    #     return ps_settings

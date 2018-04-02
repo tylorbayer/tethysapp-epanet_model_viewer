@@ -27,19 +27,19 @@ def home(request):
     return render(request, 'epanet_model_viewer/home.html', context)
 
 
-@ensure_oauth2('hydroshare')
-def my_controller(request):
-    """
-    This is an example controller that uses the HydroShare API.
-    """
-    engine = app.get_dataset_service('hydroshare', request=request)
-
-    response = engine.list_datasets()
-
-    print(response)
-
-    context = {
-        'datasets': response
-    }
-
-    return render(request, 'epanet_model_viewer/home.html', context)
+# @ensure_oauth2('hydroshare')
+# def my_controller(request):
+#     """
+#     This is an example controller that uses the HydroShare API.
+#     """
+#     engine = app.get_dataset_service('hydroshare', request=request)
+#
+#     response = engine.list_datasets()
+#
+#     print(response)
+#
+#     context = {
+#         'datasets': response
+#     }
+#
+#     return render(request, 'epanet_model_viewer/home.html', context)
