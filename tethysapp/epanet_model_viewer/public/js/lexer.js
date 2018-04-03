@@ -93,6 +93,11 @@ function Lexer(file_text, caller) {
                             label: 'Pipe ' + pipe[0],
                             source: 'n' + pipe[1],
                             target: 'n' + pipe[2],
+                            length: pipe[3],
+                            diameter: pipe[4],
+                            roughness: pipe[5],
+                            minorLoss: pipe[6],
+                            status: pipe[7],
                             size: 2,
                             color: '#ccc',
                             hover_color: '#000'
@@ -333,6 +338,7 @@ function Lexer(file_text, caller) {
                             label: 'Node ' + coord[0],
                             x: coord[1],
                             y: -1 * coord[2],
+                            properties: "properties",
                             size: 2,
                             color: '#666',
                             hover_color: '#000'

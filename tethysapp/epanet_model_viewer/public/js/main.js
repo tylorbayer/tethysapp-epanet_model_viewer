@@ -121,14 +121,16 @@
 
             s.bind('clickNode', function(e) {
                 console.log(e.type, e.data.node, e.data.captor);
-                $nodeModal.find('.modal-body').html(e.data.node.label);
+                $nodeModal.find('.modal-body').html(e.data.node.label + "<br>Properties: " + e.data.node.properties);
                 $nodeModal.modal('show');
                 s.refresh();
             });
 
             s.bind('clickEdge', function(e) {
                 console.log(e.type, e.data.edge, e.data.captor);
-                $edgeModal.find('.modal-body').html(e.data.edge.label);
+                $edgeModal.find('.modal-body').html("Id: " + e.data.edge.id + "<br>Length: " + e.data.edge.length +
+                    "<br>Roughness: " + e.data.edge.roughness + "<br>Diameter: " + e.data.edge.diameter + "<br>Minor Loss: " +
+                    e.data.edge.minorLoss + "<br>Status: " + e.data.edge.status);
                 $edgeModal.modal('show');
                 s.refresh();
             });
