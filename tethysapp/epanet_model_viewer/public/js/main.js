@@ -17,7 +17,8 @@
      *                      MODULE LEVEL / GLOBAL VARIABLES
      *************************************************************************/
     var dataTableLoadRes,
-        showLog;
+        showLog,
+        s;
 
     //  *********FUNCTIONS***********
     var addListenersToHsResTable,
@@ -37,6 +38,8 @@
 
     //  **********Query Selectors************
     var $modalAddRes,
+        $nodeModal,
+        $edgeModal,
         $btnAddRes,
         $modalLog,
         $fileInput,
@@ -99,15 +102,35 @@
             g.nodes = lexer.getNodes();
             g.edges = lexer.getEdges();
 
-            var s = new sigma({
-              graph: g,
-              renderer: {
-                // IMPORTANT:
-                // This works only with the canvas renderer, so the
-                // renderer type set as "canvas" is necessary here.
-                container: $("#graph-container")[0],
-                type: 'canvas'
-                }
+            s = new sigma({
+                graph: g,
+                renderer: {
+                    // IMPORTANT:
+                    // This works only with the canvas renderer, so the
+                    // renderer type set as "canvas" is necessary here.
+                    container: $("#graph-container")[0],
+                    type: 'canvas'
+                },
+                settings: {
+                    minEdgeSize: 0.5,
+                    maxEdgeSize: 4,
+                    enableEdgeHovering: true,
+                    edgeHoverSizeRatio: 1
+                  }
+            });
+
+            s.bind('clickNode', function(e) {
+                console.log(e.type, e.data.node, e.data.captor);
+                $nodeModal.find('.modal-body').html(e.data.node.label);
+                $nodeModal.modal('show');
+                s.refresh();
+            });
+
+            s.bind('clickEdge', function(e) {
+                console.log(e.type, e.data.edge, e.data.captor);
+                $edgeModal.find('.modal-body').html(e.data.edge.label);
+                $edgeModal.modal('show');
+                s.refresh();
             });
 
             s.refresh();
@@ -195,6 +218,8 @@
     initializeJqueryVariables = function () {
         $btnAddRes = $('#btn-upload-res');
         $modalAddRes = $('#modalLoadRes');
+        $nodeModal = $('#node-modal');
+        $edgeModal = $('#edge-modal');
         $modalLog = $('#modalLog');
         $fileInput = $("#fileInput")[0];
         $fileDisplayArea = $("#fileDisplayArea")[0];

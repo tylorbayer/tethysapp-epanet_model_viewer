@@ -85,15 +85,21 @@ function Lexer(file_text, caller) {
 					++i;
 				}
 				else {
-					var pipe = input[i].split('\t');
+					var pipe = input[i].match(/\S+/g);
 
-					var edge = {
-						id: 'e ' + pipe[0],
-					    source: 'n ' + pipe[1],
-					    target: 'n ' + pipe[2],
-					    size: 2
-					};
-					edges.push(edge);
+                    if (pipe != null) {
+                        var edge = {
+                            id: 'e' + pipe[0],
+                            label: 'Pipe ' + pipe[0],
+                            source: 'n' + pipe[1],
+                            target: 'n' + pipe[2],
+                            size: 2,
+                            color: '#ccc',
+                            hover_color: '#000'
+                        };
+                        edges.push(edge);
+                        console.log(edge);
+                    }
 				}
 				break;
 
@@ -104,15 +110,21 @@ function Lexer(file_text, caller) {
 					++i;
 				}
 				else {
-					var pump = input[i].split('\t');
+					var pump = input[i].match(/\S+/g);
 
-					var edge = {
-						id: 'p' + pump[0],
-					    source: 'n ' + pump[1],
-					    target: 'n ' + pump[2],
-					    size: 2
-					};
-					edges.push(edge);
+                    if (pump != null) {
+                        var edge = {
+                            id: 'p' + pump[0],
+                            label: 'Pump ' + pump[0],
+                            source: 'n' + pump[1],
+                            target: 'n' + pump[2],
+                            size: 2,
+                            color: '#ccc',
+                            hover_color: '#000'
+                        };
+                        edges.push(edge);
+                        console.log(edge);
+                    }
 				}
 				break;
 
@@ -313,17 +325,21 @@ function Lexer(file_text, caller) {
 					++i;
 				}
 				else {
-					var coord = input[i].split('\t');
+					var coord = input[i].match(/\S+/g);
 
-					var node = {
-						id: 'n' + coord[0],
-						label: 'Node ' + coord[0],
-					    x: coord[1],
-					    y: -1 * coord[2],
-					    size: 3
-					};
-					nodes.push(node);
-                    console.log(node);
+                    if (coord != null) {
+                        var node = {
+                            id: 'n' + coord[0],
+                            label: 'Node ' + coord[0],
+                            x: coord[1],
+                            y: -1 * coord[2],
+                            size: 2,
+                            color: '#666',
+                            hover_color: '#000'
+                        };
+                        nodes.push(node);
+                        console.log(node);
+                    }
 				}
 				break;
 
@@ -334,25 +350,28 @@ function Lexer(file_text, caller) {
 					++i;
 				}
 				else {
-					var vert = input[i].split('\t');
-					var curID = vert[0];
-					var vertNum = 0;
+					var vert = input[i].match(/\S+/g);
+                    if (vert != null) {
+                        var curID = vert[0];
+                        var vertNum = 0;
 
-					var node = {
-						id: 'v' + vert[0] + vertNum,
-						label: 'Vert ' + vert[0] + vertNum,
-					    x: vert[1],
-					    y: -1 * vert[2],
-					    size: 2
-					};
-					nodes.push(node);
+                        var node = {
+                            id: 'v' + vert[0] + vertNum,
+                            label: 'Vert ' + vert[0] + vertNum,
+                            x: vert[1],
+                            y: -1 * vert[2],
+                            size: 2,
+                            color: '#666',
+                            hover_color: '#000'
+                        };
+                        nodes.push(node);
+                    }
 					++i;
 
 					while (input[i] != intType.LABELS) {
-						vert = input[i].split('\t');
+						vert = input[i].match(/\S+/g);
 
-						if (vert.length > 1) {
-							console.log(vert[1] + vert[2]);
+						if (vert != null) {
 							if (curID == vert[0]) {
 								++vertNum;
 							}
@@ -364,7 +383,9 @@ function Lexer(file_text, caller) {
 								label: 'Vert ' + vert[0] + vertNum,
 							    x: vert[1],
 							    y: -1 * vert[2],
-							    size: 2
+							    size: 2,
+                                color: '#666',
+                                hover_color: '#000'
 							};
 							nodes.push(node);
 							curID = vert[0];
