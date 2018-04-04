@@ -39,7 +39,9 @@
     //  **********Query Selectors************
     var $modalAddRes,
         $nodeModal,
+        $nodeModalLabel,
         $edgeModal,
+        $edgeModalLabel,
         $btnAddRes,
         $modalLog,
         $fileInput,
@@ -115,20 +117,41 @@
                     minEdgeSize: 0.5,
                     maxEdgeSize: 4,
                     enableEdgeHovering: true,
-                    edgeHoverSizeRatio: 1
+                    edgeHoverSizeRatio: 1.5
                   }
             });
 
+            s.cameras[0].goTo({ ratio: 1.2 });
+
             s.bind('clickNode', function(e) {
                 console.log(e.type, e.data.node, e.data.captor);
-                $nodeModal.find('.modal-body').html(e.data.node.label + "<br>Properties: " + e.data.node.properties);
+                var html = "";
+                var values = e.data.node.values;
+
+                if (e.data.node.type == "Junction") {
+                    html += "<p><b>Junction " + e.data.node.id + "</b><br>";
+                    html += "Elev: " + values[0] + "<br>Demand: " + values[1] + "<br>Pattern: " + values[2] + "</p>";
+                }
+                else if (e.data.node.type == "Reservoir") {
+                    html += "<p><b>Reservoir " + e.data.node.id + "</b><br>";
+                    html += "Head: " + values[0] + "<br>Pattern: " + values[1] + "</p>";
+                }
+                else {
+                    html += "<p><b>Tank " + e.data.node.id + "</b><br>";
+                    html += "Elevation: " + values[0] + "<br>InitLevel: " + values[1] + "<br>MinLevel: " + values[2] +
+                    "<br>MaxLevel: " + values[3] + "<br>Diameter: " + values[4] + "<br>MinVol: " + values[5] + "<br>VolCurve: " + values[6] + "</p>";
+
+                }
+                $nodeModalLabel.html(e.data.node.type + " Properties");
+                $nodeModal.find('.modal-body').html(html);
                 $nodeModal.modal('show');
                 s.refresh();
             });
 
             s.bind('clickEdge', function(e) {
                 console.log(e.type, e.data.edge, e.data.captor);
-                $edgeModal.find('.modal-body').html("Id: " + e.data.edge.id + "<br>Length: " + e.data.edge.length +
+                $edgeModalLabel.html("Pipe Properties");
+                $edgeModal.find('.modal-body').html("Pipe: " + e.data.edge.id + "<br>Length: " + e.data.edge.length +
                     "<br>Roughness: " + e.data.edge.roughness + "<br>Diameter: " + e.data.edge.diameter + "<br>Minor Loss: " +
                     e.data.edge.minorLoss + "<br>Status: " + e.data.edge.status);
                 $edgeModal.modal('show');
@@ -221,7 +244,9 @@
         $btnAddRes = $('#btn-upload-res');
         $modalAddRes = $('#modalLoadRes');
         $nodeModal = $('#node-modal');
+        $nodeModalLabel = $('#node-modal-label');
         $edgeModal = $('#edge-modal');
+        $edgeModalLabel = $('#edge-modal-label');
         $modalLog = $('#modalLog');
         $fileInput = $("#fileInput")[0];
         $fileDisplayArea = $("#fileDisplayArea")[0];
