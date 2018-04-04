@@ -20,6 +20,8 @@ function Lexer(file_text, caller) {
 	var nodes = [];
 	var edges = [];
 
+    var nodeSpec ={};
+
 	var title_text = "";
 
 	if (input[0] == intType.TITLE) {
@@ -53,7 +55,17 @@ function Lexer(file_text, caller) {
 					++i;
 				}
 				else {
+                    var junct = input[i].match(/\S+/g);
 
+                    var lastVal = junct[3];
+                    if (lastVal == ";")
+                        lastVal = "";
+
+                    nodeSpec[junct[0]] = {
+                        type: "Junction",
+                        values: [junct[1], junct[2], lastVal],
+                        color: '#666'
+                    };
 				}
 				break;
 			case intType.RESERVOIRS:
@@ -63,7 +75,17 @@ function Lexer(file_text, caller) {
 					++i;
 				}
 				else {
-					
+					var res = input[i].match(/\S+/g);
+
+                    var lastVal = res[2];
+                    if (lastVal == ";")
+                        lastVal = "";
+
+                    nodeSpec[res[0]] = {
+                        type: "Reservoir",
+                        values: [res[1], lastVal],
+                        color: "#5F9EA0"
+                    };
 				}
 				break;
 
@@ -72,9 +94,23 @@ function Lexer(file_text, caller) {
 				if (input[i] == intType.PIPES) {
 					curType = intType.PIPES;
 					++i;
+
+                    for (val in nodeSpec) {
+                        console.log(nodeSpec[val]["type"]);
+                    }
 				}
 				else {
-					
+                    var tank = input[i].match(/\S+/g);
+
+                    var lastVal = tank[7];
+                    if (lastVal == ";")
+                        lastVal = "";
+
+                    nodeSpec[tank[0]] = {
+                        type: "Tank",
+                        values: [tank[1], tank[2], tank[3], tank[4], tank[5], tank[6], lastVal],
+                        color: '#8B4513'
+                    };
 				}
 				break;
 
@@ -89,10 +125,10 @@ function Lexer(file_text, caller) {
 
                     if (pipe != null) {
                         var edge = {
-                            id: 'e' + pipe[0],
+                            id: pipe[0],
                             label: 'Pipe ' + pipe[0],
-                            source: 'n' + pipe[1],
-                            target: 'n' + pipe[2],
+                            source: pipe[1],
+                            target: pipe[2],
                             length: pipe[3],
                             diameter: pipe[4],
                             roughness: pipe[5],
@@ -100,10 +136,9 @@ function Lexer(file_text, caller) {
                             status: pipe[7],
                             size: 2,
                             color: '#ccc',
-                            hover_color: '#000'
+                            hover_color: '#808080'
                         };
                         edges.push(edge);
-                        console.log(edge);
                     }
 				}
 				break;
@@ -119,16 +154,15 @@ function Lexer(file_text, caller) {
 
                     if (pump != null) {
                         var edge = {
-                            id: 'p' + pump[0],
+                            id: pump[0],
                             label: 'Pump ' + pump[0],
-                            source: 'n' + pump[1],
-                            target: 'n' + pump[2],
+                            source: pump[1],
+                            target: pump[2],
                             size: 2,
-                            color: '#ccc',
-                            hover_color: '#000'
+                            color: '#D2B48C',
+                            hover_color: '#DAA520'
                         };
                         edges.push(edge);
-                        console.log(edge);
                     }
 				}
 				break;
@@ -334,17 +368,17 @@ function Lexer(file_text, caller) {
 
                     if (coord != null) {
                         var node = {
-                            id: 'n' + coord[0],
-                            label: 'Node ' + coord[0],
+                            id: coord[0],
+                            label: nodeSpec[coord[0]]["type"] + " " + coord[0],
                             x: coord[1],
                             y: -1 * coord[2],
-                            properties: "properties",
+                            type: nodeSpec[coord[0]]["type"],
+                            values: nodeSpec[coord[0]]["values"],
                             size: 2,
-                            color: '#666',
+                            color: nodeSpec[coord[0]]["color"],
                             hover_color: '#000'
                         };
                         nodes.push(node);
-                        console.log(node);
                     }
 				}
 				break;
@@ -362,7 +396,7 @@ function Lexer(file_text, caller) {
                         var vertNum = 0;
 
                         var node = {
-                            id: 'v' + vert[0] + vertNum,
+                            id: vert[0] + vertNum,
                             label: 'Vert ' + vert[0] + vertNum,
                             x: vert[1],
                             y: -1 * vert[2],
@@ -385,7 +419,7 @@ function Lexer(file_text, caller) {
 								vertNum = 1;
 							}
 							node = {
-								id: 'v' + vert[0] + vertNum,
+								id: vert[0] + vertNum,
 								label: 'Vert ' + vert[0] + vertNum,
 							    x: vert[1],
 							    y: -1 * vert[2],
