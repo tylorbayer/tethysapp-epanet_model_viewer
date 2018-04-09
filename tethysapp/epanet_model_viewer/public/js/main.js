@@ -89,6 +89,8 @@
         });
 
         $('#fileDisplayArea').bind("DOMSubtreeModified",function(){
+            $( "#tabs" ).tabs({ active: 0 });
+
             var g = {
                 nodes: [],
                 edges: []
@@ -139,7 +141,7 @@
                 else {
                     html += "<p><b>Tank " + e.data.node.id + "</b><br>";
                     html += "Elevation: " + values[0] + "<br>InitLevel: " + values[1] + "<br>MinLevel: " + values[2] +
-                    "<br>MaxLevel: " + values[3] + "<br>Diameter: " + values[4] + "<br>MinVol: " + values[5] + "<br>VolCurve: " + values[6] + "</p>";
+                        "<br>MaxLevel: " + values[3] + "<br>Diameter: " + values[4] + "<br>MinVol: " + values[5] + "<br>VolCurve: " + values[6] + "</p>";
 
                 }
                 $nodeModalLabel.html(e.data.node.type + " Properties");
@@ -150,12 +152,24 @@
 
             s.bind('clickEdge', function(e) {
                 console.log(e.type, e.data.edge, e.data.captor);
-                $edgeModalLabel.html("Pipe Properties");
-                $edgeModal.find('.modal-body').html("Pipe: " + e.data.edge.id + "<br>Length: " + e.data.edge.length +
-                    "<br>Roughness: " + e.data.edge.roughness + "<br>Diameter: " + e.data.edge.diameter + "<br>Minor Loss: " +
-                    e.data.edge.minorLoss + "<br>Status: " + e.data.edge.status);
-                $edgeModal.modal('show');
+                var html = "";
+                var values = e.data.edge.values;
+
+                if (e.data.edge.type == "Pipe") {
+                    html += "<p><b>Pipe: " + e.data.edge.id  + "</b><br>";
+                    html += "Length: " + values[0] + "<br>Roughness: " + values[1] + "<br>Diameter: " + values[2] +
+                        "<br>Minor Loss: " + values[3] + "<br>Status: " + values[4] + "</p>";
+                }
+                else {
+                    html += "<p><b>Pump: " + e.data.edge.id  + "</b><br>";
+                    html += "Parameters: " + values[0] + " " + values[1] + "</p>";
+                }
+
                 s.refresh();
+
+                $edgeModalLabel.html(e.data.edge.type + " Properties");
+                $edgeModal.find('.modal-body').html(html);
+                $edgeModal.modal('show');
             });
 
             s.refresh();
@@ -396,12 +410,15 @@
     $(function () {
         initializeJqueryVariables();
         addInitialEventListeners();
+
+        $( "#tabs" ).tabs({ active: 0 });
     });
 
     /*-----------------------------------------------
      ***************INVOKE IMMEDIATELY***************
      ----------------------------------------------*/
     generateResourceList();
+
     sigma.utils.pkg('sigma.canvas.nodes');
 
     showLog = false;

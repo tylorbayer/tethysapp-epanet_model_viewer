@@ -15,24 +15,36 @@
   <input type="file" id="fileInput">
 </div>
 
-<div id="page-wrapper">
-
-  <h1>EPANET File Display</h1>
-  <pre id="fileDisplayArea"></pre>
+<div id="tabs">
+  <ul>
+    <li><a href="#tabs-1">EPANET Model View</a></li>
+    <li><a href="#tabs-2">EPANET File View</a></li>
+    <li><a href="#tabs-3">Metadata</a></li>
+  </ul>
+  <div id="tabs-1">
+      <h1>EPANET Model Display</h1>
+      <div id="container">
+          <style>
+            #graph-container {
+              height: 500px;
+              width: 800px;
+              position: relative;
+              background-color: #F0F8FF;
+              margin:0 auto;
+            }
+          </style>
+          <div id="graph-container"></div>
+      </div>
+  </div>
+  <div id="tabs-2">
+      <h1>EPANET File Display</h1>
+      <pre id="fileDisplayArea"></pre>
+  </div>
+  <div id="tabs-3">
+      <h1>Hydroshare Metadata</h1>
+  </div>
 </div>
 
-<div id="container">
-  <style>
-    #graph-container {
-      height: 500px;
-      width: 800px;
-      position: relative;
-      background-color: #F0F8FF;
-      margin:0 auto;
-    }
-  </style>
-  <div id="graph-container"></div>
-</div>
 {% endblock %}
 
 {# Use the after_app_content block for modals #}

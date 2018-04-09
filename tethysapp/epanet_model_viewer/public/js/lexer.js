@@ -127,13 +127,10 @@ function Lexer(file_text, caller) {
                         var edge = {
                             id: pipe[0],
                             label: 'Pipe ' + pipe[0],
+							type: "Pipe",
+                            values: [pipe[3], pipe[4], pipe[5], pipe[6], pipe[7]],
                             source: pipe[1],
                             target: pipe[2],
-                            length: pipe[3],
-                            diameter: pipe[4],
-                            roughness: pipe[5],
-                            minorLoss: pipe[6],
-                            status: pipe[7],
                             size: 2,
                             color: '#ccc',
                             hover_color: '#808080'
@@ -156,6 +153,8 @@ function Lexer(file_text, caller) {
                         var edge = {
                             id: pump[0],
                             label: 'Pump ' + pump[0],
+							type: "Pump",
+                            values: [pump[3], pump[4]],
                             source: pump[1],
                             target: pump[2],
                             size: 2,
