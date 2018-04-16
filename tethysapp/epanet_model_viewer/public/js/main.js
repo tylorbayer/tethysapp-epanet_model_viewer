@@ -34,7 +34,8 @@
         setStateAfterLastResource,
         addLogEntry,
         showLoadingCompleteStatus,
-        addLayerToUI;
+        addLayerToUI,
+        addMetadata;
 
     //  **********Query Selectors************
     var $modalAddRes,
@@ -127,6 +128,8 @@
 
             s.bind('clickNode', function(e) {
                 console.log(e.type, e.data.node, e.data.captor);
+                $nodeModal.css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
+
                 var html = "";
                 var values = e.data.node.values;
 
@@ -152,6 +155,8 @@
 
             s.bind('clickEdge', function(e) {
                 console.log(e.type, e.data.edge, e.data.captor);
+                $edgeModal.css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
+
                 var html = "";
                 var values = e.data.edge.values;
 
@@ -325,10 +330,11 @@
                         }
                         if (response.hasOwnProperty('results')) {
                             addLayerToUI(response.results, isLastResource, additionalResources);
+                            addMetadata(response.metadata);
                         }
                     }
                 }
-                console.log(message);
+                // console.log(message);
             }
         });
     };
@@ -370,6 +376,11 @@
         fileDisplayArea.innerText = result;
 
         setStateAfterLastResource();
+    };
+
+    addMetadata = function (metadata) {
+        var metadataDisplayArea = $('#metadataDisplayArea')[0];
+        metadataDisplayArea.innerText = JSON.stringify(metadata, null, 2);
     };
 
     addLogEntry = function (type, message, show) {

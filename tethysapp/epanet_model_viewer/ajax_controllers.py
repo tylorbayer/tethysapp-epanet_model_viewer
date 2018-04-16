@@ -41,7 +41,7 @@ def get_hs_res_list(request):
                             'id': res['resource_id'],
                             'type': res['resource_type'],
                             'owner': res['creator'],
-                            'subjects': subjects
+                            'subjects': subjects,
                         })
 
             return_obj['res_list'] = res_list
@@ -83,6 +83,7 @@ def add_hs_res(request):
                 if not r['can_access']:
                     return_obj['message'] = r['message']
                 else:
+                    return_obj['metadata'] = hs.getScienceMetadata(res_id)
                     for res_file in hs.getResourceFileList(res_id):
                         res = requests.get(res_file["url"])
                         return_obj['results'] = res.text
