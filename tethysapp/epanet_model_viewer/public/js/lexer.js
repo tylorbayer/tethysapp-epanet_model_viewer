@@ -39,7 +39,6 @@ function Lexer(file_text, caller) {
 			case intType.TITLE:
 				console.log(curType);
 				if (input[i] == intType.JUNCTIONS) {
-					console.log(title_text);
 					curType = intType.JUNCTIONS;
 					++i;
 				}

@@ -126,8 +126,9 @@ input[type="radio"] {
 }
 
 #node-modal .modal-dialog, #edge-modal .modal-dialog {
+    position: absolute;
     width: 300px;
     height: 300px;
-    margin-left: 10%;
-    margin-top: 30%;
+    /*margin-left: 10%;*/
+    /*margin-top: 30%;*/
 }
