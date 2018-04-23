@@ -1,8 +1,9 @@
 from django.http import JsonResponse
 
+import requests
+
 from hs_restclient import HydroShare
 from utilities import get_hs_auth_obj, validate_res_request, process_nongeneric_res
-import requests
 
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
@@ -83,7 +84,8 @@ def add_hs_res(request):
                 if not r['can_access']:
                     return_obj['message'] = r['message']
                 else:
-                    return_obj['metadata'] = hs.getScienceMetadata(res_id)
+                    metadata_json = hs.getScienceMetadata(res_id)
+                    return_obj['metadata'] = metadata_json
                     for res_file in hs.getResourceFileList(res_id):
                         res = requests.get(res_file["url"])
                         return_obj['results'] = res.text

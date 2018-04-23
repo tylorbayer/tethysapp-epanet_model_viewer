@@ -1,6 +1,4 @@
 from tethys_sdk.base import TethysAppBase, url_map_maker
-from tethys_sdk.app_settings import DatasetServiceSetting
-from tethys_sdk.app_settings import PersistentStoreDatabaseSetting
 
 
 class EpanetModelViewer(TethysAppBase):
