@@ -380,7 +380,33 @@
 
     addMetadata = function (metadata) {
         var metadataDisplayArea = $('#metadataDisplayArea')[0];
-        metadataDisplayArea.innerText = JSON.stringify(metadata, null, 2);
+        var metadataHTML = '<h2><a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">' + metadata['title'] + '</a></h2>';
+        metadataHTML += '<p><h6>' + metadata['description'] + "</h6>";
+
+        metadataHTML += '<br>Created: ' + metadata['dates'][1]['start_date'].substring(0, 10);
+        metadataHTML += ', &emsp;Last Modified: ' + metadata['dates'][1]['start_date'].substring(0, 10);
+
+        metadataHTML += '<br>Author: ' + metadata['creators'][0]['name'];
+        metadataHTML += '<br>Rights: ' + metadata['rights'];
+
+        var subjects = "";
+        var i;
+        for (i in metadata['subjects']) {
+            subjects += metadata['subjects'][i]['value'] + ', ';
+        }
+        metadataHTML += '<br>Subjexts: ' + subjects.substring(0, subjects.length - 2);
+
+
+
+        metadataHTML += '<br> Program: ' + '<a href="' + metadata['executed_by']['modelProgramIdentifier'] +
+            '" style="color:#3366ff">' + metadata['executed_by']['modelProgramName'] + '</a>';
+
+        metadataHTML += '</p>';
+
+        console.log(JSON.stringify(metadata, null, 2));
+
+        // metadataDisplayArea.innerText = JSON.stringify(metadata, null, 2);
+        metadataDisplayArea.innerHTML = metadataHTML;
     };
 
     addLogEntry = function (type, message, show) {
