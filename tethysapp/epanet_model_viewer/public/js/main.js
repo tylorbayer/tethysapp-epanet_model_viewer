@@ -394,7 +394,7 @@
         for (i in metadata['subjects']) {
             subjects += metadata['subjects'][i]['value'] + ', ';
         }
-        metadataHTML += '<br>Subjexts: ' + subjects.substring(0, subjects.length - 2);
+        metadataHTML += '<br>Subjects: ' + subjects.substring(0, subjects.length - 2);
 
 
 
