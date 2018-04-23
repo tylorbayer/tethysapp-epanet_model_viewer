@@ -403,9 +403,10 @@
 
         metadataHTML += '</p>';
 
+        metadataHTML += '<pre>' + JSON.stringify(metadata, null, 2) + '</pre>';
+
         console.log(JSON.stringify(metadata, null, 2));
 
-        // metadataDisplayArea.innerText = JSON.stringify(metadata, null, 2);
         metadataDisplayArea.innerHTML = metadataHTML;
     };
 
