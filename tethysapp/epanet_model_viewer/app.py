@@ -27,40 +27,12 @@ class EpanetModelViewer(TethysAppBase):
             url_map(name='home',
                     url='epanet-model-viewer',
                     controller='epanet_model_viewer.controllers.home'),
-            url_map(name='get_hs_res_list',
-                    url='epanet-model-viewer/get-hs-res-list',
-                    controller='epanet_model_viewer.ajax_controllers.get_hs_res_list'),
-            url_map(name='ajax_add_hs_res',
-                    url='epanet-model-viewer/add-hs-res',
-                    controller='epanet_model_viewer.ajax_controllers.add_hs_res')
+            url_map(name='get_epanet_model_list',
+                    url='epanet-model-viewer/get-epanet-model-list',
+                    controller='epanet_model_viewer.ajax_controllers.get_epanet_model_list'),
+            url_map(name='get_epanet_model',
+                    url='epanet-model-viewer/get-epanet-model',
+                    controller='epanet_model_viewer.ajax_controllers.get_epanet_model')
             )
 
         return url_maps
-
-    # def dataset_service_settings(self):
-    #     """
-    #     Hydroshare dataset_service_settings method.
-    #     """
-    #
-    #     ds_settings = (
-    #         DatasetServiceSetting(
-    #             name='hydroshare',
-    #             description='HydroShare service for app to use.',
-    #             engine=DatasetServiceSetting.HYDROSHARE,
-    #             required=False
-    #         ),
-    #     )
-    #
-    #     return ds_settings
-    #
-    # def persistent_store_settings(self):
-    #     ps_settings = (
-    #         PersistentStoreDatabaseSetting(
-    #             name='epanet_model_viewer_db',
-    #             description='Primary database for epanet_model_viewer.',
-    #             initializer='epanet_model_viwer.model.init_epanet_model_viewer_db',
-    #             required=True
-    #         ),
-    #     )
-    #
-    #     return ps_settings

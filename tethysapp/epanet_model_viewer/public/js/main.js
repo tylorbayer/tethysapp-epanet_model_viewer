@@ -16,26 +16,26 @@
     /************************************************************************
      *                      MODULE LEVEL / GLOBAL VARIABLES
      *************************************************************************/
-    var dataTableLoadRes,
+    var dataTableLoadModels,
         showLog,
         s;
 
     //  *********FUNCTIONS***********
     var addListenersToModelRepTable,
         addInitialEventListeners,
-        buildHSResTable,
-        generateResourceList,
+        buildModelRepTable,
+        generateModelList,
         initializeJqueryVariables,
-        redrawDataTable,
+        redrawModelTable,
         onClickOpenModel,
         showMainLoadAnim,
-        addNonGenericRes,
+        openModel,
         hideMainLoadAnim,
-        setStateAfterLastResource,
+        setStateAfterLastModel,
         addLogEntry,
         showLoadingCompleteStatus,
-        addLayerToUI,
-        addMetadata;
+        addModelToUI,
+        addMetadataToUI;
 
     //  **********Query Selectors************
     var $modalModelRep,
@@ -73,8 +73,8 @@
 
     addInitialEventListeners = function () {
         $modalModelRep.on('shown.bs.modal', function () {
-            if (dataTableLoadRes) {
-                redrawDataTable(dataTableLoadRes, $(this));
+            if (dataTableLoadModels) {
+                redrawModelTable(dataTableLoadModels, $(this));
             }
         });
 
@@ -100,8 +100,8 @@
                 edges: []
             };
 
-            $("#graph-container").remove();
-            $("#container").append("<div id='graph-container'></div>");
+            $("#model-container").remove();
+            $("#model-display").append("<div id='model-container'></div>");
 
             var file_text = $fileDisplayArea.innerText;
 
@@ -116,7 +116,7 @@
                     // IMPORTANT:
                     // This works only with the canvas renderer, so the
                     // renderer type set as "canvas" is necessary here.
-                    container: $("#graph-container")[0],
+                    container: $("#model-container")[0],
                     type: 'canvas'
                 },
                 settings: {
@@ -182,31 +182,31 @@
         });
     };
 
-    buildHSResTable = function (resList) {
-        var resTableHtml;
+    buildModelRepTable = function (modelList) {
+        var modelTableHtml;
 
-        resList = typeof resList === 'string' ? JSON.parse(resList) : resList;
-        resTableHtml = '<table id="tbl-resources"><thead><th></th><th>Title</th><th>Subjects</th><th>Type</th><th>Owner</th></thead><tbody>';
+        modelList = typeof modelList === 'string' ? JSON.parse(modelList) : modelList;
+        modelTableHtml = '<table id="tbl-models"><thead><th></th><th>Title</th><th>Subjects</th><th>Type</th><th>Owner</th></thead><tbody>';
 
-        resList.forEach(function (resource) {
+        modelList.forEach(function (model) {
             var subjects = "";
 
-            for (var subject in resource.subjects) {
+            for (var subject in model.subjects) {
                 subjects += subject + " ";
             }
 
-            resTableHtml += '<tr>' +
-                '<td><input type="radio" name="resource" class="rdo-res" value="' + resource.id + '"></td>' +
-                '<td class="res_title">' + resource.title + '</td>' +
-                '<td class="res_subjects">' + resource.subjects + '</td>' +
-                '<td class="res_type">' + resource.type + '</td>' +
-                '<td class="res_owner">' + resource.owner + '</td>' +
+            modelTableHtml += '<tr>' +
+                '<td><input type="radio" name="model" class="rdo-model" value="' + model.id + '"></td>' +
+                '<td class="model_title">' + model.title + '</td>' +
+                '<td class="model_subjects">' + model.subjects + '</td>' +
+                '<td class="model_type">' + model.type + '</td>' +
+                '<td class="model_owner">' + model.owner + '</td>' +
                 '</tr>';
         });
-        resTableHtml += '</tbody></table>';
-        $modalModelRep.find('.modal-body').html(resTableHtml);
+        modelTableHtml += '</tbody></table>';
+        $modalModelRep.find('.modal-body').html(modelTableHtml);
         addListenersToModelRepTable();
-        dataTableLoadRes = $('#tbl-resources').DataTable({
+        dataTableLoadModels = $('#tbl-models').DataTable({
             'order': [[1, 'asc']],
             'columnDefs': [{
                 'orderable': false,
@@ -221,17 +221,17 @@
         });
     };
 
-    generateResourceList = function (numRequests) {
+    generateModelList = function (numRequests) {
         $.ajax({
             type: 'GET',
-            url: '/apps/epanet-model-viewer/get-hs-res-list',
+            url: '/apps/epanet-model-viewer/get-epanet-model-list',
             dataType: 'json',
             error: function () {
                 if (numRequests < 5) {
                     numRequests += 1;
-                    setTimeout(generateResourceList(), 3000);
+                    setTimeout(generateModelList(), 3000);
                 } else {
-                    $modalModelRep.find('.modal-body').html('<div class="error">An unexpected error was encountered while attempting to load resources.</div>');
+                    $modalModelRep.find('.modal-body').html('<div class="error">An unexpected error was encountered while attempting to load models.</div>');
                 }
             },
             success: function (response) {
@@ -239,22 +239,22 @@
                     if (!response.success) {
                         $modalModelRep.find('.modal-body').html('<div class="error">' + response.message + '</div>');
                     } else {
-                        if (response.hasOwnProperty('res_list')) {
-                            buildHSResTable(response.res_list);
+                        if (response.hasOwnProperty('model_list')) {
+                            buildModelRepTable(response.model_list);
                         }
-                        $btnUploadModel.add('#div-chkbx-res-auto-close').removeClass('hidden');
+                        $btnUploadModel.add('#div-chkbx-model-auto-close').removeClass('hidden');
                     }
                 }
             }
         });
     };
 
-    redrawDataTable = function (dataTable, $modal) {
+    redrawModelTable = function (modelTable, $modal) {
         var interval;
         interval = window.setInterval(function () {
             if ($modal.css('display') !== 'none' && $modal.find('table').length > 0) {
                 $modal.find('.dataTables_scrollBody').css('height', $modal.find('.modal-body').height().toString() - 160 + 'px');
-                dataTable.columns.adjust().draw();
+                modelTable.columns.adjust().draw();
                 window.clearInterval(interval);
             }
         }, 100);
@@ -273,39 +273,39 @@
     };
 
     onClickOpenModel = function () {
-        var $rdoRes = $('.rdo-res:checked');
-        var resId = $rdoRes.val();
-        var resType = $rdoRes.parent().parent().find('.res_type').text();
-        var resTitle = $rdoRes.parent().parent().find('.res_title').text();
+        var $rdoRes = $('.rdo-model:checked');
+        var modelId = $rdoRes.val();
+        var modelType = $rdoRes.parent().parent().find('.model_type').text();
+        var modelTitle = $rdoRes.parent().parent().find('.model_title').text();
 
         showMainLoadAnim();
         $modalModelRep.modal('hide');
 
-        addNonGenericRes(resId, resType, resTitle, true, null);
+        openModel(modelId, modelType, modelTitle, true, null);
     };
 
-    addNonGenericRes = function (resId, resType, resTitle, isLastResource, additionalResources) {
-        var data = {'res_id': resId};
+    openModel = function (modelId, modelType, modelTitle, isLastResource, additionalResources) {
+        var data = {'model_id': modelId};
 
-        if (resType) {
-            data.res_type = resType;
+        if (modelTitle) {
+            data.model_type = modelType;
         }
-        if (resTitle) {
-            data.res_title = resTitle;
+        if (modelTitle) {
+            data.model_title = modelTitle;
         }
 
         $.ajax({
             type: 'GET',
-            url: '/apps/epanet-model-viewer/add-hs-res',
+            url: '/apps/epanet-model-viewer/get-epanet-model',
             dataType: 'json',
             data: data,
             error: function () {
-                var message = 'An unexpected error ocurred while processing the following resource ' +
-                    '<a href="https://www.hydroshare.org/resource/' + resId + '" target="_blank">' +
-                    resId + '</a>. An app admin has been notified.';
+                var message = 'An unexpected error ocurred while processing the following model ' +
+                    '<a href="https://www.hydroshare.org/resource/' + modelId + '" target="_blank">' +
+                    modelId + '</a>. An app admin has been notified.';
 
                 addLogEntry('danger', message);
-                setStateAfterLastResource();
+                setStateAfterLastModel();
             },
             success: function (response) {
                 var message;
@@ -317,20 +317,20 @@
 
                     if (!response.success) {
                         if (!message) {
-                            message = 'An unexpected error ocurred while processing the following resource ' +
-                                '<a href="https://www.hydroshare.org/resource/' + resId + '" target="_blank">' +
-                                resId + '</a>. An app admin has been notified.';
+                            message = 'An unexpected error ocurred while processing the following model ' +
+                                '<a href="https://www.hydroshare.org/resource/' + modelId + '" target="_blank">' +
+                                modelId + '</a>. An app admin has been notified.';
                         }
 
                         addLogEntry('danger', message);
-                        setStateAfterLastResource();
+                        setStateAfterLastModel();
                     } else {
                         if (message) {
                             addLogEntry('warning', message);
                         }
                         if (response.hasOwnProperty('results')) {
-                            addLayerToUI(response.results, isLastResource, additionalResources);
-                            addMetadata(response.metadata);
+                            addModelToUI(response.results, isLastResource, additionalResources);
+                            addMetadataToUI(response.metadata);
                         }
                     }
                 }
@@ -338,7 +338,7 @@
         });
     };
 
-    setStateAfterLastResource = function () {
+    setStateAfterLastModel = function () {
         hideMainLoadAnim();
         if (showLog) {
             $modalLog.modal('show');
@@ -358,26 +358,26 @@
 
     showLoadingCompleteStatus = function (success, message) {
         var successClass = success ? 'success' : 'error';
-        var $resLoadingStatus = $('#res-load-status');
+        var $modelLoadingStatus = $('#model-load-status');
         var $statusText = $('#status-text');
         var showTime = success ? 2000 : 4000;
         $statusText.text(message)
             .removeClass('success error')
             .addClass(successClass);
-        $resLoadingStatus.removeClass('hidden');
+        $modelLoadingStatus.removeClass('hidden');
         setTimeout(function () {
-            $resLoadingStatus.addClass('hidden');
+            $modelLoadingStatus.addClass('hidden');
         }, showTime);
     };
 
-    addLayerToUI = function (result) {
+    addModelToUI = function (result) {
         var fileDisplayArea = $("#fileDisplayArea")[0];
         fileDisplayArea.innerText = result;
 
-        setStateAfterLastResource();
+        setStateAfterLastModel();
     };
 
-    addMetadata = function (metadata) {
+    addMetadataToUI = function (metadata) {
         var metadataDisplayArea = $('#metadataDisplayArea')[0];
         var metadataHTML = '<h1><a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">' + metadata['title'] + '</a></h1>';
         metadataHTML += '<p><h6>' + metadata['description'] + "</h6>";
@@ -452,7 +452,7 @@
     /*-----------------------------------------------
      ***************INVOKE IMMEDIATELY***************
      ----------------------------------------------*/
-    generateResourceList();
+    generateModelList();
 
     sigma.utils.pkg('sigma.canvas.nodes');
 

@@ -89,10 +89,6 @@ function Lexer(file_text, caller) {
 				if (input[i] == intType.PIPES) {
 					curType = intType.PIPES;
 					++i;
-
-                    for (val in nodeSpec) {
-                        console.log(nodeSpec[val]["type"]);
-                    }
 				}
 				else {
                     var tank = input[i].match(/\S+/g);
