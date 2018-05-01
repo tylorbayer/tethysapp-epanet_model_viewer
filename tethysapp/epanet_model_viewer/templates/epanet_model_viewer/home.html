@@ -8,40 +8,29 @@
 {% endblock %}
 
 {% block app_content %}
-<div id="main">
+<div>
   <h1>Welcome to the EPANET Model Viewer</h1>
-  <button id="load-from-hs" class="btn btn-default model-btn" data-toggle="modal" data-target="#modalLoadRes">Model Repository</button>
-  <br><br><p>Or, select a local file:</p>
-  <input type="file" id="fileInput">
+  <button id="load-from-hs" class="btn btn-default model-btn" data-toggle="modal" data-target="#modalModelRep">Model Repository</button>
+  <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
 </div>
 
-<div id="tabs">
+<div id="view-tabs">
   <ul>
-    <li><a href="#tabs-1">EPANET Model View</a></li>
-    <li><a href="#tabs-2">EPANET File View</a></li>
-    <li><a href="#tabs-3">Metadata</a></li>
+    <li><a href="#model-view">EPANET Model View</a></li>
+    <li><a href="#file-view">EPANET File View</a></li>
+    <li><a href="#metadata-view">Metadata</a></li>
   </ul>
-  <div id="tabs-1">
+  <div id="model-view">
       <h1>EPANET Model Display</h1>
       <div id="container">
-          <style>
-            #graph-container {
-              height: 500px;
-              width: 800px;
-              position: relative;
-              background-color: #F0F8FF;
-              margin:0 auto;
-            }
-          </style>
           <div id="graph-container"></div>
       </div>
   </div>
-  <div id="tabs-2">
+  <div id="file-view">
       <h1>EPANET File Display</h1>
       <pre id="fileDisplayArea"></pre>
   </div>
-  <div id="tabs-3">
-      <!--<h1>Hydroshare Metadata</h1>-->
+  <div id="metadata-view">
       <div id="metadataDisplayArea"></div>
   </div>
 </div>
@@ -52,8 +41,8 @@
 {% block after_app_content %}
 
 
-  <!-- Add HS Resource Modal -->
-    <div id="modalLoadRes" class="modal fade" role="dialog">
+  <!-- Add EPANET Model Modal -->
+    <div id="modalModelRep" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
@@ -70,7 +59,7 @@
                 <div class="modal-footer">
                     <div class="button-group flex1-0">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" id="btn-upload-res" class="btn btn-default btn-upload hidden" disabled>View</button>
+                        <button type="button" id="btn-upload-model" class="btn btn-primary btn-upload hidden" disabled>Open</button>
                     </div>
                 </div>
             </div>
@@ -80,8 +69,8 @@
   <!--End modal-->
 
   <!-- Node Properties Modal -->
-  <div class="modal fade" id="node-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
-    <div class="modal-dialog" role="document">
+  <div class="modal fade" id="node-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" id="node-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -97,8 +86,8 @@
   </div>
 
   <!-- Edge Properties Modal -->
-  <div class="modal fade" id="edge-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
-    <div class="modal-dialog" role="document">
+  <div class="modal fade" id="edge-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" id="edge-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -114,18 +103,18 @@
   </div>
 
 
-  <!-- Example Modal -->
+  <!-- Help Modal -->
   <div class="modal fade" id="help-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h5 class="modal-title" id="help-modal-label">Example Modal</h5>
+          <h5 class="modal-title" id="help-modal-label">EPANET Model Viewer Help</h5>
         </div>
         <div class="modal-body">
-          <p>You can add custom buttons to the app header using the <code>header_buttons</code> block. Use anchor/link tags for the button and wrap it in a div with the class <code>header-button</code>. For buttons with the gliphyicons, add the <code>glyphicon-button</code> class as well.</p>
-          <p>Ever have trouble using a modal in a Tethys app? Use the <code>after_app_content</code> block for modal content to allow them to function properly. See: <a href="https://getbootstrap.com/javascript/#modals">Bootstrap Modals</a></p>
-          <p>Add tooltips to any element by adding the <code>data-toggle</code>, <code>data-placement</code>, and <code>title</code> attributes to the button. See: <a href="https://getbootstrap.com/javascript/#tooltips">Bootstrap Tooltips</a></p>
+          <p>Click on the "Model Repository" button to view a model that is currently stored on <a href="hydroshare.org">Hydroshare</a>.
+          click on a node or pipe to view its properties. The "File View" tab displays the raw .inp file. You can find extra information
+          about the model in the "Metadata" tab.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

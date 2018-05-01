@@ -77,36 +77,22 @@
     background-color: #744c57;
     color: white;
 }
-#load-from-pc:disabled {
-    pointer-events: all;
-    cursor: default;
-}
-#load-from-pc:disabled:hover::after {
-    content: "The project must be saved before local files can be added";
-    position: absolute;
-    top: 0;
-    white-space: normal;
-    background-color: yellow;
-    font-size: small;
-    left: 125px;
-    color: black;
-}
 
 /*****************************************************/
 
 /*****************************************************/
-/*                  HS RES MODAL                     */
+/*                  MODEL REP MODAL                  */
 
-#modalLoadRes .modal-dialog {
+#modalModelRep .modal-dialog {
     width: auto;
-    margin: 15px;
+    margin: 40px;
 }
-#modalLoadRes tbody tr:hover {
+#modalModelRep tbody tr:hover {
     background-color: #0099ff;
     color: white;
     cursor: pointer;
 }
-#modalLoadRes .modal-body {
+#modalModelRep .modal-body {
     bottom: 110px;
     right: 1px;
     left: inherit;
@@ -125,10 +111,51 @@ input[type="radio"] {
     cursor: pointer;
 }
 
+/*****************************************************/
+
+/*****************************************************/
+/*                 NODE AND EDGE MODAL               */
+
 #node-modal .modal-dialog, #edge-modal .modal-dialog {
     position: absolute;
     width: 300px;
-    height: 300px;
-    /*margin-left: 10%;*/
-    /*margin-top: 30%;*/
+    height: 345px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                      GENERAL                      */
+
+#graph-container {
+    height: 500px;
+    width: 800px;
+    position: relative;
+    background-color: #F0F8FF;
+    margin:0 auto;
+}
+
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+.ui-tabs-active a {
+    background-color: #915F6D;
+    border: none;
+}
+
+a:focus {
+    outline: none;
+}
+
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+     border: none !important;
+     background: none !important;
+}
+
+.btn-default.focus, .btn-default:focus {
+     color: white !important;
+     background-color: #915F6D;
 }
