@@ -21,13 +21,13 @@
         s;
 
     //  *********FUNCTIONS***********
-    var addListenersToHsResTable,
+    var addListenersToModelRepTable,
         addInitialEventListeners,
         buildHSResTable,
         generateResourceList,
         initializeJqueryVariables,
         redrawDataTable,
-        onClickAddRes,
+        onClickOpenModel,
         showMainLoadAnim,
         addNonGenericRes,
         hideMainLoadAnim,
@@ -38,24 +38,27 @@
         addMetadata;
 
     //  **********Query Selectors************
-    var $modalAddRes,
+    var $modalModelRep,
         $nodeModal,
         $nodeModalLabel,
         $edgeModal,
         $edgeModalLabel,
-        $btnAddRes,
+        $btnUploadModel,
         $modalLog,
-        $fileInput,
+        $loadFromLocal,
         $fileDisplayArea;
 
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
      ******************************************************/
 
-    addListenersToHsResTable = function () {
-        $modalAddRes.find('tbody tr').on('click', function () {
-            $btnAddRes.prop('disabled', false);
+    addListenersToModelRepTable = function () {
+        $modalModelRep.find('tbody tr').on('click', function () {
+            $btnUploadModel.prop('disabled', false);
             $(this)
+                .unbind().dblclick(function () {
+                    onClickOpenModel();
+                })
                 .css({
                     'background-color': '#1abc9c',
                     'color': 'white'
@@ -69,16 +72,16 @@
     };
 
     addInitialEventListeners = function () {
-        $modalAddRes.on('shown.bs.modal', function () {
+        $modalModelRep.on('shown.bs.modal', function () {
             if (dataTableLoadRes) {
                 redrawDataTable(dataTableLoadRes, $(this));
             }
         });
 
-        $btnAddRes.on('click', onClickAddRes);
+        $btnUploadModel.on('click', onClickOpenModel);
 
-        $fileInput.addEventListener('change', function() {
-            var file = $fileInput.files[0];
+        $loadFromLocal.addEventListener('change', function() {
+            var file = $loadFromLocal.files[0];
 
             var reader = new FileReader();
 
@@ -90,7 +93,7 @@
         });
 
         $('#fileDisplayArea').bind("DOMSubtreeModified",function(){
-            $( "#tabs" ).tabs({ active: 0 });
+            $( "#view-tabs" ).tabs({ active: 0 });
 
             var g = {
                 nodes: [],
@@ -127,8 +130,7 @@
             s.cameras[0].goTo({ ratio: 1.2 });
 
             s.bind('clickNode', function(e) {
-                console.log(e.type, e.data.node, e.data.captor);
-                $nodeModal.css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
+                $('#node-dialog').css({ top: e.data.captor.clientY - 10, left: e.data.captor.clientX - 500});
 
                 var html = "";
                 var values = e.data.node.values;
@@ -154,8 +156,7 @@
             });
 
             s.bind('clickEdge', function(e) {
-                console.log(e.type, e.data.edge, e.data.captor);
-                $edgeModal.css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
+                $('#edge-dialog').css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
 
                 var html = "";
                 var values = e.data.edge.values;
@@ -203,8 +204,8 @@
                 '</tr>';
         });
         resTableHtml += '</tbody></table>';
-        $modalAddRes.find('.modal-body').html(resTableHtml);
-        addListenersToHsResTable();
+        $modalModelRep.find('.modal-body').html(resTableHtml);
+        addListenersToModelRepTable();
         dataTableLoadRes = $('#tbl-resources').DataTable({
             'order': [[1, 'asc']],
             'columnDefs': [{
@@ -230,18 +231,18 @@
                     numRequests += 1;
                     setTimeout(generateResourceList(), 3000);
                 } else {
-                    $modalAddRes.find('.modal-body').html('<div class="error">An unexpected error was encountered while attempting to load resources.</div>');
+                    $modalModelRep.find('.modal-body').html('<div class="error">An unexpected error was encountered while attempting to load resources.</div>');
                 }
             },
             success: function (response) {
                 if (response.hasOwnProperty('success')) {
                     if (!response.success) {
-                        $modalAddRes.find('.modal-body').html('<div class="error">' + response.message + '</div>');
+                        $modalModelRep.find('.modal-body').html('<div class="error">' + response.message + '</div>');
                     } else {
                         if (response.hasOwnProperty('res_list')) {
                             buildHSResTable(response.res_list);
                         }
-                        $btnAddRes.add('#div-chkbx-res-auto-close').removeClass('hidden');
+                        $btnUploadModel.add('#div-chkbx-res-auto-close').removeClass('hidden');
                     }
                 }
             }
@@ -260,25 +261,25 @@
     };
 
     initializeJqueryVariables = function () {
-        $btnAddRes = $('#btn-upload-res');
-        $modalAddRes = $('#modalLoadRes');
+        $btnUploadModel = $('#btn-upload-model');
+        $modalModelRep = $('#modalModelRep');
         $nodeModal = $('#node-modal');
         $nodeModalLabel = $('#node-modal-label');
         $edgeModal = $('#edge-modal');
         $edgeModalLabel = $('#edge-modal-label');
         $modalLog = $('#modalLog');
-        $fileInput = $("#fileInput")[0];
+        $loadFromLocal = $("#load-from-local")[0];
         $fileDisplayArea = $("#fileDisplayArea")[0];
     };
 
-    onClickAddRes = function () {
+    onClickOpenModel = function () {
         var $rdoRes = $('.rdo-res:checked');
         var resId = $rdoRes.val();
         var resType = $rdoRes.parent().parent().find('.res_type').text();
         var resTitle = $rdoRes.parent().parent().find('.res_title').text();
 
         showMainLoadAnim();
-        $modalAddRes.modal('hide');
+        $modalModelRep.modal('hide');
 
         addNonGenericRes(resId, resType, resTitle, true, null);
     };
@@ -304,7 +305,6 @@
                     resId + '</a>. An app admin has been notified.';
 
                 addLogEntry('danger', message);
-                console.log(message);
                 setStateAfterLastResource();
             },
             success: function (response) {
@@ -334,7 +334,6 @@
                         }
                     }
                 }
-                // console.log(message);
             }
         });
     };
@@ -380,7 +379,7 @@
 
     addMetadata = function (metadata) {
         var metadataDisplayArea = $('#metadataDisplayArea')[0];
-        var metadataHTML = '<h2><a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">' + metadata['title'] + '</a></h2>';
+        var metadataHTML = '<h1><a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">' + metadata['title'] + '</a></h1>';
         metadataHTML += '<p><h6>' + metadata['description'] + "</h6>";
 
         metadataHTML += '<br>Created: ' + metadata['dates'][1]['start_date'].substring(0, 10);
@@ -404,8 +403,6 @@
         metadataHTML += '</p>';
 
         metadataHTML += '<pre>' + JSON.stringify(metadata, null, 2) + '</pre>';
-
-        console.log(JSON.stringify(metadata, null, 2));
 
         metadataDisplayArea.innerHTML = metadataHTML;
     };
@@ -449,7 +446,7 @@
         initializeJqueryVariables();
         addInitialEventListeners();
 
-        $( "#tabs" ).tabs({ active: 0 });
+        $( "#view-tabs" ).tabs({ active: 0 });
     });
 
     /*-----------------------------------------------

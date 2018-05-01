@@ -37,7 +37,6 @@ function Lexer(file_text, caller) {
 
 		switch(curType) {
 			case intType.TITLE:
-				console.log(curType);
 				if (input[i] == intType.JUNCTIONS) {
 					curType = intType.JUNCTIONS;
 					++i;
@@ -48,7 +47,6 @@ function Lexer(file_text, caller) {
 				break;
 
 			case intType.JUNCTIONS:
-				console.log(curType);
 				if (input[i] == intType.RESERVOIRS) {
 					curType = intType.RESERVOIRS;
 					++i;
@@ -68,7 +66,6 @@ function Lexer(file_text, caller) {
 				}
 				break;
 			case intType.RESERVOIRS:
-				console.log(curType);
 				if (input[i] == intType.TANKS) {
 					curType = intType.TANKS;
 					++i;
@@ -89,7 +86,6 @@ function Lexer(file_text, caller) {
 				break;
 
 			case intType.TANKS:
-				console.log(curType);
 				if (input[i] == intType.PIPES) {
 					curType = intType.PIPES;
 					++i;
@@ -114,7 +110,6 @@ function Lexer(file_text, caller) {
 				break;
 
 			case intType.PIPES:
-				console.log(curType);
 				if (input[i] == intType.PUMPS) {
 					curType = intType.PUMPS;
 					++i;
@@ -140,7 +135,6 @@ function Lexer(file_text, caller) {
 				break;
 
 			case intType.PUMPS:
-				console.log(curType);
 				if (input[i] == intType.VALVES) {
 					curType = intType.VALVES;
 					++i;
@@ -356,7 +350,6 @@ function Lexer(file_text, caller) {
 				break;
 
 			case intType.COORDINATES:
-				console.log(curType);
 				if (input[i] == intType.VERTICES) {
 					curType = intType.VERTICES;
 					++i;
@@ -382,7 +375,6 @@ function Lexer(file_text, caller) {
 				break;
 
 			case intType.VERTICES:
-				console.log(curType);
 				if (input[i] == intType.LABELS) {
 					curType = intType.LABELS;
 					++i;
