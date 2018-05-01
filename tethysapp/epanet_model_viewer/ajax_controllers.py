@@ -3,33 +3,31 @@ from django.http import JsonResponse
 import requests
 
 from hs_restclient import HydroShare
-from utilities import get_hs_auth_obj, validate_res_request, process_nongeneric_res
-
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
 
 
-def get_hs_res_list(request):
+def get_epanet_model_list(request):
     """
     This is an example controller that uses the HydroShare API.
     """
     return_obj = {
         'success': False,
         'message': None,
-        'res_list': None
+        'model_list': None
     }
 
     if request.is_ajax() and request.method == 'GET':
 
         hs = HydroShare()
 
-        res_list = []
+        model_list = []
 
         try:
-            for res in hs.resources(type="ModelInstanceResource"):
+            for model in hs.resources(type="ModelInstanceResource"):
 
-                science_metadata_json = hs.getScienceMetadata(res['resource_id'])
+                science_metadata_json = hs.getScienceMetadata(model['resource_id'])
 
                 if not science_metadata_json['executed_by'] is None:
                     if science_metadata_json['executed_by']['modelProgramName'] == 'EPANET_2.0':
@@ -37,15 +35,15 @@ def get_hs_res_list(request):
                         for subject in science_metadata_json['subjects']:
                             subjects.append(" " + subject['value'])
 
-                        res_list.append({
-                            'title': res['resource_title'],
-                            'id': res['resource_id'],
-                            'type': res['resource_type'],
-                            'owner': res['creator'],
+                        model_list.append({
+                            'title': model['resource_title'],
+                            'id': model['resource_id'],
+                            'type': model['resource_type'],
+                            'owner': model['creator'],
                             'subjects': subjects,
                         })
 
-            return_obj['res_list'] = res_list
+            return_obj['model_list'] = model_list
             return_obj['success'] = True
 
         except:
@@ -56,49 +54,27 @@ def get_hs_res_list(request):
     return JsonResponse(return_obj)
 
 
-def add_hs_res(request):
+def get_epanet_model(request):
     return_obj = {
         'success': False,
         'message': None,
         'results': ""
     }
     if request.is_ajax() and request.method == 'GET':
-        if not request.GET.get('res_id'):
-            return_obj['message'] = message_template_param_unfilled.format(param='res_id')
+        if not request.GET.get('model_id'):
+            return_obj['message'] = message_template_param_unfilled.format(param='model_id')
         else:
-            res_id = request.GET['res_id']
-            res_type = None
-            res_title = None
-            if request.GET.get('res_type'):
-                res_type = request.GET['res_type']
-            if request.GET.get('res_title'):
-                res_title = request.GET['res_title']
+            model_id = request.GET['model_id']
 
-            r = get_hs_auth_obj(request)
-            if not r['success']:
-                return_obj['message'] = r['message']
-                return return_obj
-            else:
-                hs = r['hs_obj']
-                r = validate_res_request(hs, res_id)
-                if not r['can_access']:
-                    return_obj['message'] = r['message']
-                else:
-                    metadata_json = hs.getScienceMetadata(res_id)
-                    return_obj['metadata'] = metadata_json
-                    for res_file in hs.getResourceFileList(res_id):
-                        res = requests.get(res_file["url"])
-                        return_obj['results'] = res.text
-                        return_obj['success'] = True
-                    # res_layers_obj_list = get_res_layers_from_db(hs, res_id, res_type, res_title, request.user.username)
-                    # if res_layers_obj_list:
-                    #     print("res layer ob list")
-                    #     return_obj['results'] = res_layers_obj_list
-                    #     return_obj['success'] = True
-                    # else:
-                    #     print("non gen")
-                    # return_obj = process_nongeneric_res(hs, res_id, res_type, res_title, request.user.username)
-                    # print(return_obj)
+            hs = HydroShare()
+
+            metadata_json = hs.getScienceMetadata(model_id)
+            return_obj['metadata'] = metadata_json
+
+            for model_file in hs.getResourceFileList(model_id):
+                model = requests.get(model_file["url"])
+                return_obj['results'] = model.text
+                return_obj['success'] = True
 
     else:
         return_obj['message'] = message_template_wrong_req_method.format(method="GET")

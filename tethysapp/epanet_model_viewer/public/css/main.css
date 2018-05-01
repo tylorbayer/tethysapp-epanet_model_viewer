@@ -97,13 +97,13 @@
     right: 1px;
     left: inherit;
 }
-#div-chkbx-res-auto-close {
+#div-chkbx-model-auto-close {
     position: fixed;
     bottom: 65px;
     margin: 10px 0 5px 0;
     height: 30px;
 }
-#chkbx-res-auto-close {
+#chkbx-model-auto-close {
     margin-left: 25px;
 }
 
@@ -127,7 +127,7 @@ input[type="radio"] {
 /*****************************************************/
 /*                      GENERAL                      */
 
-#graph-container {
+#model-container {
     height: 500px;
     width: 800px;
     position: relative;
