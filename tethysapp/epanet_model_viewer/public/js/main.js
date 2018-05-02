@@ -18,7 +18,11 @@
      *************************************************************************/
     var dataTableLoadModels,
         showLog,
-        s;
+        s,
+        curModel,
+        curNode,
+        curEdge,
+        curFile;
 
     //  *********FUNCTIONS***********
     var addListenersToModelRepTable,
@@ -35,18 +39,38 @@
         addLogEntry,
         showLoadingCompleteStatus,
         addModelToUI,
-        addMetadataToUI;
+        addMetadataToUI,
+        resetModelState,
+        resetUploadState,
+        populateNodeModal,
+        populateEdgeModal,
+        uploadModel,
+        addDefaultBehaviorToAjax,
+        checkCsrfSafe,
+        getCookie;
 
     //  **********Query Selectors************
     var $modalModelRep,
-        $nodeModal,
-        $nodeModalLabel,
-        $edgeModal,
-        $edgeModalLabel,
-        $btnUploadModel,
+        $modalNode,
+        $uploadContainer,
+        $modalNodeLabel,
+        $modalEdge,
+        $modalEdgeLabel,
+        $btnOpenModel,
         $modalLog,
         $loadFromLocal,
-        $fileDisplayArea;
+        $fileDisplayArea,
+        $chkNodeEdit,
+        $chkEdgeEdit,
+        $btnNodeOk,
+        $btnNodeCancel,
+        $btnEdgeOk,
+        $btnEdgeCancel,
+        $inpUlTitle,
+        $inpUlDescription,
+        $inpUlKeyworkds,
+        $btnUl,
+        $btnUlCancel;
 
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
@@ -54,7 +78,7 @@
 
     addListenersToModelRepTable = function () {
         $modalModelRep.find('tbody tr').on('click', function () {
-            $btnUploadModel.prop('disabled', false);
+            $btnOpenModel.prop('disabled', false);
             $(this)
                 .unbind().dblclick(function () {
                     onClickOpenModel();
@@ -78,7 +102,7 @@
             }
         });
 
-        $btnUploadModel.on('click', onClickOpenModel);
+        $btnOpenModel.on('click', onClickOpenModel);
 
         $loadFromLocal.addEventListener('change', function() {
             var file = $loadFromLocal.files[0];
@@ -86,16 +110,88 @@
             var reader = new FileReader();
 
             reader.onload = function() {
-                $fileDisplayArea.innerText = reader.result;
+                curFile = reader.result;
+                $fileDisplayArea.innerText = curFile;
+                $uploadContainer.removeClass('hidden');
             };
 
             reader.readAsText(file);
         });
 
-        $('#fileDisplayArea').bind("DOMSubtreeModified",function(){
+        $btnUl.click(function() {
+            if ($inpUlTitle.val() != '' && $inpUlDescription.val() != '' && $inpUlKeyworkds.val() != '') {
+                var data = new FormData();
+                data.append('model_title', $inpUlTitle.val());
+                data.append('model_description', $inpUlDescription.val());
+                data.append('model_keywords', $inpUlKeyworkds.tagsinput('items'));
+                data.append('model_file', curFile);
+
+                uploadModel(data);
+
+                $('#modal-upload').modal('hide');
+                resetUploadState();
+            }
+            else {
+                alert("Fields not entered correctly. Cannot upload model to Hydroshare. Fill the correct fields in and try again.");
+            }
+        });
+
+        $btnUlCancel.click(function() {
+            resetUploadState();
+        });
+
+        $chkNodeEdit.click(function() {
+            if ($chkNodeEdit.is(':checked')) {
+                $btnNodeOk.removeAttr('disabled');
+
+                $modalNode.find('.inp-properties').attr('readonly', false);
+            }
+            else {
+                $btnNodeOk.attr('disabled', true);
+
+                $modalNode.find('.inp-properties').attr('readonly', true);
+
+                populateNodeModal(curNode);
+            }
+        });
+
+        $chkEdgeEdit.click(function() {
+            if ($chkEdgeEdit.is(':checked')) {
+                $btnEdgeOk.removeAttr('disabled');
+
+                $modalEdge.find('.inp-properties').attr('readonly', false);
+            }
+            else {
+                $btnEdgeOk.attr('disabled', true);
+
+                $modalEdge.find('.inp-properties').attr('readonly', true);
+
+                populateEdgeModal(curEdge);
+            }
+        });
+
+        $btnNodeOk.click(function() {
+            $('#modal-node').modal('hide');
+            resetModelState();
+        });
+
+        $btnNodeCancel.click(function() {
+            resetModelState();
+        });
+
+        $btnEdgeOk.click(function() {
+            $('#modal-edge').modal('hide');
+            resetModelState();
+        });
+
+        $btnEdgeCancel.click(function() {
+            resetModelState();
+        });
+
+        $('#file-display-area').bind("DOMSubtreeModified",function(){
             $( "#view-tabs" ).tabs({ active: 0 });
 
-            var g = {
+            curModel = {
                 nodes: [],
                 edges: []
             };
@@ -105,13 +201,13 @@
 
             var file_text = $fileDisplayArea.innerText;
 
-            var lexer = new Lexer(file_text, "not");
+            var epanetLexer = new EPANET_Lexer(file_text, "not");
 
-            g.nodes = lexer.getNodes();
-            g.edges = lexer.getEdges();
+            curModel.nodes = epanetLexer.getNodes();
+            curModel.edges = epanetLexer.getEdges();
 
             s = new sigma({
-                graph: g,
+                graph: curModel,
                 renderer: {
                     // IMPORTANT:
                     // This works only with the canvas renderer, so the
@@ -132,54 +228,88 @@
             s.bind('clickNode', function(e) {
                 $('#node-dialog').css({ top: e.data.captor.clientY - 10, left: e.data.captor.clientX - 500});
 
-                var html = "";
-                var values = e.data.node.values;
-
-                if (e.data.node.type == "Junction") {
-                    html += "<p><b>Junction " + e.data.node.id + "</b><br>";
-                    html += "Elev: " + values[0] + "<br>Demand: " + values[1] + "<br>Pattern: " + values[2] + "</p>";
-                }
-                else if (e.data.node.type == "Reservoir") {
-                    html += "<p><b>Reservoir " + e.data.node.id + "</b><br>";
-                    html += "Head: " + values[0] + "<br>Pattern: " + values[1] + "</p>";
-                }
-                else {
-                    html += "<p><b>Tank " + e.data.node.id + "</b><br>";
-                    html += "Elevation: " + values[0] + "<br>InitLevel: " + values[1] + "<br>MinLevel: " + values[2] +
-                        "<br>MaxLevel: " + values[3] + "<br>Diameter: " + values[4] + "<br>MinVol: " + values[5] + "<br>VolCurve: " + values[6] + "</p>";
-
-                }
-                $nodeModalLabel.html(e.data.node.type + " Properties");
-                $nodeModal.find('.modal-body').html(html);
-                $nodeModal.modal('show');
-                s.refresh();
+                curNode = e.data.node;
+                populateNodeModal(curNode);
             });
 
             s.bind('clickEdge', function(e) {
                 $('#edge-dialog').css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
 
-                var html = "";
-                var values = e.data.edge.values;
-
-                if (e.data.edge.type == "Pipe") {
-                    html += "<p><b>Pipe: " + e.data.edge.id  + "</b><br>";
-                    html += "Length: " + values[0] + "<br>Roughness: " + values[1] + "<br>Diameter: " + values[2] +
-                        "<br>Minor Loss: " + values[3] + "<br>Status: " + values[4] + "</p>";
-                }
-                else {
-                    html += "<p><b>Pump: " + e.data.edge.id  + "</b><br>";
-                    html += "Parameters: " + values[0] + " " + values[1] + "</p>";
-                }
-
-                s.refresh();
-
-                $edgeModalLabel.html(e.data.edge.type + " Properties");
-                $edgeModal.find('.modal-body').html(html);
-                $edgeModal.modal('show');
+                curEdge = e.data.edge;
+                populateEdgeModal(curEdge);
             });
 
             s.refresh();
         });
+    };
+
+    populateNodeModal = function (node) {
+        var html = "";
+        var values = node.values;
+
+        if (node.type == "Junction") {
+            html += "<div><b>Junction: <input type='text' class='inp-properties' value='" + node.id + "' readonly></b><br>" +
+                "Elev: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "Demand: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "Pattern: <input type='text' class='inp-properties' value='" + values[2] + "' readonly><br></div>";
+        }
+        else if (node.type == "Reservoir") {
+            html += "<div><b>Reservoir: <input type='text' class='inp-properties' value='" + node.id + "' readonly></b><br>" +
+                "Head: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "Pattern: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br></div>";
+        }
+        else {
+            html += "<div><b>Tank: <input type='text' class='inp-properties' value='" + node.id + "' readonly></b><br>" +
+                "Elevation: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "InitLevel: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "MinLevel: <input type='text' class='inp-properties' value='" + values[2] + "' readonly><br>" +
+                "MaxLevel: <input type='text' class='inp-properties' value='" + values[3] + "' readonly><br>" +
+                "Diameter: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br>" +
+                "MinVol: <input type='text' class='inp-properties' value='" + values[5] + "' readonly><br>" +
+                "VolCurve: <input type='text' class='inp-properties' value='" + values[6] + "' readonly><br></div>";
+
+        }
+        $modalNodeLabel.html(node.type + " Properties");
+        $modalNode.find('.modal-body').html(html);
+        $modalNode.modal('show');
+    };
+
+    populateEdgeModal = function (edge) {
+        var html = "";
+        var values = edge.values;
+
+        if (edge.type == "Pipe") {
+            html += "<div><b>Pipe: <input type='text' class='inp-properties' value='" + edge.id + "' readonly></b><br>" +
+                "Length: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "Roughness: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "Diameter: <input type='text' class='inp-properties' value='" + values[2] + "' readonly><br>" +
+                "Minor Loss: <input type='text' class='inp-properties' value='" + values[3] + "' readonly><br>" +
+                "Status: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br></div>";
+        }
+        else {
+            html += "<p><b>Pump: <input type='text' class='inp-properties' value='" + edge.id + "' readonly></b><br>" +
+                "Parameters: <input type='text' class='inp-properties' value='" + values[0] + "' readonly>" +
+                "<input type='text' class='inp-properties' value='" + values[1] + "' readonly></p>";
+        }
+
+        s.refresh();
+
+        $modalEdgeLabel.html(edge.type + " Properties");
+        $modalEdge.find('.modal-body').html(html);
+        $modalEdge.modal('show');
+    };
+
+    resetModelState = function() {
+        $btnNodeOk.attr('disabled', true);
+        $btnEdgeOk.attr('disabled', true);
+        $chkNodeEdit.attr('checked', false);
+        $chkEdgeEdit.attr('checked', false);
+    };
+
+    resetUploadState = function() {
+        $inpUlTitle.val('');
+        $inpUlDescription.val('');
+        $inpUlKeyworkds.tagsinput('removeAll');
     };
 
     buildModelRepTable = function (modelList) {
@@ -242,7 +372,7 @@
                         if (response.hasOwnProperty('model_list')) {
                             buildModelRepTable(response.model_list);
                         }
-                        $btnUploadModel.add('#div-chkbx-model-auto-close').removeClass('hidden');
+                        $btnOpenModel.add('#div-chkbx-model-auto-close').removeClass('hidden');
                     }
                 }
             }
@@ -261,38 +391,42 @@
     };
 
     initializeJqueryVariables = function () {
-        $btnUploadModel = $('#btn-upload-model');
-        $modalModelRep = $('#modalModelRep');
-        $nodeModal = $('#node-modal');
-        $nodeModalLabel = $('#node-modal-label');
-        $edgeModal = $('#edge-modal');
-        $edgeModalLabel = $('#edge-modal-label');
+        $btnOpenModel = $('#btn-open-model');
+        $modalModelRep = $('#modal-model-rep');
+        $uploadContainer = $('#upload-container');
+        $modalNode = $('#modal-node');
+        $modalNodeLabel = $('#modal-node-label');
+        $modalEdge = $('#modal-edge');
+        $modalEdgeLabel = $('#modal-edge-label');
         $modalLog = $('#modalLog');
         $loadFromLocal = $("#load-from-local")[0];
-        $fileDisplayArea = $("#fileDisplayArea")[0];
+        $fileDisplayArea = $("#file-display-area")[0];
+        $chkNodeEdit = $('#chk-node');
+        $chkEdgeEdit = $('#chk-edge');
+        $btnNodeOk = $('#btn-node-ok');
+        $btnNodeCancel = $('#btn-node-cancel');
+        $btnEdgeOk = $('#btn-edge-ok');
+        $btnEdgeCancel = $('#btn-edge-cancel');
+        $inpUlTitle = $('#inp-upload-title');
+        $inpUlDescription = $('#inp-upload-description');
+        $inpUlKeyworkds = $('#tagsinp-upload-keywords');
+        $btnUl = $('#btn-upload');
+        $btnUlCancel = $('#btn-upload-cancel');
     };
 
     onClickOpenModel = function () {
         var $rdoRes = $('.rdo-model:checked');
         var modelId = $rdoRes.val();
-        var modelType = $rdoRes.parent().parent().find('.model_type').text();
-        var modelTitle = $rdoRes.parent().parent().find('.model_title').text();
 
         showMainLoadAnim();
         $modalModelRep.modal('hide');
+        $uploadContainer.addClass('hidden');
 
-        openModel(modelId, modelType, modelTitle, true, null);
+        openModel(modelId);
     };
 
-    openModel = function (modelId, modelType, modelTitle, isLastResource, additionalResources) {
+    openModel = function (modelId) {
         var data = {'model_id': modelId};
-
-        if (modelTitle) {
-            data.model_type = modelType;
-        }
-        if (modelTitle) {
-            data.model_title = modelTitle;
-        }
 
         $.ajax({
             type: 'GET',
@@ -329,8 +463,61 @@
                             addLogEntry('warning', message);
                         }
                         if (response.hasOwnProperty('results')) {
-                            addModelToUI(response.results, isLastResource, additionalResources);
+                            addModelToUI(response.results);
                             addMetadataToUI(response.metadata);
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    uploadModel = function (data) {
+        $.ajax({
+            type: 'POST',
+            url: '/apps/epanet-model-viewer/upload-epanet-model/',
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            data: data,
+            error: function () {
+                var message = 'An unexpected error occurred while uploading the model ';
+
+                addLogEntry('danger', message);
+                setStateAfterLastModel();
+            },
+            success: function (response) {
+                var message;
+
+                if (response.hasOwnProperty('success')) {
+                    if (response.hasOwnProperty('message')) {
+                        message = response.message;
+                    }
+
+                    if (!response.success) {
+                        if (!message) {
+                            message = 'An unexpected error occurred while uploading the model';
+                        }
+
+                        addLogEntry('danger', message);
+                        setStateAfterLastModel();
+                    } else {
+                        if (message) {
+                            addLogEntry('warning', message);
+                        }
+                        if (response.hasOwnProperty('results') && response.hasOwnProperty('metadata')) {
+                            addModelToUI(response.results);
+                            addMetadataToUI(response.metadata);
+                            $modalModelRep.find('.modal-body').html('<img src="/static/epanet_model_viewer/images/loading-animation.gif">' +
+                                '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>');
+                            alert("Model has successfully been uploaded to HydroShare.");
+                            generateModelList();
+                        }
+                        else {
+                            $modalModelRep.find('.modal-body').html('<img src="/static/epanet_model_viewer/images/loading-animation.gif">' +
+                                '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>"');
+                            alert("Model has successfully been uploaded to HydroShare.");
+                            generateModelList();
                         }
                     }
                 }
@@ -371,14 +558,14 @@
     };
 
     addModelToUI = function (result) {
-        var fileDisplayArea = $("#fileDisplayArea")[0];
+        var fileDisplayArea = $("#file-display-area")[0];
         fileDisplayArea.innerText = result;
 
         setStateAfterLastModel();
     };
 
     addMetadataToUI = function (metadata) {
-        var metadataDisplayArea = $('#metadataDisplayArea')[0];
+        var metadataDisplayArea = $('#metadata-display-area')[0];
         var metadataHTML = '<h1><a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">' + metadata['title'] + '</a></h1>';
         metadataHTML += '<p><h6>' + metadata['description'] + "</h6>";
 
@@ -438,6 +625,43 @@
         }
     };
 
+    addDefaultBehaviorToAjax = function () {
+        // Add CSRF token to appropriate ajax requests
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!checkCsrfSafe(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                }
+            }
+        });
+    };
+
+    // Find if method is CSRF safe
+    checkCsrfSafe = function (method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    };
+
+    getCookie = function (name) {
+        var cookie;
+        var cookies;
+        var cookieValue = null;
+        var i;
+
+        if (document.cookie && document.cookie !== '') {
+            cookies = document.cookie.split(';');
+            for (i = 0; i < cookies.length; i += 1) {
+                cookie = $.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
 
     /*-----------------------------------------------
      **************ONLOAD FUNCTION*******************
@@ -445,6 +669,7 @@
     $(function () {
         initializeJqueryVariables();
         addInitialEventListeners();
+        addDefaultBehaviorToAjax();
 
         $( "#view-tabs" ).tabs({ active: 0 });
     });

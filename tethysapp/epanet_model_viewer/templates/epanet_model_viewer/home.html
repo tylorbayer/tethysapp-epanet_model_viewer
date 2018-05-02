@@ -10,8 +10,11 @@
 {% block app_content %}
 <div>
   <h1>Welcome to the EPANET Model Viewer</h1>
-  <button id="load-from-hs" class="btn btn-default model-btn" data-toggle="modal" data-target="#modalModelRep">Model Repository</button>
+  <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository</button>
   <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
+  <div id="upload-container" class="hidden">
+    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Upload Model</button><br><br>
+  </div>
 </div>
 
 <div id="view-tabs">
@@ -28,10 +31,10 @@
   </div>
   <div id="file-view">
       <h1>EPANET File Display</h1>
-      <pre id="fileDisplayArea"></pre>
+      <pre id="file-display-area"></pre>
   </div>
   <div id="metadata-view">
-      <div id="metadataDisplayArea"></div>
+      <div id="metadata-display-area"></div>
   </div>
 </div>
 
@@ -41,8 +44,8 @@
 {% block after_app_content %}
 
 
-  <!-- Add EPANET Model Modal -->
-    <div id="modalModelRep" class="modal fade" role="dialog">
+  <!-- EPANET Model Repository Modal -->
+    <div id="modal-model-rep" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
@@ -59,7 +62,7 @@
                 <div class="modal-footer">
                     <div class="button-group flex1-0">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" id="btn-upload-model" class="btn btn-primary btn-upload hidden" disabled>Open</button>
+                        <button id="btn-open-model" type="button" class="btn btn-primary btn-upload hidden" disabled>Open</button>
                     </div>
                 </div>
             </div>
@@ -68,8 +71,29 @@
     </div>
   <!--End modal-->
 
+  <!-- Upload Model Modal -->
+  <div id="modal-upload" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" id="upload-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="upload-modal-label">Model Properties</h5>
+        </div>
+        <div class="modal-body">
+            <b>Title:</b><input id="inp-upload-title" name="upload-title" type='text'><br><br>
+            <b>Description:</b><input id="inp-upload-description" name="upload-description" type='text'><br><br>
+            <b>Keywords:</b><input id="tagsinp-upload-keywords" name="upload-keywords" type="text" data-role="tagsinput">
+        </div>
+        <div class="modal-footer">
+          <button id="btn-upload-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button id="btn-upload" type="button" class="btn btn-primary">Upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Node Properties Modal -->
-  <div class="modal fade" id="node-modal" tabindex="-1" role="dialog">
+  <div class="modal fade" id="modal-node" tabindex="-1" role="dialog">
     <div class="modal-dialog" id="node-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -78,15 +102,20 @@
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+          <span>Edit:</span>
+            <label class="switch">
+              <input id="chk-node" type="checkbox">
+              <span class="slider round"></span>
+            </label>
+          <button type="button" id="btn-node-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" id="btn-node-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Edge Properties Modal -->
-  <div class="modal fade" id="edge-modal" tabindex="-1" role="dialog">
+  <div class="modal fade" id="modal-edge" tabindex="-1" role="dialog">
     <div class="modal-dialog" id="edge-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -95,8 +124,13 @@
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+            <span>Edit:</span>
+            <label class="switch">
+              <input id="chk-edge" type="checkbox">
+              <span class="slider round"></span>
+            </label>
+          <button type="button" id="btn-edge-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" id="btn-edge-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
         </div>
       </div>
     </div>
