@@ -83,16 +83,16 @@
 /*****************************************************/
 /*                  MODEL REP MODAL                  */
 
-#modalModelRep .modal-dialog {
+#modal-model-rep .modal-dialog {
     width: auto;
     margin: 40px;
 }
-#modalModelRep tbody tr:hover {
+#modal-model-rep tbody tr:hover {
     background-color: #0099ff;
     color: white;
     cursor: pointer;
 }
-#modalModelRep .modal-body {
+#modal-model-rep .modal-body {
     bottom: 110px;
     right: 1px;
     left: inherit;
@@ -114,12 +114,31 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
+/*                UPLOAD MODEL MODAL                 */
+
+#modal-upload .modal-dialog {
+    height: 300px;
+    width: 400px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
 /*                 NODE AND EDGE MODAL               */
 
-#node-modal .modal-dialog, #edge-modal .modal-dialog {
+#modal-node .modal-dialog, #modal-edge .modal-dialog {
     position: absolute;
     width: 300px;
-    height: 345px;
+    height: 440px;
+}
+
+.inp-properties {
+    margin-bottom: 10px;
+}
+
+.inp-properties:read-only {
+    background-color: lightgray;
+    border: none;
 }
 
 /*****************************************************/
@@ -134,28 +153,85 @@ input[type="radio"] {
     background-color: #F0F8FF;
     margin:0 auto;
 }
-
 .tab {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
 }
-
 .ui-tabs-active a {
     background-color: #915F6D;
     border: none;
 }
-
 a:focus {
     outline: none;
 }
-
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
      border: none !important;
      background: none !important;
 }
-
 .btn-default.focus, .btn-default:focus {
      color: white !important;
      background-color: #915F6D;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                   MODAL SWITCH                    */
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 35px;
+  height: 20px;
+  margin-top: 5px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #286090;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(14px);
+  -ms-transform: translateX(14);
+  transform: translateX(14px);
+}
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;
+}
+.label-info {
+    background-color: #286090;
 }

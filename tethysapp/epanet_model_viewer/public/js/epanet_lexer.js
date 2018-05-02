@@ -9,7 +9,7 @@ OPTIONS:"[OPTIONS]", COORDINATES:"[COORDINATES]", VERTICES:"[VERTICES]",
 LABELS:"[LABELS]", BACKDROP:"[BACKDROP]", END:"[END]"};
 
 
-function Lexer(file_text, caller) {
+function EPANET_Lexer(file_text, caller) {
     var input;
     if (caller == "fileInput")
         input = file_text.split('\r\n');
@@ -446,9 +446,17 @@ function Lexer(file_text, caller) {
 
 	this.getNodes = function() {
 		return nodes;
-	}
+	};
 
 	this.getEdges = function() {
 		return edges;
-	}
+	};
+}
+
+function Node(node) {
+
+    }
+
+function Edge(edge) {
+
 }
