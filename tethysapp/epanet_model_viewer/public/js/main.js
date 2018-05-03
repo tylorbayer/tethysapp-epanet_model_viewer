@@ -81,8 +81,8 @@
             $btnOpenModel.prop('disabled', false);
             $(this)
                 .unbind().dblclick(function () {
-                    onClickOpenModel();
-                })
+                onClickOpenModel();
+            })
                 .css({
                     'background-color': '#1abc9c',
                     'color': 'white'
@@ -220,7 +220,7 @@
                     maxEdgeSize: 4,
                     enableEdgeHovering: true,
                     edgeHoverSizeRatio: 1.5
-                  }
+                }
             });
 
             s.cameras[0].goTo({ ratio: 1.2 });

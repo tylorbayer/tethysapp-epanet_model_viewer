@@ -8,67 +8,64 @@
 {% endblock %}
 
 {% block app_content %}
-<div>
-  <h1>Welcome to the EPANET Model Viewer</h1>
-  <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository Quick View</button>
-  <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
-  <div id="upload-container" class="hidden">
-    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Upload Model</button><br><br>
+  <div>
+    <h1>Welcome to the EPANET Model Viewer</h1>
+    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository Quick View</button>
+    <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
+    <div id="upload-container" class="hidden">
+      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Upload Model</button><br><br>
+    </div>
   </div>
-</div>
 
-<div id="view-tabs">
-  <ul>
-    <li><a href="#model-view">EPANET Model View</a></li>
-    <li><a href="#file-view">EPANET File View</a></li>
-    <li><a href="#metadata-view">Metadata</a></li>
-  </ul>
-  <div id="model-view">
+  <div id="view-tabs">
+    <ul>
+      <li><a href="#model-view">EPANET Model View</a></li>
+      <li><a href="#file-view">EPANET File View</a></li>
+      <li><a href="#metadata-view">Metadata</a></li>
+    </ul>
+    <div id="model-view">
       <h1>EPANET Model Display</h1>
       <div id="model-display">
-          <div id="model-container"></div>
+        <div id="model-container"></div>
       </div>
-  </div>
-  <div id="file-view">
+    </div>
+    <div id="file-view">
       <h1>EPANET File Display</h1>
       <pre id="file-display-area"></pre>
-  </div>
-  <div id="metadata-view">
+    </div>
+    <div id="metadata-view">
       <div id="metadata-display-area"></div>
+    </div>
   </div>
-</div>
-
 {% endblock %}
 
 {# Use the after_app_content block for modals #}
 {% block after_app_content %}
-
-
   <!-- EPANET Model Repository Modal -->
-    <div id="modal-model-rep" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">EPANET Model Repository Quick View</h4>
-                </div>
-                <div class="modal-body">
-                    <img src="/static/epanet_model_viewer/images/loading-animation.gif">
-                    <br>
-                    <p><b>Loading model repository...</b></p>
-                    <p>Note: Loading will continue if dialog is closed.</p>
-                </div>
-                <div class="modal-footer">
-                    <div class="button-group flex1-0">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button id="btn-open-model" type="button" class="btn btn-primary btn-upload hidden" disabled>Open</button>
-                    </div>
-                </div>
-            </div>
-            <!--End modal content-->
+  <div id="modal-model-rep" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">EPANET Model Repository Quick View</h4>
         </div>
+        <div class="modal-body">
+          <img src="/static/epanet_model_viewer/images/loading-animation.gif">
+          <br>
+          <p><b>Loading model repository...</b></p>
+          <p>Note: Loading will continue if dialog is closed.</p>
+        </div>
+        <div class="modal-footer">
+          <div class="button-group flex1-0">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button id="btn-open-model" type="button" class="btn btn-primary btn-upload hidden" disabled>Open</button>
+          </div>
+        </div>
+      </div>
+      <!--End modal content-->
     </div>
+  </div>
   <!--End modal-->
 
   <!-- Upload Model Modal -->
@@ -80,9 +77,9 @@
           <h5 class="modal-title" id="upload-modal-label">Model Properties</h5>
         </div>
         <div class="modal-body">
-            <b>Title:</b><input id="inp-upload-title" name="upload-title" type='text'><br><br>
-            <b>Description:</b><input id="inp-upload-description" name="upload-description" type='text'><br><br>
-            <b>Keywords:</b><input id="tagsinp-upload-keywords" name="upload-keywords" type="text" data-role="tagsinput">
+          <b>Title:</b><input id="inp-upload-title" name="upload-title" type='text'><br><br>
+          <b>Description:</b><input id="inp-upload-description" name="upload-description" type='text'><br><br>
+          <b>Keywords:</b><input id="tagsinp-upload-keywords" name="upload-keywords" type="text" data-role="tagsinput">
         </div>
         <div class="modal-footer">
           <button id="btn-upload-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -103,10 +100,10 @@
         <div class="modal-body"></div>
         <div class="modal-footer">
           <span>Edit:</span>
-            <label class="switch">
-              <input id="chk-node" type="checkbox">
-              <span class="slider round"></span>
-            </label>
+          <label class="switch">
+            <input id="chk-node" type="checkbox">
+            <span class="slider round"></span>
+          </label>
           <button type="button" id="btn-node-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="button" id="btn-node-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
         </div>
@@ -124,11 +121,11 @@
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer">
-            <span>Edit:</span>
-            <label class="switch">
-              <input id="chk-edge" type="checkbox">
-              <span class="slider round"></span>
-            </label>
+          <span>Edit:</span>
+          <label class="switch">
+            <input id="chk-edge" type="checkbox">
+            <span class="slider round"></span>
+          </label>
           <button type="button" id="btn-edge-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="button" id="btn-edge-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
         </div>
@@ -147,8 +144,8 @@
         </div>
         <div class="modal-body">
           <p>Click on the "Model Repository" button to view a model that is currently stored on <a href="hydroshare.org">Hydroshare</a>.
-          click on a node or pipe to view its properties. The "File View" tab displays the raw .inp file. You can find extra information
-          about the model in the "Metadata" tab.</p>
+            click on a node or pipe to view its properties. The "File View" tab displays the raw .inp file. You can find extra information
+            about the model in the "Metadata" tab.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -159,24 +156,24 @@
   </div>
 
   <!-- Log Modal -->
-    <div id="modalLog" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Log</h4>
-                </div>
-                <div class="modal-body" id="logEntries"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" id="btn-clearLog">Clear Log</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-            <!--End modal content-->
+  <div id="modalLog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Log</h4>
         </div>
+        <div class="modal-body" id="logEntries"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" id="btn-clearLog">Clear Log</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      <!--End modal content-->
     </div>
-    <!--End modal-->
+  </div>
+  <!--End modal-->
 {% endblock %}
 
 {% block app_actions %}
