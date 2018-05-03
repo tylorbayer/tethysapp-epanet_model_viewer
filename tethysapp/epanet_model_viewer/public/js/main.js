@@ -514,6 +514,7 @@
                             generateModelList();
                         }
                         else {
+                            $uploadContainer.addClass('hidden');
                             $modalModelRep.find('.modal-body').html('<img src="/static/epanet_model_viewer/images/loading-animation.gif">' +
                                 '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>"');
                             alert("Model has successfully been uploaded to HydroShare.");
