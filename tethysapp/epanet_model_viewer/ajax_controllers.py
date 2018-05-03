@@ -1,8 +1,7 @@
 from django.http import JsonResponse
 
-import requests, os, tempfile, json
+import requests, os, tempfile
 
-from hs_restclient import HydroShare, HydroShareAuthBasic
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
