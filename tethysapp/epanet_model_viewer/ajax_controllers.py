@@ -1,8 +1,9 @@
 from django.http import JsonResponse
 
-import requests, os, tempfile
+import requests, os, tempfile, json
 
 from hs_restclient import HydroShare, HydroShareAuthBasic
+from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
@@ -20,7 +21,7 @@ def get_epanet_model_list(request):
 
     if request.is_ajax() and request.method == 'GET':
 
-        hs = HydroShare()
+        hs = get_oauth_hs(request)
 
         model_list = []
 
@@ -67,7 +68,9 @@ def get_epanet_model(request):
         else:
             model_id = request.GET['model_id']
 
-            hs = HydroShare()
+            hs = get_oauth_hs(request)
+
+            print(hs.getSystemMetadata(model_id))
 
             metadata_json = hs.getScienceMetadata(model_id)
             return_obj['metadata'] = metadata_json
@@ -91,23 +94,26 @@ def upload_epanet_model(request):
     }
 
     if request.is_ajax() and request.method == 'POST':
-        auth = HydroShareAuthBasic(username='tylor.bayer', password='lasvegas11')
-        hs = HydroShare(auth=auth)
+        hs = get_oauth_hs(request)
+
+        model_title = request.POST['model_title']
+        resource_filename = model_title + ".inp"
+
         abstract = request.POST['model_description']
-        title = request.POST['model_title']
-        keywords = ('my keyword 1', 'my keyword 2')
+        title = model_title
+        keywords = (tuple(request.POST['model_keywords'].split(",")))
         rtype = 'ModelInstanceResource'
-        extra_metadata = '{"key-1": "value-1", "key-2": "value-2"}'
+        extra_metadata = '{"modelProgram": "EPANET_2.0"}'
 
         fd, path = tempfile.mkstemp()
         with os.fdopen(fd, 'w') as tmp:
             tmp.write(request.POST['model_file'])
             fpath = path
 
-        # {"executed_by": {"modelProgramName": "EPANET_2.0", "modelProgramIdentifier": "http://www.hydroshare.org/resource/429765e3f04b4236897b43117f79c8ce/"}}
+        metadata = '[{"creator":{"name":"' + hs.getUserInfo()['first_name'] + ' ' + hs.getUserInfo()['last_name'] + '"}}]'
+        resource_id = hs.createResource(rtype, title, resource_file=fpath, resource_filename=resource_filename, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
 
-        metadata = '[{"coverage":{"type":"period", "value":{"start":"01/01/2000", "end":"12/12/2010"}}}, {"creator":{"name":"John Smith"}}, {"creator":{"name":"Lisa Miller"}}]'
-        resource_id = hs.createResource(rtype, title, resource_file=fpath, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
+        hs.setAccessRules(resource_id, public=True)
 
         return_obj['results'] = resource_id
         return_obj['success'] = True
