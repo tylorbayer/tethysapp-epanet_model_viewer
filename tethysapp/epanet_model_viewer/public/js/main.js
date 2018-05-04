@@ -47,7 +47,8 @@
         uploadModel,
         addDefaultBehaviorToAjax,
         checkCsrfSafe,
-        getCookie;
+        getCookie,
+        openInitialModel;
 
     //  **********Query Selectors************
     var $modalModelRep,
@@ -70,7 +71,9 @@
         $inpUlDescription,
         $inpUlKeyworkds,
         $btnUl,
-        $btnUlCancel;
+        $btnUlCancel,
+        $viewTabs,
+        $loadingModel;
 
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
@@ -189,7 +192,10 @@
         });
 
         $('#file-display-area').bind("DOMSubtreeModified",function(){
-            $( "#view-tabs" ).tabs({ active: 0 });
+            $('#view-tabs').removeClass('hidden');
+            $('#loading-model').addClass('hidden');
+            
+            $viewTabs.tabs({ active: 0 });
 
             curModel = {
                 nodes: [],
@@ -379,6 +385,13 @@
         });
     };
 
+    openInitialModel = function () {
+        var $initialModel = $('#initial-model');
+        if ($initialModel.length){
+            openModel($initialModel.html());
+        }
+    };
+
     redrawModelTable = function (modelTable, $modal) {
         var interval;
         interval = window.setInterval(function () {
@@ -412,6 +425,8 @@
         $inpUlKeyworkds = $('#tagsinp-upload-keywords');
         $btnUl = $('#btn-upload');
         $btnUlCancel = $('#btn-upload-cancel');
+        $viewTabs = $('#view-tabs');
+        $loadingModel = $('#loading-model');
     };
 
     onClickOpenModel = function () {
@@ -427,6 +442,9 @@
 
     openModel = function (modelId) {
         var data = {'model_id': modelId};
+
+        $('#view-tabs').addClass('hidden');
+        $('#loading-model').removeClass('hidden');
 
         $.ajax({
             type: 'GET',
@@ -559,8 +577,7 @@
     };
 
     addModelToUI = function (result) {
-        var fileDisplayArea = $("#file-display-area")[0];
-        fileDisplayArea.innerText = result;
+        $fileDisplayArea.innerText = result;
 
         setStateAfterLastModel();
     };
@@ -668,11 +685,12 @@
      **************ONLOAD FUNCTION*******************
      ----------------------------------------------*/
     $(function () {
+        openInitialModel();
         initializeJqueryVariables();
         addInitialEventListeners();
         addDefaultBehaviorToAjax();
 
-        $( "#view-tabs" ).tabs({ active: 0 });
+        $viewTabs.tabs({ active: 0 });
     });
 
     /*-----------------------------------------------

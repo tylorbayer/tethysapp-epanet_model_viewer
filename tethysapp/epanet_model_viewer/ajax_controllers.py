@@ -2,6 +2,7 @@ from django.http import JsonResponse
 
 import requests, os, tempfile
 
+from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
@@ -19,8 +20,10 @@ def get_epanet_model_list(request):
     }
 
     if request.is_ajax() and request.method == 'GET':
-
-        hs = get_oauth_hs(request)
+        try:
+            hs = get_oauth_hs(request)
+        except:
+            hs = HydroShare()
 
         model_list = []
 
@@ -67,7 +70,10 @@ def get_epanet_model(request):
         else:
             model_id = request.GET['model_id']
 
-            hs = get_oauth_hs(request)
+            try:
+                hs = get_oauth_hs(request)
+            except:
+                hs = HydroShare()
 
             print(hs.getSystemMetadata(model_id))
 
@@ -93,7 +99,10 @@ def upload_epanet_model(request):
     }
 
     if request.is_ajax() and request.method == 'POST':
-        hs = get_oauth_hs(request)
+        try:
+            hs = get_oauth_hs(request)
+        except:
+            hs = HydroShare()
 
         model_title = request.POST['model_title']
         resource_filename = model_title + ".inp"
