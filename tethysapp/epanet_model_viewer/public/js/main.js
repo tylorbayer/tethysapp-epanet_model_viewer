@@ -99,6 +99,11 @@
     };
 
     addInitialEventListeners = function () {
+        $('#btn-model-rep').click(function () {
+            var curURL = window.location.href;
+            window.open(curURL.substring(0, curURL.indexOf('/apps/') + 6) + "epanet-model-repository/", "_self");
+        });
+
         $modalModelRep.on('shown.bs.modal', function () {
             if (dataTableLoadModels) {
                 redrawModelTable(dataTableLoadModels, $(this));
@@ -194,7 +199,7 @@
         $('#file-display-area').bind("DOMSubtreeModified",function(){
             $('#view-tabs').removeClass('hidden');
             $('#loading-model').addClass('hidden');
-            
+
             $viewTabs.tabs({ active: 0 });
 
             curModel = {
@@ -584,14 +589,11 @@
 
     addMetadataToUI = function (metadata) {
         var metadataDisplayArea = $('#metadata-display-area')[0];
-        var metadataHTML = '<h1><a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">' + metadata['title'] + '</a></h1>';
-        metadataHTML += '<p><h6>' + metadata['description'] + "</h6>";
-
-        metadataHTML += '<br>Created: ' + metadata['dates'][1]['start_date'].substring(0, 10);
-        metadataHTML += ', &emsp;Last Modified: ' + metadata['dates'][1]['start_date'].substring(0, 10);
-
-        metadataHTML += '<br>Author: ' + metadata['creators'][0]['name'];
-        metadataHTML += '<br>Rights: ' + metadata['rights'];
+        var metadataHTML = '<p><h1>' + metadata['title'] + '</h1><h6>' + metadata['description'] + '</h6>' +
+            '<a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">View the Model in HydroShare</a><br><br>' +
+            'Created: ' + metadata['dates'][1]['start_date'].substring(0, 10) +
+            ', &emsp;Last Modified: ' + metadata['dates'][1]['start_date'].substring(0, 10) +
+            '<br>Author: ' + metadata['creators'][0]['name'] + '<br>Rights: ' + metadata['rights'];
 
         var subjects = "";
         var i;
@@ -601,9 +603,14 @@
         metadataHTML += '<br>Subjects: ' + subjects.substring(0, subjects.length - 2);
 
 
+        try {
+            metadataHTML += '<br> Program: ' + '<a href="' + metadata['executed_by']['modelProgramIdentifier'] +
+                '" style="color:#3366ff">' + metadata['executed_by']['modelProgramName'] + '</a>';
+        }
+        catch (error) {
+        //    No program included in metadata
+        }
 
-        metadataHTML += '<br> Program: ' + '<a href="' + metadata['executed_by']['modelProgramIdentifier'] +
-            '" style="color:#3366ff">' + metadata['executed_by']['modelProgramName'] + '</a>';
 
         metadataHTML += '</p>';
 
@@ -696,7 +703,7 @@
     /*-----------------------------------------------
      ***************INVOKE IMMEDIATELY***************
      ----------------------------------------------*/
-    generateModelList();
+    // generateModelList();
 
     sigma.utils.pkg('sigma.canvas.nodes');
 
