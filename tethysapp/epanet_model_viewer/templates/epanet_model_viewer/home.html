@@ -10,7 +10,8 @@
 {% block app_content %}
   <div>
     <h1>Welcome to the EPANET Model Viewer</h1>
-    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository Quick View</button>
+    <!--<button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository Quick View</button>-->
+    <button id="btn-model-rep" class="btn btn-default model-btn">Model Repository</button>
     <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
     <div id="upload-container" class="hidden">
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Upload Model</button><br><br>
@@ -37,6 +38,22 @@
       <div id="model-display">
         <div id="model-container"></div>
       </div>
+      <dl>
+          <dt><span class="node" style="background-color: #666"></span></dt>
+          <dd> Junction </dd>
+
+          <dt><span class="node" style="background-color: #5F9EA0"></span></dt>
+          <dd> Reservoir </dd>
+
+          <dt><span class="node" style="background-color: #8B4513"></span></dt>
+          <dd> Tank </dd>
+
+          <dt><span class="glyphicon glyphicon-minus" style="color:#ccc; font-size: 1.5em;"></span></dt>
+          <dd> Pipe </dd>
+
+          <dt><span class="glyphicon glyphicon-minus" style="color:#D2B48C; font-size: 1.5em;"></span></dt>
+          <dd> Pump </dd>
+      </dl>
     </div>
     <div id="file-view">
       <h1>EPANET File Display</h1>
@@ -104,7 +121,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h5 class="modal-title" id="node-modal-label">Node Properties</h5>
+          <h5 class="modal-title" id="modal-node-label">Node Properties</h5>
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer">
@@ -126,7 +143,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h5 class="modal-title" id="edge-modal-label">Edge Properties</h5>
+          <h5 class="modal-title" id="modal-edge-label">Edge Properties</h5>
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer">

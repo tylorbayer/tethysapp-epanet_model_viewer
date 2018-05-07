@@ -75,8 +75,6 @@ def get_epanet_model(request):
             except:
                 hs = HydroShare()
 
-            print(hs.getSystemMetadata(model_id))
-
             metadata_json = hs.getScienceMetadata(model_id)
             return_obj['metadata'] = metadata_json
 
@@ -109,7 +107,12 @@ def upload_epanet_model(request):
 
         abstract = request.POST['model_description']
         title = model_title
-        keywords = (tuple(request.POST['model_keywords'].split(",")))
+
+        user_keywords = ["EPANET_2.0"]
+        for keyword in request.POST['model_keywords'].split(","):
+            user_keywords.append(keyword)
+        keywords = (tuple(user_keywords))
+
         rtype = 'ModelInstanceResource'
         extra_metadata = '{"modelProgram": "EPANET_2.0"}'
 
@@ -119,6 +122,7 @@ def upload_epanet_model(request):
             fpath = path
 
         metadata = '[{"creator":{"name":"' + hs.getUserInfo()['first_name'] + ' ' + hs.getUserInfo()['last_name'] + '"}}]'
+
         resource_id = hs.createResource(rtype, title, resource_file=fpath, resource_filename=resource_filename, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
 
         hs.setAccessRules(resource_id, public=True)
