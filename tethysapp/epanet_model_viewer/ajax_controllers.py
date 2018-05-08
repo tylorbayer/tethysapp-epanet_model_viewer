@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 
-import requests, os, tempfile
+import os, tempfile
 
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
@@ -79,8 +79,14 @@ def get_epanet_model(request):
             return_obj['metadata'] = metadata_json
 
             for model_file in hs.getResourceFileList(model_id):
-                model = requests.get(model_file["url"])
-                return_obj['results'] = model.text
+                model_url = model_file['url']
+                model_name = model_url[model_url.find('contents/') + 9:]
+
+                model = ""
+                for line in hs.getResourceFile(model_id, model_name):
+                    model += line
+
+                return_obj['results'] = model
                 return_obj['success'] = True
 
     else:
