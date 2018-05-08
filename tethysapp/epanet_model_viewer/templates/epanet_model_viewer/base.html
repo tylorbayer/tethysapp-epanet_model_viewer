@@ -6,15 +6,15 @@
 
 {% block app_icon %}
 {# The path you provided in your app.py is accessible through the tethys_app.icon context variable #}
-  <img src="{% static tethys_app.icon %}">
+<img src="{% static tethys_app.icon %}">
 {% endblock %}
 
 {# The name you provided in your app.py is accessible through the tethys_app.name context variable #}
 {% block app_title %}{{ tethys_app.name }}{% endblock %}
 
 {% block app_navigation_items %}
-  <li class="title">App Navigation</li>
-  <li class="active"><a href="">Home</a></li>
+<li class="title">App Navigation</li>
+<li class="active"><a href="">Home</a></li>
 {% endblock %}
 
 {% block app_content %}
@@ -24,70 +24,70 @@
 {% endblock %}
 
 {% block content_dependent_styles %}
-  {{ block.super }}
-  <link href="{% static 'epanet_model_viewer/css/main.css' %}" rel="stylesheet"/>
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.11,fh-3.1.1,r-2.0.2,sc-1.4.1,se-1.1.2/datatables.min.css"/>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <link rel="stylesheet" href="http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/dist/bootstrap-tagsinput.css">
+{{ block.super }}
+<link href="{% static 'epanet_model_viewer/css/main.css' %}" rel="stylesheet"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.11,fh-3.1.1,r-2.0.2,sc-1.4.1,se-1.1.2/datatables.min.css"/>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/dist/bootstrap-tagsinput.css">
 {% endblock %}
 
 {% block scripts %}
-  {{ block.super }}
-  <script src="https://cdn.datatables.net/t/bs/dt-1.10.11,fh-3.1.1,r-2.0.2,sc-1.4.1,se-1.1.2/datatables.min.js" async="async"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script src="http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
+{{ block.super }}
+<script src="https://cdn.datatables.net/t/bs/dt-1.10.11,fh-3.1.1,r-2.0.2,sc-1.4.1,se-1.1.2/datatables.min.js" async="async"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
 
-  <!-- START SIGMA IMPORTS -->
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/sigma.core.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/conrad.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/utils/sigma.utils.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/utils/sigma.polyfills.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/sigma.settings.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.dispatcher.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.configurable.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.graph.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.camera.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.quad.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.edgequad.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/captors/sigma.captors.mouse.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/captors/sigma.captors.touch.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.canvas.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.webgl.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.svg.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.nodes.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.nodes.fast.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.edges.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.edges.fast.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.edges.arrow.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.labels.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.hovers.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.nodes.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.curve.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.arrow.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curve.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.extremities.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.utils.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.nodes.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.edges.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.edges.curve.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.labels.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.hovers.def.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/middlewares/sigma.middlewares.rescale.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/middlewares/sigma.middlewares.copy.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.animation.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.bindEvents.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.bindDOMEvents.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.drawHovers.js' %}" type="text/javascript"></script>
-   <!--END SIGMA IMPORTS-->
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.parsers.json/sigma.parsers.json.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.renderers.customShapes/shape-library.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.renderers.customShapes/sigma.renderers.customShapes.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/js/epanet_lexer.js' %}" type="text/javascript"></script>
-  <script src="{% static 'epanet_model_viewer/js/main.js' %}" type="text/javascript"></script>
+<!-- START SIGMA IMPORTS -->
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/sigma.core.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/conrad.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/utils/sigma.utils.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/utils/sigma.polyfills.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/sigma.settings.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.dispatcher.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.configurable.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.graph.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.camera.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.quad.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/classes/sigma.classes.edgequad.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/captors/sigma.captors.mouse.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/captors/sigma.captors.touch.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.canvas.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.webgl.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.svg.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/sigma.renderers.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.nodes.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.nodes.fast.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.edges.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.edges.fast.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/webgl/sigma.webgl.edges.arrow.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.labels.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.hovers.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.nodes.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.curve.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.arrow.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curve.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/canvas/sigma.canvas.extremities.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.utils.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.nodes.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.edges.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.edges.curve.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.labels.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/renderers/svg/sigma.svg.hovers.def.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/middlewares/sigma.middlewares.rescale.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/middlewares/sigma.middlewares.copy.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.animation.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.bindEvents.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.bindDOMEvents.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.drawHovers.js' %}" type="text/javascript"></script>
+<!--END SIGMA IMPORTS-->
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.parsers.json/sigma.parsers.json.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.renderers.customShapes/shape-library.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.renderers.customShapes/sigma.renderers.customShapes.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/js/epanet_lexer.js' %}" type="text/javascript"></script>
+<script src="{% static 'epanet_model_viewer/js/main.js' %}" type="text/javascript"></script>
 {% endblock %}
