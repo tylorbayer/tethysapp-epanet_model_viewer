@@ -69,7 +69,7 @@
         $btnEdgeCancel,
         $inpUlTitle,
         $inpUlDescription,
-        $inpUlKeyworkds,
+        $inpUlKeywords,
         $btnUl,
         $btnUlCancel,
         $viewTabs,
@@ -127,11 +127,11 @@
         });
 
         $btnUl.click(function() {
-            if ($inpUlTitle.val() != '' && $inpUlDescription.val() != '' && $inpUlKeyworkds.val() != '') {
+            if ($inpUlTitle.val() != '' && $inpUlDescription.val() != '' && $inpUlKeywords.val() != '') {
                 var data = new FormData();
                 data.append('model_title', $inpUlTitle.val());
                 data.append('model_description', $inpUlDescription.val());
-                data.append('model_keywords', $inpUlKeyworkds.tagsinput('items'));
+                data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
                 data.append('model_file', curFile);
 
                 uploadModel(data);
@@ -320,7 +320,7 @@
     resetUploadState = function() {
         $inpUlTitle.val('');
         $inpUlDescription.val('');
-        $inpUlKeyworkds.tagsinput('removeAll');
+        $inpUlKeywords.tagsinput('removeAll');
     };
 
     buildModelRepTable = function (modelList) {
@@ -427,7 +427,7 @@
         $btnEdgeCancel = $('#btn-edge-cancel');
         $inpUlTitle = $('#inp-upload-title');
         $inpUlDescription = $('#inp-upload-description');
-        $inpUlKeyworkds = $('#tagsinp-upload-keywords');
+        $inpUlKeywords = $('#tagsinp-upload-keywords');
         $btnUl = $('#btn-upload');
         $btnUlCancel = $('#btn-upload-cancel');
         $viewTabs = $('#view-tabs');
@@ -462,7 +462,6 @@
                     modelId + '</a>. An app admin has been notified.';
 
                 addLogEntry('danger', message);
-                setStateAfterLastModel();
             },
             success: function (response) {
                 var message;
@@ -480,7 +479,6 @@
                         }
 
                         addLogEntry('danger', message);
-                        setStateAfterLastModel();
                     } else {
                         if (message) {
                             addLogEntry('warning', message);
@@ -507,7 +505,6 @@
                 var message = 'An unexpected error occurred while uploading the model ';
 
                 addLogEntry('danger', message);
-                setStateAfterLastModel();
             },
             success: function (response) {
                 var message;
@@ -523,7 +520,6 @@
                         }
 
                         addLogEntry('danger', message);
-                        setStateAfterLastModel();
                     } else {
                         if (message) {
                             addLogEntry('warning', message);
@@ -539,7 +535,7 @@
                         else {
                             $uploadContainer.addClass('hidden');
                             $modalModelRep.find('.modal-body').html('<img src="/static/epanet_model_viewer/images/loading-animation.gif">' +
-                                '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>"');
+                                '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>');
                             alert("Model has successfully been uploaded to HydroShare.");
                             generateModelList();
                         }
