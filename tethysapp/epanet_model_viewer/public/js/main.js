@@ -152,11 +152,13 @@
             if ($chkNodeEdit.is(':checked')) {
                 $btnNodeOk.removeAttr('disabled');
 
+                $modalNode.find('#node-id').attr('readonly', false);
                 $modalNode.find('.inp-properties').attr('readonly', false);
             }
             else {
                 $btnNodeOk.attr('disabled', true);
 
+                $modalNode.find('#node-id').attr('readonly', true);
                 $modalNode.find('.inp-properties').attr('readonly', true);
 
                 populateNodeModal(curNode);
@@ -167,11 +169,13 @@
             if ($chkEdgeEdit.is(':checked')) {
                 $btnEdgeOk.removeAttr('disabled');
 
+                $modalEdge.find('#edge-id').attr('readonly', false);
                 $modalEdge.find('.inp-properties').attr('readonly', false);
             }
             else {
                 $btnEdgeOk.attr('disabled', true);
 
+                $modalEdge.find('#edge-id').attr('readonly', true);
                 $modalEdge.find('.inp-properties').attr('readonly', true);
 
                 populateEdgeModal(curEdge);
@@ -179,7 +183,14 @@
         });
 
         $btnNodeOk.click(function() {
-            $('#modal-node').modal('hide');
+            $modalNode.modal('hide');
+
+            curNode.id = $('#node-id').val();
+
+            for (var i = 0; i < $modalNode.find('.inp-properties').length; ++i) {
+                curNode.values[i] = $modalNode.find('.inp-properties')[i].value;
+            }
+
             resetModelState();
         });
 
@@ -188,7 +199,14 @@
         });
 
         $btnEdgeOk.click(function() {
-            $('#modal-edge').modal('hide');
+            $modalEdge.modal('hide');
+
+            curEdge.id = $('#edge-id').val();
+
+            for (var i = 0; i < $modalEdge.find('.inp-properties').length; ++i) {
+                curEdge.values[i] = $modalEdge.find('.inp-properties')[i].value;
+            }
+
             resetModelState();
         });
 
@@ -259,25 +277,25 @@
         var values = node.values;
 
         if (node.type == "Junction") {
-            html += "<div><b>Junction: <input type='text' class='inp-properties' value='" + node.id + "' readonly></b><br>" +
-                "Elev: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Demand: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "Pattern: <input type='text' class='inp-properties' value='" + values[2] + "' readonly><br></div>";
+            html += "<div><b>Junction: <input type='number' id='node-id' value='" + node.id + "' readonly></b><br>" +
+                "Elev: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "Demand: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "Pattern: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br></div>";
         }
         else if (node.type == "Reservoir") {
-            html += "<div><b>Reservoir: <input type='text' class='inp-properties' value='" + node.id + "' readonly></b><br>" +
+            html += "<div><b>Reservoir: <input type='text' id='node-id' value='" + node.id + "' readonly></b><br>" +
                 "Head: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
                 "Pattern: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br></div>";
         }
         else {
-            html += "<div><b>Tank: <input type='text' class='inp-properties' value='" + node.id + "' readonly></b><br>" +
-                "Elevation: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "InitLevel: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "MinLevel: <input type='text' class='inp-properties' value='" + values[2] + "' readonly><br>" +
-                "MaxLevel: <input type='text' class='inp-properties' value='" + values[3] + "' readonly><br>" +
-                "Diameter: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br>" +
-                "MinVol: <input type='text' class='inp-properties' value='" + values[5] + "' readonly><br>" +
-                "VolCurve: <input type='text' class='inp-properties' value='" + values[6] + "' readonly><br></div>";
+            html += "<div><b>Tank: <input type='number' id='node-id' value='" + node.id + "' readonly></b><br>" +
+                "Elevation: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "InitLevel: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "MinLevel: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
+                "MaxLevel: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br>" +
+                "Diameter: <input type='number' class='inp-properties' value='" + values[4] + "' readonly><br>" +
+                "MinVol: <input type='number' class='inp-properties' value='" + values[5] + "' readonly><br>" +
+                "VolCurve: <input type='number' class='inp-properties' value='" + values[6] + "' readonly><br></div>";
 
         }
         $modalNodeLabel.html(node.type + " Properties");
@@ -290,16 +308,16 @@
         var values = edge.values;
 
         if (edge.type == "Pipe") {
-            html += "<div><b>Pipe: <input type='text' class='inp-properties' value='" + edge.id + "' readonly></b><br>" +
-                "Length: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Roughness: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "Diameter: <input type='text' class='inp-properties' value='" + values[2] + "' readonly><br>" +
-                "Minor Loss: <input type='text' class='inp-properties' value='" + values[3] + "' readonly><br>" +
-                "Status: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br></div>";
+            html += "<div><b>Pipe: <input type='number' id='edge-id' value='" + edge.id + "' readonly></b><br>" +
+                "Length: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "Roughness: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "Diameter: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
+                "Minor Loss: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br>" +
+                "Status: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br><p>('Open' or 'Closed')</p></div>";
         }
         else {
-            html += "<p><b>Pump: <input type='text' class='inp-properties' value='" + edge.id + "' readonly></b><br>" +
-                "Parameters: <input type='text' class='inp-properties' value='" + values[0] + "' readonly>" +
+            html += "<p><b>Pump: <input type='number' id='edge-id' value='" + edge.id + "' readonly></b><br>" +
+                "Parameters: <input type='number' class='inp-properties' value='" + values[0] + "' readonly>" +
                 "<input type='text' class='inp-properties' value='" + values[1] + "' readonly></p>";
         }
 

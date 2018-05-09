@@ -135,11 +135,11 @@ input[type="radio"] {
     height: 440px;
 }
 
-.inp-properties {
+.inp-properties, #node-id, #edge-id {
     margin-bottom: 10px;
 }
 
-.inp-properties:read-only {
+.inp-properties:read-only, #node-id:read-only, #edge-id:read-only {
     background-color: lightgray;
     border: none;
 }
