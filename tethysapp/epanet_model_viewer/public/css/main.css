@@ -135,11 +135,18 @@ input[type="radio"] {
     height: 440px;
 }
 
-.inp-properties, #node-id, #edge-id {
+
+.dual-properties {
+    width: 50px;
+    margin-right: 10px;
     margin-bottom: 10px;
 }
 
-.inp-properties:read-only, #node-id:read-only, #edge-id:read-only {
+.model-options, .inp-options, #node-id, #edge-id {
+    margin-bottom: 10px;
+}
+
+.dual-properties:read-only, .model-options:read-only, .inp-options:read-only, #node-id:read-only, #edge-id:read-only {
     background-color: lightgray;
     border: none;
 }
@@ -239,11 +246,12 @@ input:checked + .slider:before {
 dl {
     position: relative;
     margin:0 auto;
-    width: 401px;
+    width: 473px;
     background: #fff;
     border: 1px solid #00000036;
     padding: 5px 15px;
     margin-top: 20px;
+    -webkit-user-select: none;
 }
 dt, dd {
     display: inline;
@@ -260,4 +268,8 @@ dd {
 h1, h2, h3, h4, h5, h6 {
     color: #555;
     font-family: 'Lato', sans-serif;
+}
+
+.no-close .ui-dialog-titlebar-close {
+  display: none;
 }

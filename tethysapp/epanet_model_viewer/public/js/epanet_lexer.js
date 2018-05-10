@@ -19,6 +19,7 @@ function EPANET_Lexer(file_text, caller) {
 
     var nodes = [];
     var edges = [];
+    var options = [];
 
     var nodeSpec ={};
 
@@ -121,7 +122,7 @@ function EPANET_Lexer(file_text, caller) {
                             values: [pipe[3], pipe[4], pipe[5], pipe[6], pipe[7]],
                             source: pipe[1],
                             target: pipe[2],
-                            size: 2,
+                            size: 1,
                             color: '#ccc',
                             hover_color: '#808080'
                         };
@@ -146,7 +147,7 @@ function EPANET_Lexer(file_text, caller) {
                             values: [pump[3], pump[4]],
                             source: pump[1],
                             target: pump[2],
-                            size: 2,
+                            size: 1,
                             color: '#D2B48C',
                             hover_color: '#DAA520'
                         };
@@ -156,12 +157,26 @@ function EPANET_Lexer(file_text, caller) {
                 break;
 
             case intType.VALVES:
-                console.log(curType);
                 if (input[i] == intType.TAGS) {
                     curType = intType.TAGS;
                 }
                 else {
+                    var valve = input[i].match(/\S+/g);
 
+                    if (valve != null) {
+                        var edge = {
+                            id: valve[0],
+                            label: 'Valve ' + valve[0],
+                            type: "Valve",
+                            values: [valve[3], valve[4], valve[5], valve[6]],
+                            source: valve[1],
+                            target: valve[2],
+                            size: 1,
+                            color: '#7070db',
+                            hover_color: '#3333cc'
+                        };
+                        edges.push(edge);
+                    }
                 }
                 break;
 
@@ -262,13 +277,13 @@ function EPANET_Lexer(file_text, caller) {
                 break;
 
             case intType.QUALITY:
-                console.log(curType);
                 if (input[i] == intType.SOURCES) {
                     curType = intType.SOURCES;
                     ++i;
                 }
                 else {
-
+                    var quality = input[i].match(/\S+/g);
+                    nodeSpec[quality[0]]["values"].push(quality[1]);
                 }
                 break;
 
@@ -341,7 +356,18 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    var option = input[i].match(/\S+/g);
 
+                    if(option[0] == "Unbalanced" || option[0] == "Quality") {
+                        options.push(option[option.length - 2]);
+                        options.push(option[option.length - 1]);
+                        console.log(option[option.length - 2]);
+                        console.log(option[option.length - 1]);
+                    }
+                    else {
+                        console.log(option[option.length - 1]);
+                        options.push(option[option.length - 1]);
+                    }
                 }
                 break;
 
@@ -386,7 +412,8 @@ function EPANET_Lexer(file_text, caller) {
                             label: 'Vert ' + vert[0] + vertNum,
                             x: vert[1],
                             y: -1 * vert[2],
-                            size: 2,
+                            type:"Vertex",
+                            size: 1,
                             color: '#666',
                             hover_color: '#000'
                         };
@@ -409,7 +436,8 @@ function EPANET_Lexer(file_text, caller) {
                                 label: 'Vert ' + vert[0] + vertNum,
                                 x: vert[1],
                                 y: -1 * vert[2],
-                                size: 2,
+                                type:"Vertex",
+                                size: 1,
                                 color: '#666',
                                 hover_color: '#000'
                             };
@@ -450,5 +478,9 @@ function EPANET_Lexer(file_text, caller) {
 
     this.getEdges = function() {
         return edges;
+    };
+
+    this.getOptions = function() {
+        return options;
     };
 }
