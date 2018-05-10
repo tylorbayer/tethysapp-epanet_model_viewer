@@ -20,6 +20,8 @@
   <div id="initial-model" hidden>{{ modelID }}</div>
   {% else %}
   {% endif %}
+
+  <div id="node-edge-select"></div>
 </div>
 
 <div class="hidden" id="loading-model">
@@ -30,6 +32,7 @@
 <div id="view-tabs">
   <ul>
     <li><a href="#model-view">EPANET Model View</a></li>
+    <li><a href="#model-options-view">Model Options</a></li>
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
   </ul>
@@ -49,7 +52,27 @@
       <dd> Pipe </dd>
       <dt><span class="glyphicon glyphicon-minus" style="color:#D2B48C; font-size: 1.5em;"></span></dt>
       <dd> Pump </dd>
+      <dt><span class="glyphicon glyphicon-minus" style="color:#7070db; font-size: 1.5em;"></span></dt>
+      <dd> Valve </dd>
     </dl>
+  </div>
+  <div id="model-options-view">
+    Units: <input type='text' class="model-options" readonly><br>
+    Headloss: <input type='text' class='model-options' readonly><br>
+    Specific Gravity: <input type='text' class='model-options' readonly><br>
+    Viscosity: <input type='number' class='model-options' readonly><br>
+    Trials: <input type='number' class='model-options' readonly><br>
+    Accuracy: <input type='number' class='model-options' readonly><br>
+    CHECKFREQ: <input type='number' class='model-options' readonly><br>
+    MAXCHECK: <input type='number' class='model-options' readonly><br>
+    DAMPLIMIT: <input type='number' class='model-options' readonly><br>
+    Unbalanced: <input type='text' class='dual-properties' readonly><input type='number' class='dual-properties' readonly><br>
+    Pattern: <input type='text' class='model-options' readonly><br>
+    Demand Multiplier: <input type='number' class='model-options' readonly><br>
+    Emitter Exponent: <input type='number' class='model-options' readonly><br>
+    Quality: <input type='text' class='dual-properties' readonly><input type='text' class='dual-properties' readonly><br>
+    Diffusivity: <input type='number' class='model-options' readonly><br>
+    Tolerance: <input type='number' class='model-options' readonly><br>
   </div>
   <div id="file-view">
     <h1>EPANET File Display</h1>

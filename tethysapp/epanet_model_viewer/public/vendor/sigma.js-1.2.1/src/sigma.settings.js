@@ -17,7 +17,7 @@
     clone: true,
     // {boolean} Indicates if nodes "id" values and edges "id", "source" and
     //           "target" values must be set as immutable.
-    immutable: false,
+    immutable: true,
     // {boolean} Indicates if sigma can log its errors and warnings.
     verbose: false,
 

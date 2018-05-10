@@ -22,7 +22,16 @@
         curModel,
         curNode,
         curEdge,
-        curFile;
+        curFile,
+        modelOptions,
+        graphColors = {
+            Junction: '#666',
+            Vertex: "#666",
+            Reservoir: '#5F9EA0',
+            Tank: '#8B4513',
+            Pipe: '#808080',
+            Pump: '#DAA520',
+            Valve: '#3333cc' };
 
     //  *********FUNCTIONS***********
     var addListenersToModelRepTable,
@@ -42,6 +51,7 @@
         addMetadataToUI,
         resetModelState,
         resetUploadState,
+        populateModelOptions,
         populateNodeModal,
         populateEdgeModal,
         uploadModel,
@@ -52,6 +62,7 @@
 
     //  **********Query Selectors************
     var $modalModelRep,
+        $modelOptions,
         $modalNode,
         $uploadContainer,
         $modalNodeLabel,
@@ -73,7 +84,8 @@
         $btnUl,
         $btnUlCancel,
         $viewTabs,
-        $loadingModel;
+        $loadingModel,
+        $nodeEdgeSelect;
 
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
@@ -148,6 +160,16 @@
             resetUploadState();
         });
 
+        $modalNode.on('hidden.bs.modal', function () {
+            curNode.color = graphColors[curNode.type];
+            s.refresh();
+        });
+
+        $modalEdge.on('hidden.bs.modal', function () {
+            curEdge.hover_color = graphColors[curEdge.type];
+            s.refresh();
+        });
+
         $chkNodeEdit.click(function() {
             if ($chkNodeEdit.is(':checked')) {
                 $btnNodeOk.removeAttr('disabled');
@@ -171,12 +193,14 @@
 
                 $modalEdge.find('#edge-id').attr('readonly', false);
                 $modalEdge.find('.inp-properties').attr('readonly', false);
+                $modalEdge.find('.dual-properties').attr('readonly', false);
             }
             else {
                 $btnEdgeOk.attr('disabled', true);
 
                 $modalEdge.find('#edge-id').attr('readonly', true);
                 $modalEdge.find('.inp-properties').attr('readonly', true);
+                $modalEdge.find('.dual-properties').attr('readonly', false);
 
                 populateEdgeModal(curEdge);
             }
@@ -235,6 +259,9 @@
             curModel.nodes = epanetLexer.getNodes();
             curModel.edges = epanetLexer.getEdges();
 
+            modelOptions = epanetLexer.getOptions();
+            populateModelOptions();
+
             s = new sigma({
                 graph: curModel,
                 renderer: {
@@ -245,85 +272,185 @@
                     type: 'canvas'
                 },
                 settings: {
+                    minNodeSize: 0.2,
+                    maxNodeSize: 6.5,
                     minEdgeSize: 0.5,
                     maxEdgeSize: 4,
                     enableEdgeHovering: true,
-                    edgeHoverSizeRatio: 1.5
+                    edgeHoverSizeRatio: 1.5,
+                    nodesPowRatio: 0.3,
+                    edgesPowRatio: 0.2,
+                    scalingMode: "outside",
+                    immutable: false
                 }
             });
 
             s.cameras[0].goTo({ ratio: 1.2 });
 
-            s.bind('clickNode', function(e) {
+            s.bind('clickNodes', function(e) {
                 $('#node-dialog').css({ top: e.data.captor.clientY - 10, left: e.data.captor.clientX - 500});
 
-                curNode = e.data.node;
-                populateNodeModal(curNode);
+                var curNodes = e.data.node;
+                if (curNodes.length > 1) {
+                    $nodeEdgeSelect.empty();
+                    $nodeEdgeSelect.append('<p>Select a Node to display</p>');
+
+                    var selectHtml = "<select id='select-node-edge'>";
+                    for (var i in curNodes) {
+                        selectHtml += "<option value='" + i + "'>" + curNodes[i].type + " " + curNodes[i].id + "</option>";
+                    }
+                    selectHtml += "</select";
+                    $nodeEdgeSelect.append(selectHtml);
+                    $nodeEdgeSelect.dialog({
+                        title: "Node Select",
+                        dialogClass: "no-close",
+                        resizable: false,
+                        height: "auto",
+                        width: 400,
+                        modal: true,
+                        buttons: {
+                            Ok: function() {
+                                curNode = curNodes[$('#select-node-edge').val()];
+                                populateNodeModal();
+                                $( this ).dialog( "close" );
+                            },
+                            Cancel: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        }
+                    });
+
+                    $nodeEdgeSelect.dialog("open");
+                }
+                else {
+                    curNode = curNodes[0];
+                    populateNodeModal();
+                }
             });
 
-            s.bind('clickEdge', function(e) {
+            s.bind('clickEdges', function(e) {
                 $('#edge-dialog').css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
 
-                curEdge = e.data.edge;
-                populateEdgeModal(curEdge);
+                var curEdges = e.data.edge;
+                if (curEdges.length > 1) {
+                    $nodeEdgeSelect.empty();
+                    $nodeEdgeSelect.append('<p>Select an Edge to display</p>');
+
+                    var selectHtml = "<select id='select-node-edge'>";
+                    for (var i in curEdges) {
+                        selectHtml += "<option value='" + i + "'>" + curEdges[i].type + " " + curEdges[i].id + "</option>";
+                    }
+                    selectHtml += "</select";
+                    $nodeEdgeSelect.append(selectHtml);
+
+                    $nodeEdgeSelect.dialog({
+                        title: "Edge Select",
+                        dialogClass: "no-close",
+                        resizable: false,
+                        height: "auto",
+                        width: 400,
+                        modal: true,
+                        buttons: {
+                            Ok: function() {
+                                curEdge = curEdges[$('#select-node-edge').val()];
+                                populateEdgeModal();
+                                $( this ).dialog( "close" );
+                            },
+                            Cancel: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        }
+                    });
+
+                    $nodeEdgeSelect.dialog("open");
+                }
+                else {
+                    curEdge = curEdges[0];
+                    populateEdgeModal();
+                }
             });
 
             s.refresh();
         });
     };
 
-    populateNodeModal = function (node) {
-        var html = "";
-        var values = node.values;
+    populateModelOptions = function () {
+        for (var i = 0; i < $modelOptions.find('.model-options').length; ++i) {
+            console.log("hey");
+            $modelOptions.find('.model-options')[i].value = modelOptions[i];
+        }
+    };
 
-        if (node.type == "Junction") {
-            html += "<div><b>Junction: <input type='number' id='node-id' value='" + node.id + "' readonly></b><br>" +
+    populateNodeModal = function () {
+        curNode.color = "#1affff";
+        s.refresh();
+
+        var html = "";
+        var values = curNode.values;
+
+        if (curNode.type == "Junction") {
+            html += "<div><b>Junction: <input type='number' id='node-id' value='" + curNode.id + "' readonly></b><br>" +
                 "Elev: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
                 "Demand: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "Pattern: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br></div>";
+                "Pattern: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br></div>" +
+                "Quality: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br></div>";
         }
-        else if (node.type == "Reservoir") {
-            html += "<div><b>Reservoir: <input type='text' id='node-id' value='" + node.id + "' readonly></b><br>" +
+        else if (curNode.type == "Reservoir") {
+            html += "<div><b>Reservoir: <input type='text' id='node-id' value='" + curNode.id + "' readonly></b><br>" +
                 "Head: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Pattern: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br></div>";
+                "Pattern: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br></div>" +
+                "Quality: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br></div>";
         }
-        else {
-            html += "<div><b>Tank: <input type='number' id='node-id' value='" + node.id + "' readonly></b><br>" +
+        else if (curNode.type == "Tank") {
+            html += "<div><b>Tank: <input type='number' id='node-id' value='" + curNode.id + "' readonly></b><br>" +
                 "Elevation: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
                 "InitLevel: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
                 "MinLevel: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
                 "MaxLevel: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br>" +
                 "Diameter: <input type='number' class='inp-properties' value='" + values[4] + "' readonly><br>" +
                 "MinVol: <input type='number' class='inp-properties' value='" + values[5] + "' readonly><br>" +
-                "VolCurve: <input type='number' class='inp-properties' value='" + values[6] + "' readonly><br></div>";
-
+                "VolCurve: <input type='number' class='inp-properties' value='" + values[6] + "' readonly><br>" +
+                "Quality: <input type='number' class='inp-properties' value='" + values[7] + "' readonly><br></div>";
         }
-        $modalNodeLabel.html(node.type + " Properties");
+        else {
+             html += "<div><b>Vertex: <input type='number' id='node-id' value='" + curNode.id + "' readonly></b><br>";
+        }
+        $modalNodeLabel.html(curNode.type + " Properties");
         $modalNode.find('.modal-body').html(html);
         $modalNode.modal('show');
     };
 
-    populateEdgeModal = function (edge) {
-        var html = "";
-        var values = edge.values;
+    populateEdgeModal = function () {
+        curEdge.hover_color = "#1affff";
+        s.refresh();
 
-        if (edge.type == "Pipe") {
-            html += "<div><b>Pipe: <input type='number' id='edge-id' value='" + edge.id + "' readonly></b><br>" +
+        var html = "";
+        var values = curEdge.values;
+
+        if (curEdge.type == "Pipe") {
+            html += "<div><b>Pipe: <input type='number' id='edge-id' value='" + curEdge.id + "' readonly></b><br>" +
                 "Length: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
                 "Roughness: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
                 "Diameter: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
                 "Minor Loss: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br>" +
                 "Status: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br><p>('Open' or 'Closed')</p></div>";
         }
+        else if (curEdge.type == "Pump") {
+            html += "<p><b>Pump: <input type='number' id='edge-id' value='" + curEdge.id + "' readonly></b><br>" +
+                "Parameters: <input type='text' class='dual-properties' value='" + values[0] + "' readonly>" +
+                "<input type='number' class='dual-properties' value='" + values[1] + "' readonly></p>";
+        }
         else {
-            html += "<p><b>Pump: <input type='number' id='edge-id' value='" + edge.id + "' readonly></b><br>" +
-                "Parameters: <input type='number' class='inp-properties' value='" + values[0] + "' readonly>" +
-                "<input type='text' class='inp-properties' value='" + values[1] + "' readonly></p>";
+            html += "<div><b>Valve: <input type='number' id='edge-id' value='" + curEdge.id + "' readonly></b><br>" +
+                "Diameter: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "Type: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
+                "Setting: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
+                "Minor Loss: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br></div>";
         }
 
         s.refresh();
 
-        $modalEdgeLabel.html(edge.type + " Properties");
+        $modalEdgeLabel.html(curEdge.type + " Properties");
         $modalEdge.find('.modal-body').html(html);
         $modalEdge.modal('show');
     };
@@ -428,6 +555,7 @@
 
     initializeJqueryVariables = function () {
         $btnOpenModel = $('#btn-open-model');
+        $modelOptions = $('#model-options-view');
         $modalModelRep = $('#modal-model-rep');
         $uploadContainer = $('#upload-container');
         $modalNode = $('#modal-node');
@@ -450,6 +578,7 @@
         $btnUlCancel = $('#btn-upload-cancel');
         $viewTabs = $('#view-tabs');
         $loadingModel = $('#loading-model');
+        $nodeEdgeSelect = $('#node-edge-select');
     };
 
     onClickOpenModel = function () {
@@ -712,6 +841,7 @@
         addDefaultBehaviorToAjax();
 
         $viewTabs.tabs({ active: 0 });
+        $nodeEdgeSelect.dialog({ autoOpen: false });
     });
 
     /*-----------------------------------------------
