@@ -1,9 +1,12 @@
 from django.http import JsonResponse
 
-import os, tempfile
+import os, tempfile, pprint
 
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+
+from  epanettools.epanettools import EPANetSimulation, Node, Link, Network, Nodes, Links, Patterns, Pattern, Controls, Control
+from epanettools.examples import simple
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
@@ -58,6 +61,8 @@ def get_epanet_model_list(request):
 
 
 def get_epanet_model(request):
+    pp = pprint.PrettyPrinter()
+
     return_obj = {
         'success': False,
         'message': None,
@@ -86,6 +91,24 @@ def get_epanet_model(request):
                 for line in hs.getResourceFile(model_id, model_name):
                     model += line
 
+                with open('tmp.inp', 'w') as f:
+                    f.write(model)
+                es = EPANetSimulation('tmp.inp')
+                os.remove('tmp.inp')
+
+                print(len(es.network.nodes))
+
+                print(pp.pprint(es.network.nodes['23'].results))
+
+                es.run()
+
+                p = Node.value_type['EN_PRESSURE']
+
+                print(pp.pprint(Node.value_type))
+                print(pp.pprint(es.network.nodes['23'].results))
+                print(len(es.network.nodes['23'].results[p]))
+                print("%.3f" % es.network.nodes['23'].results[p][5])
+
                 return_obj['results'] = model
                 return_obj['success'] = True
 
@@ -111,7 +134,7 @@ def upload_epanet_model(request):
         model_title = request.POST['model_title']
         resource_filename = model_title + ".inp"
 
-        abstract = request.POST['model_description']
+        abstract = request.POST['model_description'] + '\n{%EPANET Model Repository%}'
         title = model_title
 
         user_keywords = ["EPANET_2.0"]
@@ -128,6 +151,8 @@ def upload_epanet_model(request):
             fpath = path
 
         metadata = '[{"creator":{"name":"' + hs.getUserInfo()['first_name'] + ' ' + hs.getUserInfo()['last_name'] + '"}}]'
+
+        print(fpath)
 
         resource_id = hs.createResource(rtype, title, resource_file=fpath, resource_filename=resource_filename, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
 

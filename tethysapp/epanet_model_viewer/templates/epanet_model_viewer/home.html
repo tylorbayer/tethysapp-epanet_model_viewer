@@ -14,7 +14,7 @@
   <button id="btn-model-rep" class="btn btn-default model-btn">Model Repository</button>
   <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
   <div id="upload-container" class="hidden">
-    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Upload Model</button><br><br>
+    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Save Model</button><br><br>
   </div>
   {% if modelID %}
   <div id="initial-model" hidden>{{ modelID }}</div>
@@ -37,7 +37,14 @@
     <li><a href="#metadata-view">Metadata</a></li>
   </ul>
   <div id="model-view">
-    <h1>EPANET Model Display</h1>
+    <h1 style="display: inline;">EPANET Model Display</h1>
+    <div style="float: right;">
+      <span>Drag Nodes:</span>
+      <label class="switch" style="top: 10px; margin-left: 0px;">
+        <input id="chk-graph" type="checkbox">
+        <span class="slider round"></span>
+      </label>
+    </div>
     <div id="model-display">
       <div id="model-container"></div>
     </div>
@@ -57,22 +64,140 @@
     </dl>
   </div>
   <div id="model-options-view">
-    Units: <input type='text' class="model-options" readonly><br>
-    Headloss: <input type='text' class='model-options' readonly><br>
-    Specific Gravity: <input type='text' class='model-options' readonly><br>
-    Viscosity: <input type='number' class='model-options' readonly><br>
-    Trials: <input type='number' class='model-options' readonly><br>
-    Accuracy: <input type='number' class='model-options' readonly><br>
-    CHECKFREQ: <input type='number' class='model-options' readonly><br>
-    MAXCHECK: <input type='number' class='model-options' readonly><br>
-    DAMPLIMIT: <input type='number' class='model-options' readonly><br>
-    Unbalanced: <input type='text' class='dual-properties' readonly><input type='number' class='dual-properties' readonly><br>
-    Pattern: <input type='text' class='model-options' readonly><br>
-    Demand Multiplier: <input type='number' class='model-options' readonly><br>
-    Emitter Exponent: <input type='number' class='model-options' readonly><br>
-    Quality: <input type='text' class='dual-properties' readonly><input type='text' class='dual-properties' readonly><br>
-    Diffusivity: <input type='number' class='model-options' readonly><br>
-    Tolerance: <input type='number' class='model-options' readonly><br>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+          <table class="table table-nonfluid">
+            <tbody>
+            <tr>
+              <td>Units:</td>
+              <td>
+                <div class="form-group">
+                  <select id="units" class="form-control" disabled>
+                    <option disabled selected value> -- select an option -- </option>
+                    <option value="CFS" data-toggle="tooltip" data-placement="right" title="cubic feet per second">CFS</option>
+                    <option value="GPM" data-toggle="tooltip" data-placement="right" title="gallons per minute">GPM</option>
+                    <option value="MGD" data-toggle="tooltip" data-placement="right" title="million gallons per day">MGD</option>
+                    <option value="IMGD" data-toggle="tooltip" data-placement="right" title="Imperial MGD">IMGD</option>
+                    <option value="AFD" data-toggle="tooltip" data-placement="right" title="acre-feet per day">AFD</option>
+                    <option value="LPS" data-toggle="tooltip" data-placement="right" title="liters per second">LPS</option>
+                    <option value="LPM" data-toggle="tooltip" data-placement="right" title="liters per minute">LPM</option>
+                    <option value="MLD" data-toggle="tooltip" data-placement="right" title="million liters per day">MLD</option>
+                    <option value="CMH" data-toggle="tooltip" data-placement="right" title="cubic meters per hour">CMH</option>
+                    <option value="CMD" data-toggle="tooltip" data-placement="right" title="cubic meters per day">CMD</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Headloss:</td>
+              <td>
+                <div class="form-group">
+                  <select id="headloss" class="form-control" disabled>
+                    <option disabled selected value> -- select an option -- </option>
+                    <option value="H-W" data-toggle="tooltip" data-placement="right" title=" Hazen-Williams">H-W</option>
+                    <option value="D-W" data-toggle="tooltip" data-placement="right" title="Darcy-Weisbach">D-W</option>
+                    <option value="C-M" data-toggle="tooltip" data-placement="right" title=" Chezy-Manning">C-M</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Hydraulics:</td>
+              <td>
+                <div class="form-group">
+                  <select id="hydraulics1" class="form-control" disabled>
+                    <option disabled selected value> -- select an option -- </option>
+                    <option value="use">Use</option>
+                    <option value="save">Save</option>
+                  </select>
+                </div>
+                <input type='text' id="hydraulics2" class='model-options' placeholder="File Name" readonly>
+              </td>
+            </tr>
+            <tr>
+              <td>Quality:</td>
+              <td>
+                <input type='text' id="quality1" class='model-options' readonly><br>
+                <input type='text' id="quality2" class='model-options' readonly>
+              </td>
+            </tr>
+            <tr>
+              <td>Viscosity:</td>
+              <td><input type='number' id="viscosity" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Diffusivity:</td>
+              <td><input type='number' id="diffusivity" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Specific Gravity:</td>
+              <td><input type='number' id="specific" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Trials:</td>
+              <td><input type='number' id="trials" class="model-options" readonly></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+          <table class="table table-nonfluid">
+            <tbody>
+            <tr>
+              <td>Accuracy:</td>
+              <td><input type='number' id="accuracy" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Unbalanced:</td>
+              <td>
+                <input type='text' id="unbalanced1" class='model-options' readonly><br>
+                <input type='number' id="unbalanced2" class='model-options' readonly>
+              </td>
+            </tr>
+            <tr>
+              <td>Pattern:</td>
+              <td><input type='text' id="pattern" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Demand Multiplier:</td>
+              <td><input type='number' id="demand" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Emitter Exponent:</td>
+              <td><input type='number' id="emitter" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Tolerance:</td>
+              <td><input type='number' id="tolerance" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>Map:</td>
+              <td><input type='text' id="map" class="model-options" placeholder="File Name" readonly></td>
+            </tr>
+            <tr>
+              <td>CHECKFREQ:</td>
+              <td><input type='number' id="checkfreq" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>MAXCHECK:</td>
+              <td><input type='number' id="maxcheck" class="model-options" readonly></td>
+            </tr>
+            <tr>
+              <td>DAMPLIMIT:</td>
+              <td><input type='number' id="damplimit" class="model-options" readonly></td>
+            </tr>
+            </tbody>
+          </table>
+          <span>Edit:</span>
+          <label class="switch" style="top: 10px; margin-left: 0px;">
+            <input id="chk-options" type="checkbox">
+            <span class="slider round"></span>
+          </label>
+          <button type="button" id="btn-options-ok" class="btn btn-primary" disabled>OK</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div id="file-view">
     <h1>EPANET File Display</h1>
@@ -113,7 +238,7 @@
 </div>
 <!--End modal-->
 
-<!-- Upload Model Modal -->
+<!-- Upload/Save Model Modal -->
 <div id="modal-upload" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog" id="upload-dialog">
     <div class="modal-content">
@@ -122,13 +247,26 @@
         <h5 class="modal-title" id="upload-modal-label">Model Properties</h5>
       </div>
       <div class="modal-body">
-        <b>Title:</b><input id="inp-upload-title" name="upload-title" type='text'><br><br>
-        <b>Description:</b><input id="inp-upload-description" name="upload-description" type='text'><br><br>
-        <b>Keywords:</b><input id="tagsinp-upload-keywords" name="upload-keywords" type="text" data-role="tagsinput">
+        <table class="table table-nonfluid">
+          <tbody>
+            <tr>
+              <td><b>Title:</b></td>
+              <td><input id="inp-upload-title" class="model-properties" name="upload-title" type='text'><br></td>
+            </tr>
+            <tr>
+              <td><b>Description:</b></td>
+              <td><input id="inp-upload-description" class="model-properties" name="upload-description" type='text'></td>
+            </tr>
+            <tr>
+              <td><b>Keywords:</b></td>
+              <td><input id="tagsinp-upload-keywords" class="model-properties" name="upload-keywords" type="text" data-role="tagsinput"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="modal-footer">
         <button id="btn-upload-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button id="btn-upload" type="button" class="btn btn-primary">Upload</button>
+        <button id="btn-upload" type="button" class="btn btn-primary">Save</button>
       </div>
     </div>
   </div>
