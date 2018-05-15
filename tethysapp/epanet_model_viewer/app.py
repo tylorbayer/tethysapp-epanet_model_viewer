@@ -8,7 +8,7 @@ class EpanetModelViewer(TethysAppBase):
 
     name = 'EPANET Model Viewer'
     index = 'epanet_model_viewer:home'
-    icon = 'epanet_model_viewer/images/CIMM.png'
+    icon = 'epanet_model_viewer/images/NCIMM.png'
     package = 'epanet_model_viewer'
     root_url = 'epanet-model-viewer'
     color = '#915F6D'

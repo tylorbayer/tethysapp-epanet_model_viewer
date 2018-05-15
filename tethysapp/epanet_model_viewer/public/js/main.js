@@ -20,10 +20,9 @@
         showLog,
         s,
         curModel,
+        file_text,
         curNode,
         curEdge,
-        curFile,
-        modelOptions,
         graphColors = {
             Junction: '#666',
             Vertex: "#666",
@@ -53,6 +52,8 @@
         resetUploadState,
         populateModelOptions,
         populateNodeModal,
+        nodeClick,
+        edgeClick,
         populateEdgeModal,
         uploadModel,
         addDefaultBehaviorToAjax,
@@ -69,9 +70,12 @@
         $modalEdge,
         $modalEdgeLabel,
         $btnOpenModel,
+        $chkGraphEdit,
         $modalLog,
         $loadFromLocal,
         $fileDisplayArea,
+        $chkOptionsEdit,
+        $btnOptionsOk,
         $chkNodeEdit,
         $chkEdgeEdit,
         $btnNodeOk,
@@ -130,9 +134,7 @@
             var reader = new FileReader();
 
             reader.onload = function() {
-                curFile = reader.result;
-                $fileDisplayArea.innerText = curFile;
-                $uploadContainer.removeClass('hidden');
+                $fileDisplayArea.innerText = reader.result;
             };
 
             reader.readAsText(file);
@@ -140,11 +142,15 @@
 
         $btnUl.click(function() {
             if ($inpUlTitle.val() != '' && $inpUlDescription.val() != '' && $inpUlKeywords.val() != '') {
+                curModel.title = [$inpUlTitle.val(), $inpUlDescription.val()];
+
+                var epanetWriter = new EPANET_Writer(curModel);
+
                 var data = new FormData();
                 data.append('model_title', $inpUlTitle.val());
                 data.append('model_description', $inpUlDescription.val());
                 data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
-                data.append('model_file', curFile);
+                data.append('model_file', epanetWriter.getFile());
 
                 uploadModel(data);
 
@@ -160,6 +166,42 @@
             resetUploadState();
         });
 
+        $chkGraphEdit.click(function() {
+            if ($chkGraphEdit.is(':checked')) {
+                var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+                dragListener.bind('startdrag', function(e) {
+                    $('#model-display').css("cursor", "-webkit-grabbing");
+                });
+                dragListener.bind('drag', function(e) {
+                    s.unbind('clickNodes');
+                });
+                // dragListener.bind('drop', function(e) {
+                //     console.log(e);
+                // });
+                dragListener.bind('dragend', function(e) {
+                    $('#model-display').css("cursor", "-webkit-grab");
+
+                    setTimeout(function(){
+                        s.bind('clickNodes', function(e) {
+                            nodeClick(e);
+                        });
+                    },250);
+
+                    var myNode = curModel.nodes.find(node => node.id === e.data.node.id);
+                    myNode.x = Math.round(e.data.node.x * 100) / 100;
+                    myNode.y = Math.round(e.data.node.y * 100) / 100;
+                });
+
+                $('#model-display').css("cursor", "-webkit-grab");
+            }
+            else {
+                sigma.plugins.killDragNodes(s);
+
+                $('#model-display').css("cursor", "default");
+            }
+        });
+
         $modalNode.on('hidden.bs.modal', function () {
             curNode.color = graphColors[curNode.type];
             s.refresh();
@@ -170,18 +212,49 @@
             s.refresh();
         });
 
+        $chkOptionsEdit.click(function () {
+            if ($chkOptionsEdit.is(':checked')) {
+                $btnOptionsOk.removeAttr('disabled');
+
+                $modelOptions.find('input').attr('readonly', false);
+                $modelOptions.find('select').attr('disabled', false);
+            }
+            else {
+                $btnOptionsOk.attr('disabled', true);
+
+                $modelOptions.find('input').attr('readonly', true);
+                $modelOptions.find('select').attr('disabled', true);
+
+                populateModelOptions();
+            }
+        });
+
+        $btnOptionsOk.click(function() {
+            for(var key in curModel.options) {
+                if(key == "unbalanced" || key == "quality" || key == "hydraulics") {
+                    curModel.options[key][0] = $('#' + key + 1).val();
+                    curModel.options[key][1] = $('#' + key + 2).val();
+                }
+                else
+                    curModel.options[key] = $('#' + key).val();
+            }
+
+            $modelOptions.find('input').attr('readonly', true);
+            $modelOptions.find('select').attr('disabled', true);
+            resetModelState();
+            populateModelOptions();
+        });
+
         $chkNodeEdit.click(function() {
             if ($chkNodeEdit.is(':checked')) {
                 $btnNodeOk.removeAttr('disabled');
 
-                $modalNode.find('#node-id').attr('readonly', false);
-                $modalNode.find('.inp-properties').attr('readonly', false);
+                $modalNode.find('input').attr('readonly', false);
             }
             else {
                 $btnNodeOk.attr('disabled', true);
 
-                $modalNode.find('#node-id').attr('readonly', true);
-                $modalNode.find('.inp-properties').attr('readonly', true);
+                $modalNode.find('input').attr('readonly', true);
 
                 populateNodeModal(curNode);
             }
@@ -191,16 +264,12 @@
             if ($chkEdgeEdit.is(':checked')) {
                 $btnEdgeOk.removeAttr('disabled');
 
-                $modalEdge.find('#edge-id').attr('readonly', false);
-                $modalEdge.find('.inp-properties').attr('readonly', false);
-                $modalEdge.find('.dual-properties').attr('readonly', false);
+                $modalEdge.find('input').attr('readonly', false);
             }
             else {
                 $btnEdgeOk.attr('disabled', true);
 
-                $modalEdge.find('#edge-id').attr('readonly', true);
-                $modalEdge.find('.inp-properties').attr('readonly', true);
-                $modalEdge.find('.dual-properties').attr('readonly', false);
+                $modalEdge.find('input').attr('readonly', true);
 
                 populateEdgeModal(curEdge);
             }
@@ -210,9 +279,10 @@
             $modalNode.modal('hide');
 
             curNode.id = $('#node-id').val();
+            curNode.label = curNode.type + ' ' + $('#node-id').val();
 
-            for (var i = 0; i < $modalNode.find('.inp-properties').length; ++i) {
-                curNode.values[i] = $modalNode.find('.inp-properties')[i].value;
+            for (var i = 1; i < $modalNode.find('input').length - 1; ++i) {
+                curNode.values[i - 1] = $modalNode.find('input')[i].value;
             }
 
             resetModelState();
@@ -226,9 +296,10 @@
             $modalEdge.modal('hide');
 
             curEdge.id = $('#edge-id').val();
+            curEdge.label = curEdge.type + ' ' + $('#edge-id').val();
 
-            for (var i = 0; i < $modalEdge.find('.inp-properties').length; ++i) {
-                curEdge.values[i] = $modalEdge.find('.inp-properties')[i].value;
+            for (var i = 1; i < $modalEdge.find('input').length - 1; ++i) {
+                curEdge.values[i - 1] = $modalEdge.find('input')[i].value;
             }
 
             resetModelState();
@@ -241,25 +312,27 @@
         $('#file-display-area').bind("DOMSubtreeModified",function(){
             $('#view-tabs').removeClass('hidden');
             $('#loading-model').addClass('hidden');
+            $uploadContainer.removeClass('hidden');
 
             $viewTabs.tabs({ active: 0 });
 
             curModel = {
                 nodes: [],
-                edges: []
+                edges: [],
+                options: {}
             };
 
             $("#model-container").remove();
             $("#model-display").append("<div id='model-container'></div>");
 
-            var file_text = $fileDisplayArea.innerText;
+            file_text = $fileDisplayArea.innerText;
 
-            var epanetLexer = new EPANET_Lexer(file_text, "not");
+            var epanetReader = new EPANET_Reader(file_text, "not");
 
-            curModel.nodes = epanetLexer.getNodes();
-            curModel.edges = epanetLexer.getEdges();
+            curModel.nodes = epanetReader.getNodes();
+            curModel.edges = epanetReader.getEdges();
 
-            modelOptions = epanetLexer.getOptions();
+            curModel.options = epanetReader.getOptions();
             populateModelOptions();
 
             s = new sigma({
@@ -280,7 +353,6 @@
                     edgeHoverSizeRatio: 1.5,
                     nodesPowRatio: 0.3,
                     edgesPowRatio: 0.2,
-                    scalingMode: "outside",
                     immutable: false
                 }
             });
@@ -288,96 +360,114 @@
             s.cameras[0].goTo({ ratio: 1.2 });
 
             s.bind('clickNodes', function(e) {
-                $('#node-dialog').css({ top: e.data.captor.clientY - 10, left: e.data.captor.clientX - 500});
-
-                var curNodes = e.data.node;
-                if (curNodes.length > 1) {
-                    $nodeEdgeSelect.empty();
-                    $nodeEdgeSelect.append('<p>Select a Node to display</p>');
-
-                    var selectHtml = "<select id='select-node-edge'>";
-                    for (var i in curNodes) {
-                        selectHtml += "<option value='" + i + "'>" + curNodes[i].type + " " + curNodes[i].id + "</option>";
-                    }
-                    selectHtml += "</select";
-                    $nodeEdgeSelect.append(selectHtml);
-                    $nodeEdgeSelect.dialog({
-                        title: "Node Select",
-                        dialogClass: "no-close",
-                        resizable: false,
-                        height: "auto",
-                        width: 400,
-                        modal: true,
-                        buttons: {
-                            Ok: function() {
-                                curNode = curNodes[$('#select-node-edge').val()];
-                                populateNodeModal();
-                                $( this ).dialog( "close" );
-                            },
-                            Cancel: function() {
-                                $( this ).dialog( "close" );
-                            }
-                        }
-                    });
-
-                    $nodeEdgeSelect.dialog("open");
-                }
-                else {
-                    curNode = curNodes[0];
-                    populateNodeModal();
-                }
+                nodeClick(e);
             });
 
             s.bind('clickEdges', function(e) {
-                $('#edge-dialog').css({ top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
-
-                var curEdges = e.data.edge;
-                if (curEdges.length > 1) {
-                    $nodeEdgeSelect.empty();
-                    $nodeEdgeSelect.append('<p>Select an Edge to display</p>');
-
-                    var selectHtml = "<select id='select-node-edge'>";
-                    for (var i in curEdges) {
-                        selectHtml += "<option value='" + i + "'>" + curEdges[i].type + " " + curEdges[i].id + "</option>";
-                    }
-                    selectHtml += "</select";
-                    $nodeEdgeSelect.append(selectHtml);
-
-                    $nodeEdgeSelect.dialog({
-                        title: "Edge Select",
-                        dialogClass: "no-close",
-                        resizable: false,
-                        height: "auto",
-                        width: 400,
-                        modal: true,
-                        buttons: {
-                            Ok: function() {
-                                curEdge = curEdges[$('#select-node-edge').val()];
-                                populateEdgeModal();
-                                $( this ).dialog( "close" );
-                            },
-                            Cancel: function() {
-                                $( this ).dialog( "close" );
-                            }
-                        }
-                    });
-
-                    $nodeEdgeSelect.dialog("open");
-                }
-                else {
-                    curEdge = curEdges[0];
-                    populateEdgeModal();
-                }
+                edgeClick(e);
             });
 
             s.refresh();
         });
     };
 
+    nodeClick = function (e) {
+        if(!e.data.captor.isDragging) {
+            $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX - 500});
+
+            var curNodes = e.data.node;
+            if (curNodes.length > 1) {
+                $nodeEdgeSelect.empty();
+                $nodeEdgeSelect.append('<p>Select a Node to display</p>');
+
+                var selectHtml = "<select id='select-node-edge'>";
+                for (var i in curNodes) {
+                    selectHtml += "<option value='" + i + "'>" + curNodes[i].type + " " + curNodes[i].id + "</option>";
+                }
+                selectHtml += "</select";
+                $nodeEdgeSelect.append(selectHtml);
+                $nodeEdgeSelect.dialog({
+                    title: "Node Select",
+                    dialogClass: "no-close",
+                    resizable: false,
+                    height: "auto",
+                    width: 400,
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            curNode = curNodes[$('#select-node-edge').val()];
+                            populateNodeModal();
+                            $(this).dialog("close");
+                        },
+                        Cancel: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+
+                $nodeEdgeSelect.dialog("open");
+            }
+            else {
+                curNode = curNodes[0];
+                populateNodeModal();
+            }
+            s.refresh();
+        }
+    };
+
+    edgeClick = function(e) {
+        if(!e.data.captor.isDragging) {
+            $('#edge-dialog').css({top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
+
+            var curEdges = e.data.edge;
+            if (curEdges.length > 1) {
+                $nodeEdgeSelect.empty();
+                $nodeEdgeSelect.append('<p>Select an Edge to display</p>');
+
+                var selectHtml = "<select id='select-node-edge'>";
+                for (var i in curEdges) {
+                    selectHtml += "<option value='" + i + "'>" + curEdges[i].type + " " + curEdges[i].id + "</option>";
+                }
+                selectHtml += "</select";
+                $nodeEdgeSelect.append(selectHtml);
+
+                $nodeEdgeSelect.dialog({
+                    title: "Edge Select",
+                    dialogClass: "no-close",
+                    resizable: false,
+                    height: "auto",
+                    width: 400,
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            curEdge = curEdges[$('#select-node-edge').val()];
+                            populateEdgeModal();
+                            $(this).dialog("close");
+                        },
+                        Cancel: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+
+                $nodeEdgeSelect.dialog("open");
+            }
+            else {
+                curEdge = curEdges[0];
+                populateEdgeModal();
+            }
+            s.refresh();
+        }
+    };
+
     populateModelOptions = function () {
-        for (var i = 0; i < $modelOptions.find('.model-options').length; ++i) {
-            console.log("hey");
-            $modelOptions.find('.model-options')[i].value = modelOptions[i];
+        for(var key in curModel.options) {
+            if(key == "unbalanced" || key == "quality" || key == "hydraulics") {
+                $('#' + key + 1).val(curModel.options[key][0]);
+                $('#' + key + 2).val(curModel.options[key][1]);
+            }
+            else
+                $('#' + key).val(curModel.options[key])
         }
     };
 
@@ -385,36 +475,41 @@
         curNode.color = "#1affff";
         s.refresh();
 
-        var html = "";
+        var html = "<table class='table table-nonfluid'><tbody>";
         var values = curNode.values;
 
         if (curNode.type == "Junction") {
-            html += "<div><b>Junction: <input type='number' id='node-id' value='" + curNode.id + "' readonly></b><br>" +
-                "Elev: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Demand: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "Pattern: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br></div>" +
-                "Quality: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br></div>";
+            html +=
+                "<tr><td><b>Junction:</b></td><td><input type='text' id='node-id' class='inp-properties' value='" + curNode.id + "' readonly></td></tr>" +
+                "<tr><td>Elev:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
+                "<tr><td>Demand:</td><td><input type='number' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
+                "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
+                "<tr><td>Quality:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>";
         }
         else if (curNode.type == "Reservoir") {
-            html += "<div><b>Reservoir: <input type='text' id='node-id' value='" + curNode.id + "' readonly></b><br>" +
-                "Head: <input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Pattern: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br></div>" +
-                "Quality: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br></div>";
+            html +=
+                "<tr><td><b>Reservoir:</b></td><td><input type='text' id='node-id' class='inp-properties' value='" + curNode.id + "' readonly></td></tr>" +
+                "<tr><td>Head:</td><td><input type='text' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
+                "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
+                "<tr><td>Quality:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>";
         }
         else if (curNode.type == "Tank") {
-            html += "<div><b>Tank: <input type='number' id='node-id' value='" + curNode.id + "' readonly></b><br>" +
-                "Elevation: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "InitLevel: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "MinLevel: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
-                "MaxLevel: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br>" +
-                "Diameter: <input type='number' class='inp-properties' value='" + values[4] + "' readonly><br>" +
-                "MinVol: <input type='number' class='inp-properties' value='" + values[5] + "' readonly><br>" +
-                "VolCurve: <input type='number' class='inp-properties' value='" + values[6] + "' readonly><br>" +
-                "Quality: <input type='number' class='inp-properties' value='" + values[7] + "' readonly><br></div>";
+            html +=
+                "<tr><td><b>Tank:</b></td><td><input type='text' id='node-id' class='inp-properties' value='" + curNode.id + "' readonly></td></tr>" +
+                "<tr><td>Elevation:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
+                "<tr><td>InitLevel:</td><td><input type='number' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
+                "<tr><td>MinLevel:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
+                "<tr><td>MaxLevel:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>" +
+                "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' value='" + values[4] + "' readonly></td></tr>" +
+                "<tr><td>MinVol:</td><td><input type='number' class='inp-properties' value='" + values[5] + "' readonly></td></tr>" +
+                "<tr><td>VolCurve:</td><td><input type='text' class='inp-properties' value='" + values[6] + "' readonly></td></tr>" +
+                "<tr><td>Quality:</td><td><input type='number' class='inp-properties' value='" + values[7] + "' readonly></td></tr>";
         }
         else {
-             html += "<div><b>Vertex: <input type='number' id='node-id' value='" + curNode.id + "' readonly></b><br>";
+             html += "<tr><td><b>Vertex:</b></td><td><input type='number' id='node-id' value='" + curNode.id + "' readonly></td></tr>";
         }
+        html += "</tbody></table>";
+
         $modalNodeLabel.html(curNode.type + " Properties");
         $modalNode.find('.modal-body').html(html);
         $modalNode.modal('show');
@@ -424,31 +519,33 @@
         curEdge.hover_color = "#1affff";
         s.refresh();
 
-        var html = "";
+        var html = "<table class='table table-nonfluid'><tbody>";
         var values = curEdge.values;
 
         if (curEdge.type == "Pipe") {
-            html += "<div><b>Pipe: <input type='number' id='edge-id' value='" + curEdge.id + "' readonly></b><br>" +
-                "Length: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Roughness: <input type='number' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "Diameter: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
-                "Minor Loss: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br>" +
-                "Status: <input type='text' class='inp-properties' value='" + values[4] + "' readonly><br><p>('Open' or 'Closed')</p></div>";
+            html +=
+                "<tr><td><b>Pipe:</b></td><td><input type='number' id='edge-id' class='inp-properties' value='" + curEdge.id + "' readonly></td></tr>" +
+                "<tr><td>Length:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
+                "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
+                "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
+                "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>" +
+                "<tr><td>Status:</td><td><input type='text' class='inp-properties' value='" + values[4] + "' readonly><br><p>('Open' or 'Closed')</p></td></tr>";
         }
         else if (curEdge.type == "Pump") {
-            html += "<p><b>Pump: <input type='number' id='edge-id' value='" + curEdge.id + "' readonly></b><br>" +
-                "Parameters: <input type='text' class='dual-properties' value='" + values[0] + "' readonly>" +
-                "<input type='number' class='dual-properties' value='" + values[1] + "' readonly></p>";
+            html +=
+                "<tr><td><b>Pump:</td><td><input type='number' id='edge-id' class='inp-properties' value='" + curEdge.id + "' readonly></td></tr>" +
+                "<tr><td>Parameters:</td><td><input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
+                "<input type='text' class='inp-properties' value='" + values[1] + "' readonly></td></tr>";
         }
         else {
-            html += "<div><b>Valve: <input type='number' id='edge-id' value='" + curEdge.id + "' readonly></b><br>" +
-                "Diameter: <input type='number' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "Type: <input type='text' class='inp-properties' value='" + values[1] + "' readonly><br>" +
-                "Setting: <input type='number' class='inp-properties' value='" + values[2] + "' readonly><br>" +
-                "Minor Loss: <input type='number' class='inp-properties' value='" + values[3] + "' readonly><br></div>";
+            html +=
+                "<div><b>Valve:</td><td><input type='number' id='edge-id' class='inp-properties' value='" + curEdge.id + "' readonly></td></tr>" +
+                "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
+                "<tr><td>Type:</td><td><input type='text' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
+                "<tr><td>Setting:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
+                "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>";
         }
-
-        s.refresh();
+        html += "</tbody></table>";
 
         $modalEdgeLabel.html(curEdge.type + " Properties");
         $modalEdge.find('.modal-body').html(html);
@@ -456,6 +553,8 @@
     };
 
     resetModelState = function() {
+        $btnOptionsOk.attr('disabled', true);
+        $chkOptionsEdit.attr('checked', false);
         $btnNodeOk.attr('disabled', true);
         $btnEdgeOk.attr('disabled', true);
         $chkNodeEdit.attr('checked', false);
@@ -563,8 +662,11 @@
         $modalEdge = $('#modal-edge');
         $modalEdgeLabel = $('#modal-edge-label');
         $modalLog = $('#modalLog');
+        $chkGraphEdit = $('#chk-graph');
         $loadFromLocal = $("#load-from-local")[0];
         $fileDisplayArea = $("#file-display-area")[0];
+        $btnOptionsOk = $('#btn-options-ok');
+        $chkOptionsEdit = $('#chk-options');
         $chkNodeEdit = $('#chk-node');
         $chkEdgeEdit = $('#chk-edge');
         $btnNodeOk = $('#btn-node-ok');
@@ -755,9 +857,9 @@
         }
 
 
-        metadataHTML += '</p>';
+        metadataHTML += '</p><br>';
 
-        metadataHTML += '<pre>' + JSON.stringify(metadata, null, 2) + '</pre>';
+        metadataHTML += '<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#metadata-json">&nbsp; Raw Metadata JSON<span class="glyphicon glyphicon-minus pull-left"></span></a></h4></div><div id="metadata-json" class="filter-list panel-collapse collapse"><pre>' + JSON.stringify(metadata, null, 2) + '</pre></div></div>';
 
         metadataDisplayArea.innerHTML = metadataHTML;
     };

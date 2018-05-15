@@ -5,6 +5,7 @@
 
 #app-header .tethys-app-header .icon-wrapper img {
     border-radius: 0 !important;
+    height: 50px !important;
 }
 
 /*****************************************************/
@@ -137,18 +138,19 @@ input[type="radio"] {
 
 
 .dual-properties {
-    width: 50px;
+    width: 70px;
     margin-right: 10px;
     margin-bottom: 10px;
 }
 
-.model-options, .inp-options, #node-id, #edge-id {
+.model-options, .inp-properties, .inp-options, #node-id, #edge-id {
     margin-bottom: 10px;
 }
 
-.dual-properties:read-only, .model-options:read-only, .inp-options:read-only, #node-id:read-only, #edge-id:read-only {
+.dual-properties:read-only, .inp-properties:read-only, .model-options:read-only, .inp-options:read-only, #node-id:read-only, #edge-id:read-only {
     background-color: lightgray;
     border: none;
+    padding-left: 5px;
 }
 
 /*****************************************************/
@@ -269,7 +271,21 @@ h1, h2, h3, h4, h5, h6 {
     color: #555;
     font-family: 'Lato', sans-serif;
 }
-
 .no-close .ui-dialog-titlebar-close {
   display: none;
+}
+.table th, .table td {
+    white-space: nowrap !important;
+    padding: 0 !important;
+    border-top: none !important;
+    padding-right: 10px !important;
+ }
+.table-nonfluid {
+   width: auto !important;
+}
+#modal-upload td {
+    padding: 8px !important;
+}
+.form-control {
+    width: inherit !important;
 }

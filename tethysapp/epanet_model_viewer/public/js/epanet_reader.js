@@ -9,7 +9,7 @@ const intType = {TITLE:"[TITLE]", JUNCTIONS:"[JUNCTIONS]", RESERVOIRS:"[RESERVOI
     LABELS:"[LABELS]", BACKDROP:"[BACKDROP]", END:"[END]"};
 
 
-function EPANET_Lexer(file_text, caller) {
+function EPANET_Reader(file_text, caller) {
     var input;
     if (caller == "fileInput")
         input = file_text.split('\r\n');
@@ -19,7 +19,7 @@ function EPANET_Lexer(file_text, caller) {
 
     var nodes = [];
     var edges = [];
-    var options = [];
+    var options = {};
 
     var nodeSpec ={};
 
@@ -53,6 +53,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var junct = input[i].match(/\S+/g);
 
                     var lastVal = junct[3];
@@ -72,6 +74,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var res = input[i].match(/\S+/g);
 
                     var lastVal = res[2];
@@ -92,6 +96,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var tank = input[i].match(/\S+/g);
 
                     var lastVal = tank[7];
@@ -112,6 +118,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var pipe = input[i].match(/\S+/g);
 
                     if (pipe != null) {
@@ -137,6 +145,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var pump = input[i].match(/\S+/g);
 
                     if (pump != null) {
@@ -161,6 +171,8 @@ function EPANET_Lexer(file_text, caller) {
                     curType = intType.TAGS;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var valve = input[i].match(/\S+/g);
 
                     if (valve != null) {
@@ -220,6 +232,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
 
                 }
                 break;
@@ -230,6 +244,8 @@ function EPANET_Lexer(file_text, caller) {
                     curType = intType.CONTROLS;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
 
                 }
                 break;
@@ -282,6 +298,8 @@ function EPANET_Lexer(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
                     var quality = input[i].match(/\S+/g);
                     nodeSpec[quality[0]]["values"].push(quality[1]);
                 }
@@ -325,6 +343,8 @@ function EPANET_Lexer(file_text, caller) {
                     curType = intType.TIMES;
                 }
                 else {
+                    if (input[i].charAt(0) == ';')
+                        ++i;
 
                 }
                 break;
@@ -350,7 +370,6 @@ function EPANET_Lexer(file_text, caller) {
                 break;
 
             case intType.OPTIONS:
-                console.log(curType);
                 if (input[i] == intType.COORDINATES) {
                     curType = intType.COORDINATES;
                     ++i;
@@ -358,15 +377,10 @@ function EPANET_Lexer(file_text, caller) {
                 else {
                     var option = input[i].match(/\S+/g);
 
-                    if(option[0] == "Unbalanced" || option[0] == "Quality") {
-                        options.push(option[option.length - 2]);
-                        options.push(option[option.length - 1]);
-                        console.log(option[option.length - 2]);
-                        console.log(option[option.length - 1]);
-                    }
+                    if (option[0].toLowerCase() == "unbalanced" || option[0].toLowerCase() == "quality" || option[0].toLowerCase() == "hydraulics")
+                        options[option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
                     else {
-                        console.log(option[option.length - 1]);
-                        options.push(option[option.length - 1]);
+                        options[option[0].toLowerCase()] = option[option.length - 1];
                     }
                 }
                 break;
@@ -383,7 +397,7 @@ function EPANET_Lexer(file_text, caller) {
                         var node = {
                             id: coord[0],
                             label: nodeSpec[coord[0]]["type"] + " " + coord[0],
-                            x: coord[1],
+                            x: 1 * coord[1],
                             y: -1 * coord[2],
                             type: nodeSpec[coord[0]]["type"],
                             values: nodeSpec[coord[0]]["values"],
@@ -410,7 +424,7 @@ function EPANET_Lexer(file_text, caller) {
                         var node = {
                             id: vert[0] + vertNum,
                             label: 'Vert ' + vert[0] + vertNum,
-                            x: vert[1],
+                            x: 1 * vert[1],
                             y: -1 * vert[2],
                             type:"Vertex",
                             size: 1,
@@ -434,7 +448,7 @@ function EPANET_Lexer(file_text, caller) {
                             node = {
                                 id: vert[0] + vertNum,
                                 label: 'Vert ' + vert[0] + vertNum,
-                                x: vert[1],
+                                x: 1 * vert[1],
                                 y: -1 * vert[2],
                                 type:"Vertex",
                                 size: 1,
