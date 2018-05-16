@@ -84,7 +84,7 @@
         $loadingModel,
         $nodeEdgeSelect;
 
-    //  **********Node/Edge Element Html************
+    //  *******Node/Edge Element Html********
     let nodeHtml = {
         Junction:
         "<tr><td><b>Junction:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
