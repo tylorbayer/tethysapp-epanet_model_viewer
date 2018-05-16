@@ -16,8 +16,7 @@
     /************************************************************************
      *                      MODULE LEVEL / GLOBAL VARIABLES
      *************************************************************************/
-    var dataTableLoadModels,
-        showLog,
+    let showLog,
         s,
         curModel,
         file_text,
@@ -33,15 +32,10 @@
             Valve: '#3333cc' };
 
     //  *********FUNCTIONS***********
-    var addListenersToModelRepTable,
-        addInitialEventListeners,
-        buildModelRepTable,
+    let addInitialEventListeners,
         generateModelList,
         initializeJqueryVariables,
-        redrawModelTable,
-        onClickOpenModel,
-        showMainLoadAnim,
-        openModel,
+        openInitialModel,
         hideMainLoadAnim,
         setStateAfterLastModel,
         addLogEntry,
@@ -59,11 +53,10 @@
         addDefaultBehaviorToAjax,
         checkCsrfSafe,
         getCookie,
-        openInitialModel;
+        openModel;
 
     //  **********Query Selectors************
-    var $modalModelRep,
-        $modelOptions,
+    let $modelOptions,
         $modalNode,
         $uploadContainer,
         $modalNodeLabel,
@@ -91,47 +84,66 @@
         $loadingModel,
         $nodeEdgeSelect;
 
+    //  **********Node/Edge Element Html************
+    let nodeHtml = {
+        Junction:
+        "<tr><td><b>Junction:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Elev:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Demand:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
+        Reservoir:
+        "<tr><td><b>Reservoir:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Head:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
+        Tank: "<tr><td><b>Tank:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Elevation:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>InitLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>MinLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>MaxLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>MinVol:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>VolCurve:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
+        Vertex:
+        "<tr><td><b>Vertex:</b></td><td><input type='number' id='node-id' readonly></td></tr>"
+    };
+
+    let edgeHtml = {
+        Pipe:
+        "<tr><td><b>Pipe:</b></td><td><input type='number' id='edge-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Length:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
+        "<tr><td>Status:</td><td><input type='text' class='inp-properties'readonly><br><p>('Open', 'Closed', or 'CV')</p></td></tr>",
+        Pump:
+        "<tr><td><b>Pump:</td><td><input type='number' id='edge-id' class='inp-properties'readonly></td></tr>" +
+        "<tr><td>Parameters:</td><td><input type='text' class='inp-properties'readonly><br>" +
+        "<input type='text' class='inp-properties'readonly></td></tr>",
+        Valve:
+        "<div><b>Valve:</td><td><input type='number' id='edge-id' class='inp-properties'readonly></td></tr>" +
+        "<tr><td>Diameter:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
+        "<tr><td>Type:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Setting:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' readonly></td></tr>"
+};
+
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
      ******************************************************/
 
-    addListenersToModelRepTable = function () {
-        $modalModelRep.find('tbody tr').on('click', function () {
-            $btnOpenModel.prop('disabled', false);
-            $(this)
-                .unbind().dblclick(function () {
-                onClickOpenModel();
-            })
-                .css({
-                    'background-color': '#1abc9c',
-                    'color': 'white'
-                })
-                .find('input').prop('checked', true);
-            $('tr').not($(this)).css({
-                'background-color': '',
-                'color': ''
-            });
-        });
-    };
-
     addInitialEventListeners = function () {
         $('#btn-model-rep').click(function () {
-            var curURL = window.location.href;
-            window.open(curURL.substring(0, curURL.indexOf('/apps/') + 6) + "epanet-model-repository/", "_self");
+            let curURL = window.location.href;
+            window.open(curURL.substring(0, curURL.indexOf('/apps/') + 6) + "epanet-model-repository/", "modelRepository");
         });
-
-        $modalModelRep.on('shown.bs.modal', function () {
-            if (dataTableLoadModels) {
-                redrawModelTable(dataTableLoadModels, $(this));
-            }
-        });
-
-        $btnOpenModel.on('click', onClickOpenModel);
 
         $loadFromLocal.addEventListener('change', function() {
-            var file = $loadFromLocal.files[0];
+            let file = $loadFromLocal.files[0];
 
-            var reader = new FileReader();
+            let reader = new FileReader();
 
             reader.onload = function() {
                 $fileDisplayArea.innerText = reader.result;
@@ -141,12 +153,12 @@
         });
 
         $btnUl.click(function() {
-            if ($inpUlTitle.val() != '' && $inpUlDescription.val() != '' && $inpUlKeywords.val() != '') {
+            if ($inpUlTitle.val() !== '' && $inpUlDescription.val() !== '' && $inpUlKeywords.val() !== '') {
                 curModel.title = [$inpUlTitle.val(), $inpUlDescription.val()];
 
-                var epanetWriter = new EPANET_Writer(curModel);
+                let epanetWriter = new EPANET_Writer(curModel);
 
-                var data = new FormData();
+                let data = new FormData();
                 data.append('model_title', $inpUlTitle.val());
                 data.append('model_description', $inpUlDescription.val());
                 data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
@@ -168,7 +180,7 @@
 
         $chkGraphEdit.click(function() {
             if ($chkGraphEdit.is(':checked')) {
-                var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+                let dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
 
                 dragListener.bind('startdrag', function(e) {
                     $('#model-display').css("cursor", "-webkit-grabbing");
@@ -176,9 +188,6 @@
                 dragListener.bind('drag', function(e) {
                     s.unbind('clickNodes');
                 });
-                // dragListener.bind('drop', function(e) {
-                //     console.log(e);
-                // });
                 dragListener.bind('dragend', function(e) {
                     $('#model-display').css("cursor", "-webkit-grab");
 
@@ -188,7 +197,7 @@
                         });
                     },250);
 
-                    var myNode = curModel.nodes.find(node => node.id === e.data.node.id);
+                    let myNode = curModel.nodes.find(node => node.id === e.data.node.id);
                     myNode.x = Math.round(e.data.node.x * 100) / 100;
                     myNode.y = Math.round(e.data.node.y * 100) / 100;
                 });
@@ -230,8 +239,8 @@
         });
 
         $btnOptionsOk.click(function() {
-            for(var key in curModel.options) {
-                if(key == "unbalanced" || key == "quality" || key == "hydraulics") {
+            for(let key in curModel.options) {
+                if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
                     curModel.options[key][0] = $('#' + key + 1).val();
                     curModel.options[key][1] = $('#' + key + 2).val();
                 }
@@ -281,7 +290,7 @@
             curNode.id = $('#node-id').val();
             curNode.label = curNode.type + ' ' + $('#node-id').val();
 
-            for (var i = 1; i < $modalNode.find('input').length - 1; ++i) {
+            for (let i = 1; i < $modalNode.find('input').length; ++i) {
                 curNode.values[i - 1] = $modalNode.find('input')[i].value;
             }
 
@@ -298,7 +307,7 @@
             curEdge.id = $('#edge-id').val();
             curEdge.label = curEdge.type + ' ' + $('#edge-id').val();
 
-            for (var i = 1; i < $modalEdge.find('input').length - 1; ++i) {
+            for (let i = 1; i < $modalEdge.find('input').length; ++i) {
                 curEdge.values[i - 1] = $modalEdge.find('input')[i].value;
             }
 
@@ -327,7 +336,7 @@
 
             file_text = $fileDisplayArea.innerText;
 
-            var epanetReader = new EPANET_Reader(file_text, "not");
+            let epanetReader = new EPANET_Reader(file_text, "not");
 
             curModel.nodes = epanetReader.getNodes();
             curModel.edges = epanetReader.getEdges();
@@ -338,9 +347,6 @@
             s = new sigma({
                 graph: curModel,
                 renderer: {
-                    // IMPORTANT:
-                    // This works only with the canvas renderer, so the
-                    // renderer type set as "canvas" is necessary here.
                     container: $("#model-container")[0],
                     type: 'canvas'
                 },
@@ -373,15 +379,15 @@
 
     nodeClick = function (e) {
         if(!e.data.captor.isDragging) {
-            $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX - 500});
+            $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
 
-            var curNodes = e.data.node;
+            let curNodes = e.data.node;
             if (curNodes.length > 1) {
                 $nodeEdgeSelect.empty();
                 $nodeEdgeSelect.append('<p>Select a Node to display</p>');
 
-                var selectHtml = "<select id='select-node-edge'>";
-                for (var i in curNodes) {
+                let selectHtml = "<select id='select-node-edge'>";
+                for (let i in curNodes) {
                     selectHtml += "<option value='" + i + "'>" + curNodes[i].type + " " + curNodes[i].id + "</option>";
                 }
                 selectHtml += "</select";
@@ -417,15 +423,15 @@
 
     edgeClick = function(e) {
         if(!e.data.captor.isDragging) {
-            $('#edge-dialog').css({top: e.data.captor.clientY, left: e.data.captor.clientX - 500});
+            $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
 
-            var curEdges = e.data.edge;
+            let curEdges = e.data.edge;
             if (curEdges.length > 1) {
                 $nodeEdgeSelect.empty();
                 $nodeEdgeSelect.append('<p>Select an Edge to display</p>');
 
-                var selectHtml = "<select id='select-node-edge'>";
-                for (var i in curEdges) {
+                let selectHtml = "<select id='select-node-edge'>";
+                for (let i in curEdges) {
                     selectHtml += "<option value='" + i + "'>" + curEdges[i].type + " " + curEdges[i].id + "</option>";
                 }
                 selectHtml += "</select";
@@ -461,8 +467,8 @@
     };
 
     populateModelOptions = function () {
-        for(var key in curModel.options) {
-            if(key == "unbalanced" || key == "quality" || key == "hydraulics") {
+        for(let key in curModel.options) {
+            if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
                 $('#' + key + 1).val(curModel.options[key][0]);
                 $('#' + key + 2).val(curModel.options[key][1]);
             }
@@ -475,81 +481,38 @@
         curNode.color = "#1affff";
         s.refresh();
 
-        var html = "<table class='table table-nonfluid'><tbody>";
-        var values = curNode.values;
+        let values = curNode.values;
 
-        if (curNode.type == "Junction") {
-            html +=
-                "<tr><td><b>Junction:</b></td><td><input type='text' id='node-id' class='inp-properties' value='" + curNode.id + "' readonly></td></tr>" +
-                "<tr><td>Elev:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
-                "<tr><td>Demand:</td><td><input type='number' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
-                "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
-                "<tr><td>Quality:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>";
-        }
-        else if (curNode.type == "Reservoir") {
-            html +=
-                "<tr><td><b>Reservoir:</b></td><td><input type='text' id='node-id' class='inp-properties' value='" + curNode.id + "' readonly></td></tr>" +
-                "<tr><td>Head:</td><td><input type='text' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
-                "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
-                "<tr><td>Quality:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>";
-        }
-        else if (curNode.type == "Tank") {
-            html +=
-                "<tr><td><b>Tank:</b></td><td><input type='text' id='node-id' class='inp-properties' value='" + curNode.id + "' readonly></td></tr>" +
-                "<tr><td>Elevation:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
-                "<tr><td>InitLevel:</td><td><input type='number' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
-                "<tr><td>MinLevel:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
-                "<tr><td>MaxLevel:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>" +
-                "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' value='" + values[4] + "' readonly></td></tr>" +
-                "<tr><td>MinVol:</td><td><input type='number' class='inp-properties' value='" + values[5] + "' readonly></td></tr>" +
-                "<tr><td>VolCurve:</td><td><input type='text' class='inp-properties' value='" + values[6] + "' readonly></td></tr>" +
-                "<tr><td>Quality:</td><td><input type='number' class='inp-properties' value='" + values[7] + "' readonly></td></tr>";
-        }
-        else {
-             html += "<tr><td><b>Vertex:</b></td><td><input type='number' id='node-id' value='" + curNode.id + "' readonly></td></tr>";
-        }
-        html += "</tbody></table>";
+        let html = "<table class='table table-nonfluid'><tbody>" + nodeHtml[curNode.type] + "</tbody></table>";
 
         $modalNodeLabel.html(curNode.type + " Properties");
         $modalNode.find('.modal-body').html(html);
         $modalNode.modal('show');
+
+        $('#node-id').val(curNode.id);
+
+        for (let i = 0; i < values.length - 1; ++i) {
+            $modalNode.find('input')[i + 1].value = curNode.values[i];
+        }
     };
 
     populateEdgeModal = function () {
         curEdge.hover_color = "#1affff";
         s.refresh();
 
-        var html = "<table class='table table-nonfluid'><tbody>";
-        var values = curEdge.values;
+        let values = curEdge.values;
 
-        if (curEdge.type == "Pipe") {
-            html +=
-                "<tr><td><b>Pipe:</b></td><td><input type='number' id='edge-id' class='inp-properties' value='" + curEdge.id + "' readonly></td></tr>" +
-                "<tr><td>Length:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
-                "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
-                "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
-                "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>" +
-                "<tr><td>Status:</td><td><input type='text' class='inp-properties' value='" + values[4] + "' readonly><br><p>('Open' or 'Closed')</p></td></tr>";
-        }
-        else if (curEdge.type == "Pump") {
-            html +=
-                "<tr><td><b>Pump:</td><td><input type='number' id='edge-id' class='inp-properties' value='" + curEdge.id + "' readonly></td></tr>" +
-                "<tr><td>Parameters:</td><td><input type='text' class='inp-properties' value='" + values[0] + "' readonly><br>" +
-                "<input type='text' class='inp-properties' value='" + values[1] + "' readonly></td></tr>";
-        }
-        else {
-            html +=
-                "<div><b>Valve:</td><td><input type='number' id='edge-id' class='inp-properties' value='" + curEdge.id + "' readonly></td></tr>" +
-                "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' value='" + values[0] + "' readonly></td></tr>" +
-                "<tr><td>Type:</td><td><input type='text' class='inp-properties' value='" + values[1] + "' readonly></td></tr>" +
-                "<tr><td>Setting:</td><td><input type='number' class='inp-properties' value='" + values[2] + "' readonly></td></tr>" +
-                "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' value='" + values[3] + "' readonly></td></tr>";
-        }
-        html += "</tbody></table>";
+        let html = "<table class='table table-nonfluid'><tbody>" + edgeHtml[curEdge.type] + "</tbody></table>";
 
         $modalEdgeLabel.html(curEdge.type + " Properties");
         $modalEdge.find('.modal-body').html(html);
         $modalEdge.modal('show');
+
+        $('#edge-id').val(curEdge.id);
+
+        for (let i = 0; i < values.length - 1; ++i) {
+            $modalEdge.find('input')[i + 1].value = curEdge.values[i];
+        }
     };
 
     resetModelState = function() {
@@ -567,95 +530,16 @@
         $inpUlKeywords.tagsinput('removeAll');
     };
 
-    buildModelRepTable = function (modelList) {
-        var modelTableHtml;
-
-        modelList = typeof modelList === 'string' ? JSON.parse(modelList) : modelList;
-        modelTableHtml = '<table id="tbl-models"><thead><th></th><th>Title</th><th>Subjects</th><th>Type</th><th>Owner</th></thead><tbody>';
-
-        modelList.forEach(function (model) {
-            var subjects = "";
-
-            for (var subject in model.subjects) {
-                subjects += subject + " ";
-            }
-
-            modelTableHtml += '<tr>' +
-                '<td><input type="radio" name="model" class="rdo-model" value="' + model.id + '"></td>' +
-                '<td class="model_title">' + model.title + '</td>' +
-                '<td class="model_subjects">' + model.subjects + '</td>' +
-                '<td class="model_type">' + model.type + '</td>' +
-                '<td class="model_owner">' + model.owner + '</td>' +
-                '</tr>';
-        });
-        modelTableHtml += '</tbody></table>';
-        $modalModelRep.find('.modal-body').html(modelTableHtml);
-        addListenersToModelRepTable();
-        dataTableLoadModels = $('#tbl-models').DataTable({
-            'order': [[1, 'asc']],
-            'columnDefs': [{
-                'orderable': false,
-                'targets': 0
-            }],
-            "scrollY": '500px',
-            "scrollCollapse": true,
-            fixedHeader: {
-                header: true,
-                footer: true
-            }
-        });
-    };
-
-    generateModelList = function (numRequests) {
-        $.ajax({
-            type: 'GET',
-            url: '/apps/epanet-model-viewer/get-epanet-model-list',
-            dataType: 'json',
-            error: function () {
-                if (numRequests < 5) {
-                    numRequests += 1;
-                    setTimeout(generateModelList(), 3000);
-                } else {
-                    $modalModelRep.find('.modal-body').html('<div class="error">An unexpected error was encountered while attempting to load models.</div>');
-                }
-            },
-            success: function (response) {
-                if (response.hasOwnProperty('success')) {
-                    if (!response.success) {
-                        $modalModelRep.find('.modal-body').html('<div class="error">' + response.message + '</div>');
-                    } else {
-                        if (response.hasOwnProperty('model_list')) {
-                            buildModelRepTable(response.model_list);
-                        }
-                        $btnOpenModel.add('#div-chkbx-model-auto-close').removeClass('hidden');
-                    }
-                }
-            }
-        });
-    };
-
     openInitialModel = function () {
-        var $initialModel = $('#initial-model');
-        if ($initialModel.length){
+        let $initialModel = $('#initial-model');
+        if ($initialModel.length) {
             openModel($initialModel.html());
         }
-    };
-
-    redrawModelTable = function (modelTable, $modal) {
-        var interval;
-        interval = window.setInterval(function () {
-            if ($modal.css('display') !== 'none' && $modal.find('table').length > 0) {
-                $modal.find('.dataTables_scrollBody').css('height', $modal.find('.modal-body').height().toString() - 160 + 'px');
-                modelTable.columns.adjust().draw();
-                window.clearInterval(interval);
-            }
-        }, 100);
     };
 
     initializeJqueryVariables = function () {
         $btnOpenModel = $('#btn-open-model');
         $modelOptions = $('#model-options-view');
-        $modalModelRep = $('#modal-model-rep');
         $uploadContainer = $('#upload-container');
         $modalNode = $('#modal-node');
         $modalNodeLabel = $('#modal-node-label');
@@ -683,19 +567,8 @@
         $nodeEdgeSelect = $('#node-edge-select');
     };
 
-    onClickOpenModel = function () {
-        var $rdoRes = $('.rdo-model:checked');
-        var modelId = $rdoRes.val();
-
-        showMainLoadAnim();
-        $modalModelRep.modal('hide');
-        $uploadContainer.addClass('hidden');
-
-        openModel(modelId);
-    };
-
     openModel = function (modelId) {
-        var data = {'model_id': modelId};
+        let data = {'model_id': modelId};
 
         $('#view-tabs').addClass('hidden');
         $('#loading-model').removeClass('hidden');
@@ -706,14 +579,14 @@
             dataType: 'json',
             data: data,
             error: function () {
-                var message = 'An unexpected error ocurred while processing the following model ' +
+                let message = 'An unexpected error ocurred while processing the following model ' +
                     '<a href="https://www.hydroshare.org/resource/' + modelId + '" target="_blank">' +
                     modelId + '</a>. An app admin has been notified.';
 
                 addLogEntry('danger', message);
             },
             success: function (response) {
-                var message;
+                let message;
 
                 if (response.hasOwnProperty('success')) {
                     if (response.hasOwnProperty('message')) {
@@ -751,12 +624,12 @@
             contentType: false,
             data: data,
             error: function () {
-                var message = 'An unexpected error occurred while uploading the model ';
+                let message = 'An unexpected error occurred while uploading the model ';
 
                 addLogEntry('danger', message);
             },
             success: function (response) {
-                var message;
+                let message;
 
                 if (response.hasOwnProperty('success')) {
                     if (response.hasOwnProperty('message')) {
@@ -804,19 +677,15 @@
         }
     };
 
-    showMainLoadAnim = function () {
-        $('#div-loading').removeClass('hidden');
-    };
-
     hideMainLoadAnim = function () {
         $('#div-loading').addClass('hidden');
     };
 
     showLoadingCompleteStatus = function (success, message) {
-        var successClass = success ? 'success' : 'error';
-        var $modelLoadingStatus = $('#model-load-status');
-        var $statusText = $('#status-text');
-        var showTime = success ? 2000 : 4000;
+        let successClass = success ? 'success' : 'error';
+        let $modelLoadingStatus = $('#model-load-status');
+        let $statusText = $('#status-text');
+        let showTime = success ? 2000 : 4000;
         $statusText.text(message)
             .removeClass('success error')
             .addClass(successClass);
@@ -833,15 +702,15 @@
     };
 
     addMetadataToUI = function (metadata) {
-        var metadataDisplayArea = $('#metadata-display-area')[0];
-        var metadataHTML = '<p><h1>' + metadata['title'] + '</h1><h6>' + metadata['description'] + '</h6>' +
+        let metadataDisplayArea = $('#metadata-display-area')[0];
+        let metadataHTML = '<p><h1>' + metadata['title'] + '</h1><h6>' + metadata['description'] + '</h6>' +
             '<a href="' + metadata['identifiers'][0]['url'] + '" style="color:#3366ff">View the Model in HydroShare</a><br><br>' +
             'Created: ' + metadata['dates'][1]['start_date'].substring(0, 10) +
             ', &emsp;Last Modified: ' + metadata['dates'][1]['start_date'].substring(0, 10) +
             '<br>Author: ' + metadata['creators'][0]['name'] + '<br>Rights: ' + metadata['rights'];
 
-        var subjects = "";
-        var i;
+        let subjects = "";
+        let i;
         for (i in metadata['subjects']) {
             subjects += metadata['subjects'][i]['value'] + ', ';
         }
@@ -865,8 +734,8 @@
     };
 
     addLogEntry = function (type, message, show) {
-        var icon;
-        var timeStamp;
+        let icon;
+        let timeStamp;
 
         switch (type) {
             case 'success':
@@ -895,8 +764,10 @@
         }
     };
 
+    /*-----------------------------------------------
+     ************TO ENABLE PROPER UPLOAD*************
+     ----------------------------------------------*/
     addDefaultBehaviorToAjax = function () {
-        // Add CSRF token to appropriate ajax requests
         $.ajaxSetup({
             beforeSend: function (xhr, settings) {
                 if (!checkCsrfSafe(settings.type) && !this.crossDomain) {
@@ -906,23 +777,20 @@
         });
     };
 
-    // Find if method is CSRF safe
     checkCsrfSafe = function (method) {
-        // these HTTP methods do not require CSRF protection
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
     };
 
     getCookie = function (name) {
-        var cookie;
-        var cookies;
-        var cookieValue = null;
-        var i;
+        let cookie;
+        let cookies;
+        let cookieValue = null;
+        let i;
 
         if (document.cookie && document.cookie !== '') {
             cookies = document.cookie.split(';');
             for (i = 0; i < cookies.length; i += 1) {
                 cookie = $.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
@@ -937,6 +805,8 @@
      **************ONLOAD FUNCTION*******************
      ----------------------------------------------*/
     $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+
         openInitialModel();
         initializeJqueryVariables();
         addInitialEventListeners();
@@ -949,7 +819,6 @@
     /*-----------------------------------------------
      ***************INVOKE IMMEDIATELY***************
      ----------------------------------------------*/
-    // generateModelList();
 
     sigma.utils.pkg('sigma.canvas.nodes');
 

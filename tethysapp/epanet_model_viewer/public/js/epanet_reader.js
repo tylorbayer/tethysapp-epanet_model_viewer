@@ -10,35 +10,35 @@ const intType = {TITLE:"[TITLE]", JUNCTIONS:"[JUNCTIONS]", RESERVOIRS:"[RESERVOI
 
 
 function EPANET_Reader(file_text, caller) {
-    var input;
-    if (caller == "fileInput")
+    let input;
+    if (caller === "fileInput")
         input = file_text.split('\r\n');
     else
         input = file_text.split('\n');
-    var curType;
+    let curType;
 
-    var nodes = [];
-    var edges = [];
-    var options = {};
+    let nodes = [];
+    let edges = [];
+    let options = {};
 
-    var nodeSpec ={};
+    let nodeSpec ={};
 
-    var title_text = "";
+    let title_text = "";
 
-    if (input[0] == intType.TITLE) {
+    if (input[0] === intType.TITLE) {
         curType = intType.TITLE;
     }
     else {
         throw INP_FILE_ERROR;
     }
 
-    for (var i = 1; i < input.length; ++i) {
-        if (input[i] == "")
+    for (let i = 1; i < input.length; ++i) {
+        if (input[i] === "")
             continue;
 
         switch(curType) {
             case intType.TITLE:
-                if (input[i] == intType.JUNCTIONS) {
+                if (input[i] === intType.JUNCTIONS) {
                     curType = intType.JUNCTIONS;
                     ++i;
                 }
@@ -48,17 +48,17 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.JUNCTIONS:
-                if (input[i] == intType.RESERVOIRS) {
+                if (input[i] === intType.RESERVOIRS) {
                     curType = intType.RESERVOIRS;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var junct = input[i].match(/\S+/g);
+                    let junct = input[i].match(/\S+/g);
 
-                    var lastVal = junct[3];
-                    if (lastVal == ";")
+                    let lastVal = junct[3];
+                    if (lastVal === ";")
                         lastVal = "";
 
                     nodeSpec[junct[0]] = {
@@ -69,17 +69,17 @@ function EPANET_Reader(file_text, caller) {
                 }
                 break;
             case intType.RESERVOIRS:
-                if (input[i] == intType.TANKS) {
+                if (input[i] === intType.TANKS) {
                     curType = intType.TANKS;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var res = input[i].match(/\S+/g);
+                    let res = input[i].match(/\S+/g);
 
-                    var lastVal = res[2];
-                    if (lastVal == ";")
+                    let lastVal = res[2];
+                    if (lastVal === ";")
                         lastVal = "";
 
                     nodeSpec[res[0]] = {
@@ -91,17 +91,17 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.TANKS:
-                if (input[i] == intType.PIPES) {
+                if (input[i] === intType.PIPES) {
                     curType = intType.PIPES;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var tank = input[i].match(/\S+/g);
+                    let tank = input[i].match(/\S+/g);
 
-                    var lastVal = tank[7];
-                    if (lastVal == ";")
+                    let lastVal = tank[7];
+                    if (lastVal === ";")
                         lastVal = "";
 
                     nodeSpec[tank[0]] = {
@@ -113,17 +113,17 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.PIPES:
-                if (input[i] == intType.PUMPS) {
+                if (input[i] === intType.PUMPS) {
                     curType = intType.PUMPS;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var pipe = input[i].match(/\S+/g);
+                    let pipe = input[i].match(/\S+/g);
 
-                    if (pipe != null) {
-                        var edge = {
+                    if (pipe !== null) {
+                        let edge = {
                             id: pipe[0],
                             label: 'Pipe ' + pipe[0],
                             type: "Pipe",
@@ -140,17 +140,17 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.PUMPS:
-                if (input[i] == intType.VALVES) {
+                if (input[i] === intType.VALVES) {
                     curType = intType.VALVES;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var pump = input[i].match(/\S+/g);
+                    let pump = input[i].match(/\S+/g);
 
-                    if (pump != null) {
-                        var edge = {
+                    if (pump !== null) {
+                        let edge = {
                             id: pump[0],
                             label: 'Pump ' + pump[0],
                             type: "Pump",
@@ -167,16 +167,16 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.VALVES:
-                if (input[i] == intType.TAGS) {
+                if (input[i] === intType.TAGS) {
                     curType = intType.TAGS;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var valve = input[i].match(/\S+/g);
+                    let valve = input[i].match(/\S+/g);
 
-                    if (valve != null) {
-                        var edge = {
+                    if (valve !== null) {
+                        let edge = {
                             id: valve[0],
                             label: 'Valve ' + valve[0],
                             type: "Valve",
@@ -194,7 +194,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.TAGS:
                 console.log(curType);
-                if (input[i] == intType.DEMANDS) {
+                if (input[i] === intType.DEMANDS) {
                     curType = intType.DEMANDS;
                     ++i;
                 }
@@ -205,7 +205,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.DEMANDS:
                 console.log(curType);
-                if (input[i] == intType.STATUS) {
+                if (input[i] === intType.STATUS) {
                     curType = intType.STATUS;
                     ++i;
                 }
@@ -216,7 +216,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.STATUS:
                 console.log(curType);
-                if (input[i] == intType.PATTERNS) {
+                if (input[i] === intType.PATTERNS) {
                     curType = intType.PATTERNS;
                     ++i;
                 }
@@ -227,12 +227,12 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.PATTERNS:
                 console.log(curType);
-                if (input[i] == intType.CURVES) {
+                if (input[i] === intType.CURVES) {
                     curType = intType.CURVES;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
 
                 }
@@ -240,11 +240,11 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.CURVES:
                 console.log(curType);
-                if (input[i] == intType.CONTROLS) {
+                if (input[i] === intType.CONTROLS) {
                     curType = intType.CONTROLS;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
 
                 }
@@ -252,7 +252,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.CONTROLS:
                 console.log(curType);
-                if (input[i] == intType.RULES) {
+                if (input[i] === intType.RULES) {
                     curType = intType.RULES;
                 }
                 else {
@@ -262,7 +262,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.RULES:
                 console.log(curType);
-                if (input[i] == intType.ENERGY) {
+                if (input[i] === intType.ENERGY) {
                     curType = intType.ENERGY;
                 }
                 else {
@@ -272,7 +272,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.ENERGY:
                 console.log(curType);
-                if (input[i] == intType.EMITTERS) {
+                if (input[i] === intType.EMITTERS) {
                     curType = intType.EMITTERS;
                     ++i;
                 }
@@ -283,7 +283,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.EMITTERS:
                 console.log(curType);
-                if (input[i] == intType.QUALITY) {
+                if (input[i] === intType.QUALITY) {
                     curType = intType.QUALITY;
                     ++i;
                 }
@@ -293,21 +293,21 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.QUALITY:
-                if (input[i] == intType.SOURCES) {
+                if (input[i] === intType.SOURCES) {
                     curType = intType.SOURCES;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
-                    var quality = input[i].match(/\S+/g);
+                    let quality = input[i].match(/\S+/g);
                     nodeSpec[quality[0]]["values"].push(quality[1]);
                 }
                 break;
 
             case intType.SOURCES:
                 console.log(curType);
-                if (input[i] + "1" == intType.REACTIONS1) {
+                if (input[i] + "1" === intType.REACTIONS1) {
                     curType = intType.REACTIONS1;
                     ++i;
                 }
@@ -318,7 +318,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.REACTIONS1:
                 console.log(curType);
-                if (input[i] + "2" == intType.REACTIONS2) {
+                if (input[i] + "2" === intType.REACTIONS2) {
                     curType = intType.REACTIONS2;
                 }
                 else {
@@ -328,7 +328,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.REACTIONS2:
                 console.log(curType);
-                if (input[i] == intType.MIXING) {
+                if (input[i] === intType.MIXING) {
                     curType = intType.MIXING;
                     ++i;
                 }
@@ -339,11 +339,11 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.MIXING:
                 console.log(curType);
-                if (input[i] == intType.TIMES) {
+                if (input[i] === intType.TIMES) {
                     curType = intType.TIMES;
                 }
                 else {
-                    if (input[i].charAt(0) == ';')
+                    if (input[i].charAt(0) === ';')
                         ++i;
 
                 }
@@ -351,7 +351,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.TIMES:
                 console.log(curType);
-                if (input[i] == intType.REPORT) {
+                if (input[i] === intType.REPORT) {
                     curType = intType.REPORT;
                 }
                 else {
@@ -361,7 +361,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.REPORT:
                 console.log(curType);
-                if (input[i] == intType.OPTIONS) {
+                if (input[i] === intType.OPTIONS) {
                     curType = intType.OPTIONS;
                 }
                 else {
@@ -370,14 +370,14 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.OPTIONS:
-                if (input[i] == intType.COORDINATES) {
+                if (input[i] === intType.COORDINATES) {
                     curType = intType.COORDINATES;
                     ++i;
                 }
                 else {
-                    var option = input[i].match(/\S+/g);
+                    let option = input[i].match(/\S+/g);
 
-                    if (option[0].toLowerCase() == "unbalanced" || option[0].toLowerCase() == "quality" || option[0].toLowerCase() == "hydraulics")
+                    if (option[0].toLowerCase() === "unbalanced" || option[0].toLowerCase() === "quality" || option[0].toLowerCase() === "hydraulics")
                         options[option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
                     else {
                         options[option[0].toLowerCase()] = option[option.length - 1];
@@ -386,15 +386,15 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.COORDINATES:
-                if (input[i] == intType.VERTICES) {
+                if (input[i] === intType.VERTICES) {
                     curType = intType.VERTICES;
                     ++i;
                 }
                 else {
-                    var coord = input[i].match(/\S+/g);
+                    let coord = input[i].match(/\S+/g);
 
-                    if (coord != null) {
-                        var node = {
+                    if (coord !== null) {
+                        let node = {
                             id: coord[0],
                             label: nodeSpec[coord[0]]["type"] + " " + coord[0],
                             x: 1 * coord[1],
@@ -411,54 +411,56 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.VERTICES:
-                if (input[i] == intType.LABELS) {
+                if (input[i] === intType.LABELS) {
                     curType = intType.LABELS;
                     ++i;
                 }
                 else {
-                    var vert = input[i].match(/\S+/g);
-                    if (vert != null) {
-                        var curID = vert[0];
-                        var vertNum = 0;
+                    let vert = input[i].match(/\S+/g);
+                    if (vert !== null) {
+                        let curID = vert[0];
+                        let vertNum = 0;
 
-                        var node = {
+                        let node = {
                             id: vert[0] + vertNum,
                             label: 'Vert ' + vert[0] + vertNum,
                             x: 1 * vert[1],
                             y: -1 * vert[2],
-                            type:"Vertex",
+                            type: "Vertex",
+                            values: [],
                             size: 1,
                             color: '#666',
                             hover_color: '#000'
                         };
                         nodes.push(node);
-                    }
-                    ++i;
-
-                    while (input[i] != intType.LABELS) {
-                        vert = input[i].match(/\S+/g);
-
-                        if (vert != null) {
-                            if (curID == vert[0]) {
-                                ++vertNum;
-                            }
-                            else {
-                                vertNum = 1;
-                            }
-                            node = {
-                                id: vert[0] + vertNum,
-                                label: 'Vert ' + vert[0] + vertNum,
-                                x: 1 * vert[1],
-                                y: -1 * vert[2],
-                                type:"Vertex",
-                                size: 1,
-                                color: '#666',
-                                hover_color: '#000'
-                            };
-                            nodes.push(node);
-                            curID = vert[0];
-                        }
                         ++i;
+
+                        while (input[i] !== intType.LABELS) {
+                            vert = input[i].match(/\S+/g);
+
+                            if (vert !== null) {
+                                if (curID === vert[0]) {
+                                    ++vertNum;
+                                }
+                                else {
+                                    vertNum = 1;
+                                }
+                                node = {
+                                    id: vert[0] + vertNum,
+                                    label: 'Vert ' + vert[0] + vertNum,
+                                    x: 1 * vert[1],
+                                    y: -1 * vert[2],
+                                    type: "Vertex",
+                                    values: [],
+                                    size: 1,
+                                    color: '#666',
+                                    hover_color: '#000'
+                                };
+                                nodes.push(node);
+                                curID = vert[0];
+                            }
+                            ++i;
+                        }
                     }
                     curType = intType.LABELS;
                 }
@@ -466,7 +468,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.LABELS:
                 console.log(curType);
-                if (input[i] == intType.BACKDROP) {
+                if (input[i] === intType.BACKDROP) {
                     curType = intType.BACKDROP;
                 }
                 else {
@@ -476,7 +478,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.BACKDROP:
                 console.log(curType);
-                if (input[i] == intType.END) {
+                if (input[i] === intType.END) {
                     curType = intType.END;
                     ++i;
                 }

@@ -25,7 +25,6 @@
 
 {% block content_dependent_styles %}
 {{ block.super }}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.11,fh-3.1.1,r-2.0.2,sc-1.4.1,se-1.1.2/datatables.min.css"/>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <link rel="stylesheet" href="http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/dist/bootstrap-tagsinput.css">
 <link href="{% static 'epanet_model_viewer/css/main.css' %}" rel="stylesheet"/>
@@ -33,7 +32,6 @@
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://cdn.datatables.net/t/bs/dt-1.10.11,fh-3.1.1,r-2.0.2,sc-1.4.1,se-1.1.2/datatables.min.js" async="async"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
 
@@ -84,11 +82,12 @@
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.bindEvents.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.bindDOMEvents.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/src/misc/sigma.misc.drawHovers.js' %}" type="text/javascript"></script>
-<!--END SIGMA IMPORTS-->
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.parsers.json/sigma.parsers.json.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.renderers.customShapes/shape-library.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.renderers.customShapes/sigma.renderers.customShapes.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/vendor/sigma.js-1.2.1/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js' %}" type="text/javascript"></script>
+<!--END SIGMA IMPORTS-->
+
 <script src="{% static 'epanet_model_viewer/js/epanet_reader.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/js/epanet_writer.js' %}" type="text/javascript"></script>
 <script src="{% static 'epanet_model_viewer/js/main.js' %}" type="text/javascript"></script>
