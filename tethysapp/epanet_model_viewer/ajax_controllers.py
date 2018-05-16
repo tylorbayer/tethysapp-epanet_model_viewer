@@ -91,23 +91,23 @@ def get_epanet_model(request):
                 for line in hs.getResourceFile(model_id, model_name):
                     model += line
 
-                with open('tmp.inp', 'w') as f:
-                    f.write(model)
-                es = EPANetSimulation('tmp.inp')
-                os.remove('tmp.inp')
-
-                print(len(es.network.nodes))
-
-                print(pp.pprint(es.network.nodes['23'].results))
-
-                es.run()
-
-                p = Node.value_type['EN_PRESSURE']
-
-                print(pp.pprint(Node.value_type))
-                print(pp.pprint(es.network.nodes['23'].results))
-                print(len(es.network.nodes['23'].results[p]))
-                print("%.3f" % es.network.nodes['23'].results[p][5])
+                # with open('tmp.inp', 'w') as f:
+                #     f.write(model)
+                # es = EPANetSimulation('tmp.inp')
+                # os.remove('tmp.inp')
+                #
+                # print(len(es.network.nodes))
+                #
+                # print(pp.pprint(es.network.nodes['23'].results))
+                #
+                # es.run()
+                #
+                # p = Node.value_type['EN_PRESSURE']
+                #
+                # print(pp.pprint(Node.value_type))
+                # print(pp.pprint(es.network.nodes['23'].results))
+                # print(len(es.network.nodes['23'].results[p]))
+                # print("%.3f" % es.network.nodes['23'].results[p][5])
 
                 return_obj['results'] = model
                 return_obj['success'] = True

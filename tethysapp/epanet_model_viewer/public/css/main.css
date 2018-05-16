@@ -287,5 +287,12 @@ h1, h2, h3, h4, h5, h6 {
     padding: 8px !important;
 }
 .form-control {
+    display: inline !important;
     width: inherit !important;
+}
+.glyphicon-info-sign:before {
+    padding: 5px;
+    vertical-align: middle;
+    color:#ccc;
+    font-size: 1.5em;
 }
