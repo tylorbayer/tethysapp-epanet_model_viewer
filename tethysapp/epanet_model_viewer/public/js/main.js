@@ -107,28 +107,28 @@
         "<tr><td>VolCurve:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
         Vertex:
-        "<tr><td><b>Vertex:</b></td><td><input type='number' id='node-id' readonly></td></tr>"
+            "<tr><td><b>Vertex:</b></td><td><input type='text' id='node-id' readonly></td></tr>"
     };
 
     let edgeHtml = {
         Pipe:
-        "<tr><td><b>Pipe:</b></td><td><input type='number' id='edge-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td><b>Pipe:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Length:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Status:</td><td><input type='text' class='inp-properties'readonly><br><p>('Open', 'Closed', or 'CV')</p></td></tr>",
         Pump:
-        "<tr><td><b>Pump:</td><td><input type='number' id='edge-id' class='inp-properties'readonly></td></tr>" +
+        "<tr><td><b>Pump:</td><td><input type='text' id='edge-id' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Parameters:</td><td><input type='text' class='inp-properties'readonly><br>" +
         "<input type='text' class='inp-properties'readonly></td></tr>",
         Valve:
-        "<div><b>Valve:</td><td><input type='number' id='edge-id' class='inp-properties'readonly></td></tr>" +
+        "<div><b>Valve:</td><td><input type='text' id='edge-id' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Diameter:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Type:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Setting:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' readonly></td></tr>"
-};
+    };
 
     /******************************************************
      **************FUNCTION DECLARATIONS*******************
@@ -158,13 +158,13 @@
 
                 let epanetWriter = new EPANET_Writer(curModel);
 
-                let data = new FormData();
-                data.append('model_title', $inpUlTitle.val());
-                data.append('model_description', $inpUlDescription.val());
-                data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
-                data.append('model_file', epanetWriter.getFile());
-
-                uploadModel(data);
+                // let data = new FormData();
+                // data.append('model_title', $inpUlTitle.val());
+                // data.append('model_description', $inpUlDescription.val());
+                // data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
+                // data.append('model_file', epanetWriter.getFile());
+                //
+                // uploadModel(data);
 
                 $('#modal-upload').modal('hide');
                 resetUploadState();
@@ -212,12 +212,12 @@
         });
 
         $modalNode.on('hidden.bs.modal', function () {
-            curNode.color = graphColors[curNode.type];
+            curNode.color = graphColors[curNode.epaType];
             s.refresh();
         });
 
         $modalEdge.on('hidden.bs.modal', function () {
-            curEdge.hover_color = graphColors[curEdge.type];
+            curEdge.hover_color = graphColors[curEdge.epaType];
             s.refresh();
         });
 
@@ -287,8 +287,19 @@
         $btnNodeOk.click(function() {
             $modalNode.modal('hide');
 
+            let edges = curModel.edges;
+            for (let i in edges) {
+                if (edges[i].type === "vert") {
+                    for (let j in edges[i].vert) {
+                        if (edges[i].vert[j] === curNode.id) {
+                            edges[i].vert[j] = $('#node-id').val();
+                        }
+                    }
+                }
+            }
+
             curNode.id = $('#node-id').val();
-            curNode.label = curNode.type + ' ' + $('#node-id').val();
+            curNode.label = curNode.epaType + ' ' + $('#node-id').val();
 
             for (let i = 1; i < $modalNode.find('input').length; ++i) {
                 curNode.values[i - 1] = $modalNode.find('input')[i].value;
@@ -305,7 +316,7 @@
             $modalEdge.modal('hide');
 
             curEdge.id = $('#edge-id').val();
-            curEdge.label = curEdge.type + ' ' + $('#edge-id').val();
+            curEdge.label = curEdge.epaType + ' ' + $('#edge-id').val();
 
             for (let i = 1; i < $modalEdge.find('input').length; ++i) {
                 curEdge.values[i - 1] = $modalEdge.find('input')[i].value;
@@ -351,7 +362,7 @@
                     type: 'canvas'
                 },
                 settings: {
-                    minNodeSize: 0.2,
+                    minNodeSize: 0.3,
                     maxNodeSize: 6.5,
                     minEdgeSize: 0.5,
                     maxEdgeSize: 4,
@@ -388,7 +399,7 @@
 
                 let selectHtml = "<select id='select-node-edge'>";
                 for (let i in curNodes) {
-                    selectHtml += "<option value='" + i + "'>" + curNodes[i].type + " " + curNodes[i].id + "</option>";
+                    selectHtml += "<option value='" + i + "'>" + curNodes[i].epaType + " " + curNodes[i].id + "</option>";
                 }
                 selectHtml += "</select";
                 $nodeEdgeSelect.append(selectHtml);
@@ -432,7 +443,7 @@
 
                 let selectHtml = "<select id='select-node-edge'>";
                 for (let i in curEdges) {
-                    selectHtml += "<option value='" + i + "'>" + curEdges[i].type + " " + curEdges[i].id + "</option>";
+                    selectHtml += "<option value='" + i + "'>" + curEdges[i].epaType + " " + curEdges[i].id + "</option>";
                 }
                 selectHtml += "</select";
                 $nodeEdgeSelect.append(selectHtml);
@@ -483,9 +494,9 @@
 
         let values = curNode.values;
 
-        let html = "<table class='table table-nonfluid'><tbody>" + nodeHtml[curNode.type] + "</tbody></table>";
+        let html = "<table class='table table-nonfluid'><tbody>" + nodeHtml[curNode.epaType] + "</tbody></table>";
 
-        $modalNodeLabel.html(curNode.type + " Properties");
+        $modalNodeLabel.html(curNode.epaType + " Properties");
         $modalNode.find('.modal-body').html(html);
         $modalNode.modal('show');
 
@@ -502,9 +513,9 @@
 
         let values = curEdge.values;
 
-        let html = "<table class='table table-nonfluid'><tbody>" + edgeHtml[curEdge.type] + "</tbody></table>";
+        let html = "<table class='table table-nonfluid'><tbody>" + edgeHtml[curEdge.epaType] + "</tbody></table>";
 
-        $modalEdgeLabel.html(curEdge.type + " Properties");
+        $modalEdgeLabel.html(curEdge.epaType + " Properties");
         $modalEdge.find('.modal-body').html(html);
         $modalEdge.modal('show');
 
@@ -516,6 +527,7 @@
     };
 
     resetModelState = function() {
+        s.refresh();
         $btnOptionsOk.attr('disabled', true);
         $chkOptionsEdit.attr('checked', false);
         $btnNodeOk.attr('disabled', true);
@@ -722,7 +734,7 @@
                 '" style="color:#3366ff">' + metadata['executed_by']['modelProgramName'] + '</a>';
         }
         catch (error) {
-        //    No program included in metadata
+            //    No program included in metadata
         }
 
 
@@ -814,6 +826,101 @@
 
         $viewTabs.tabs({ active: 0 });
         $nodeEdgeSelect.dialog({ autoOpen: false });
+
+        // Custom edge render for edges with vertices
+        sigma.utils.pkg('sigma.canvas.edges');
+        sigma.canvas.edges.vert = function(edge, source, target, context, settings) {
+            let color = edge.color,
+                prefix = settings('prefix') || '';
+
+            context.strokeStyle = color;
+            context.lineWidth = edge[prefix + 'size'];
+
+            context.beginPath();
+            context.moveTo(
+                source[prefix + 'x'],
+                source[prefix + 'y']
+            );
+
+            let verticies = edge.vert;
+
+            for (let i = 0; i < verticies.length; ++i) {
+                try {
+                    let nodesOnScreen = s.renderers["0"].nodesOnScreen;
+                    let nextVert = nodesOnScreen.find(node => node.id === verticies[i]);
+
+                    context.lineTo(
+                        nextVert[prefix + 'x'],
+                        nextVert[prefix + 'y']
+                    );
+                }
+                catch (e) {
+                    // nothing
+                }
+            }
+
+            context.lineTo(
+                target[prefix + 'x'],
+                target[prefix + 'y']
+            );
+
+            context.stroke();
+        };
+
+        sigma.utils.pkg('sigma.canvas.edgehovers');
+        sigma.canvas.edgehovers.vert = function(edge, source, target, context, settings) {
+            var color = edge.color,
+                prefix = settings('prefix') || '',
+                size = settings('edgeHoverSizeRatio') * (edge[prefix + 'size'] || 1),
+                edgeColor = settings('edgeColor'),
+                defaultNodeColor = settings('defaultNodeColor'),
+                defaultEdgeColor = settings('defaultEdgeColor'),
+                sX = source[prefix + 'x'],
+                sY = source[prefix + 'y'],
+                tX = target[prefix + 'x'],
+                tY = target[prefix + 'y'];
+
+            if (!color)
+                switch (edgeColor) {
+                    case 'source':
+                        color = source.color || defaultNodeColor;
+                        break;
+                    case 'target':
+                        color = target.color || defaultNodeColor;
+                        break;
+                    default:
+                        color = defaultEdgeColor;
+                        break;
+                }
+
+            if (settings('edgeHoverColor') === 'edge') {
+                color = edge.hover_color || color;
+            } else {
+                color = edge.hover_color || settings('defaultEdgeHoverColor') || color;
+            }
+
+            context.strokeStyle = color;
+            context.lineWidth = size;
+            context.beginPath();
+            context.moveTo(sX, sY);
+            let verticies = edge.vert;
+            for (let i = 0; i < verticies.length; ++i) {
+                try {
+                    let nodesOnScreen = s.renderers["0"].nodesOnScreen;
+                    let nextVert = nodesOnScreen.find(node => node.id === verticies[i]);
+
+                    context.lineTo(
+                        nextVert[prefix + 'x'],
+                        nextVert[prefix + 'y']
+                    );
+                }
+                catch (e) {
+                    // nothing
+                }
+            }
+            context.lineTo(tX, tY);
+            context.stroke();
+        };
     });
 
     /*-----------------------------------------------
