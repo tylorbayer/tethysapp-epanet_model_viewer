@@ -20,6 +20,9 @@ function EPANET_Reader(file_text, caller) {
     let nodes = [];
     let edges = [];
     let options = {};
+    let backdrop = {};
+    let controls = [];
+    let curves = [];
 
     let nodeSpec ={};
 
@@ -62,7 +65,7 @@ function EPANET_Reader(file_text, caller) {
                         lastVal = "";
 
                     nodeSpec[junct[0]] = {
-                        type: "Junction",
+                        epaType: "Junction",
                         values: [junct[1], junct[2], lastVal],
                         color: '#666'
                     };
@@ -83,7 +86,7 @@ function EPANET_Reader(file_text, caller) {
                         lastVal = "";
 
                     nodeSpec[res[0]] = {
-                        type: "Reservoir",
+                        epaType: "Reservoir",
                         values: [res[1], lastVal],
                         color: "#5F9EA0"
                     };
@@ -105,7 +108,7 @@ function EPANET_Reader(file_text, caller) {
                         lastVal = "";
 
                     nodeSpec[tank[0]] = {
-                        type: "Tank",
+                        epaType: "Tank",
                         values: [tank[1], tank[2], tank[3], tank[4], tank[5], tank[6], lastVal],
                         color: '#8B4513'
                     };
@@ -126,7 +129,7 @@ function EPANET_Reader(file_text, caller) {
                         let edge = {
                             id: pipe[0],
                             label: 'Pipe ' + pipe[0],
-                            type: "Pipe",
+                            epaType: "Pipe",
                             values: [pipe[3], pipe[4], pipe[5], pipe[6], pipe[7]],
                             source: pipe[1],
                             target: pipe[2],
@@ -153,7 +156,7 @@ function EPANET_Reader(file_text, caller) {
                         let edge = {
                             id: pump[0],
                             label: 'Pump ' + pump[0],
-                            type: "Pump",
+                            epaType: "Pump",
                             values: [pump[3], pump[4]],
                             source: pump[1],
                             target: pump[2],
@@ -179,7 +182,7 @@ function EPANET_Reader(file_text, caller) {
                         let edge = {
                             id: valve[0],
                             label: 'Valve ' + valve[0],
-                            type: "Valve",
+                            epaType: "Valve",
                             values: [valve[3], valve[4], valve[5], valve[6]],
                             source: valve[1],
                             target: valve[2],
@@ -210,6 +213,8 @@ function EPANET_Reader(file_text, caller) {
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) === ';')
+                        ++i;
 
                 }
                 break;
@@ -244,9 +249,23 @@ function EPANET_Reader(file_text, caller) {
                     curType = intType.CONTROLS;
                 }
                 else {
-                    if (input[i].charAt(0) === ';')
-                        ++i;
+                    let curve = input[i];
+                    ++i;
 
+                    let next = false;
+                    if (curve.charAt(0) === ";") {
+                        let values = [];
+                        while (!next) {
+                            if (input[i].charAt(0) === ";" || input[i] === '')
+                                next = true;
+                            else {
+                                values.push(input[i].match(/\S+/g));
+                                ++i;
+                            }
+                        }
+                        curves.push([curve, values]);
+                        --i;
+                    }
                 }
                 break;
 
@@ -256,7 +275,9 @@ function EPANET_Reader(file_text, caller) {
                     curType = intType.RULES;
                 }
                 else {
-
+                    if (input[i].charAt(0) === ';')
+                        ++i;
+                    controls.push(input[i]);
                 }
                 break;
 
@@ -379,9 +400,8 @@ function EPANET_Reader(file_text, caller) {
 
                     if (option[0].toLowerCase() === "unbalanced" || option[0].toLowerCase() === "quality" || option[0].toLowerCase() === "hydraulics")
                         options[option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
-                    else {
+                    else
                         options[option[0].toLowerCase()] = option[option.length - 1];
-                    }
                 }
                 break;
 
@@ -396,10 +416,10 @@ function EPANET_Reader(file_text, caller) {
                     if (coord !== null) {
                         let node = {
                             id: coord[0],
-                            label: nodeSpec[coord[0]]["type"] + " " + coord[0],
+                            label: nodeSpec[coord[0]]["epaType"] + " " + coord[0],
                             x: 1 * coord[1],
                             y: -1 * coord[2],
-                            type: nodeSpec[coord[0]]["type"],
+                            epaType: nodeSpec[coord[0]]["epaType"],
                             values: nodeSpec[coord[0]]["values"],
                             size: 2,
                             color: nodeSpec[coord[0]]["color"],
@@ -418,51 +438,26 @@ function EPANET_Reader(file_text, caller) {
                 else {
                     let vert = input[i].match(/\S+/g);
                     if (vert !== null) {
-                        let curID = vert[0];
-                        let vertNum = 0;
+                        let edge = edges.find(edge => edge.id === vert[0]);
+                        if (!edge.type) {
+                            edge["type"] = "vert";
+                            edge["vert"] = [];
+                        }
 
                         let node = {
-                            id: vert[0] + vertNum,
-                            label: 'Vert ' + vert[0] + vertNum,
+                            id: vert[0] + ' vert ' + edge.vert.length,
+                            label: vert[0] + ' vert ' + edge.vert.length,
                             x: 1 * vert[1],
                             y: -1 * vert[2],
-                            type: "Vertex",
+                            epaType: "Vertex",
                             values: [],
-                            size: 1,
+                            size: 0.3,
                             color: '#666',
                             hover_color: '#000'
                         };
                         nodes.push(node);
-                        ++i;
-
-                        while (input[i] !== intType.LABELS) {
-                            vert = input[i].match(/\S+/g);
-
-                            if (vert !== null) {
-                                if (curID === vert[0]) {
-                                    ++vertNum;
-                                }
-                                else {
-                                    vertNum = 1;
-                                }
-                                node = {
-                                    id: vert[0] + vertNum,
-                                    label: 'Vert ' + vert[0] + vertNum,
-                                    x: 1 * vert[1],
-                                    y: -1 * vert[2],
-                                    type: "Vertex",
-                                    values: [],
-                                    size: 1,
-                                    color: '#666',
-                                    hover_color: '#000'
-                                };
-                                nodes.push(node);
-                                curID = vert[0];
-                            }
-                            ++i;
-                        }
+                        edge["vert"].push(node.id);
                     }
-                    curType = intType.LABELS;
                 }
                 break;
 
@@ -483,6 +478,14 @@ function EPANET_Reader(file_text, caller) {
                     ++i;
                 }
                 else {
+                    let backdropInfo = input[i].match(/\S+/g);
+
+                    if (backdropInfo[0].toLowerCase() === "dimensions")
+                        backdrop[backdropInfo[0].toLowerCase()] = [backdropInfo[1], backdropInfo[2], backdropInfo[3], backdropInfo[4]];
+                    else if (backdropInfo[0].toLowerCase() === "offset")
+                        backdrop[backdropInfo[0].toLowerCase()] = [backdropInfo[1], backdropInfo[2]];
+                    else
+                        backdrop[backdropInfo[0].toLowerCase()] = backdropInfo[1];
                 }
                 break;
         }
