@@ -18,7 +18,7 @@
      *************************************************************************/
     let showLog,
         s,
-        curModel,
+        model,
         file_text,
         curNode,
         curEdge,
@@ -154,9 +154,9 @@
 
         $btnUl.click(function() {
             if ($inpUlTitle.val() !== '' && $inpUlDescription.val() !== '' && $inpUlKeywords.val() !== '') {
-                curModel.title = [$inpUlTitle.val(), $inpUlDescription.val()];
+                model.title = [$inpUlTitle.val(), $inpUlDescription.val()];
 
-                let epanetWriter = new EPANET_Writer(curModel);
+                let epanetWriter = new EPANET_Writer(model);
 
                 // let data = new FormData();
                 // data.append('model_title', $inpUlTitle.val());
@@ -197,7 +197,7 @@
                         });
                     },250);
 
-                    let myNode = curModel.nodes.find(node => node.id === e.data.node.id);
+                    let myNode = model.nodes.find(node => node.id === e.data.node.id);
                     myNode.x = Math.round(e.data.node.x * 100) / 100;
                     myNode.y = Math.round(e.data.node.y * 100) / 100;
                 });
@@ -239,13 +239,13 @@
         });
 
         $btnOptionsOk.click(function() {
-            for(let key in curModel.options) {
+            for(let key in model.options) {
                 if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
-                    curModel.options[key][0] = $('#' + key + 1).val();
-                    curModel.options[key][1] = $('#' + key + 2).val();
+                    model.options[key][0] = $('#' + key + 1).val();
+                    model.options[key][1] = $('#' + key + 2).val();
                 }
                 else
-                    curModel.options[key] = $('#' + key).val();
+                    model.options[key] = $('#' + key).val();
             }
 
             $modelOptions.find('input').attr('readonly', true);
@@ -287,7 +287,7 @@
         $btnNodeOk.click(function() {
             $modalNode.modal('hide');
 
-            let edges = curModel.edges;
+            let edges = model.edges;
             for (let i in edges) {
                 if (edges[i].type === "vert") {
                     for (let j in edges[i].vert) {
@@ -336,7 +336,7 @@
 
             $viewTabs.tabs({ active: 0 });
 
-            curModel = {
+            model = {
                 nodes: [],
                 edges: [],
                 options: {}
@@ -349,14 +349,11 @@
 
             let epanetReader = new EPANET_Reader(file_text, "not");
 
-            curModel.nodes = epanetReader.getNodes();
-            curModel.edges = epanetReader.getEdges();
-
-            curModel.options = epanetReader.getOptions();
+            model = epanetReader.getModel();
             populateModelOptions();
 
             s = new sigma({
-                graph: curModel,
+                graph: model,
                 renderer: {
                     container: $("#model-container")[0],
                     type: 'canvas'
@@ -478,13 +475,13 @@
     };
 
     populateModelOptions = function () {
-        for(let key in curModel.options) {
+        for(let key in model.options) {
             if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
-                $('#' + key + 1).val(curModel.options[key][0]);
-                $('#' + key + 2).val(curModel.options[key][1]);
+                $('#' + key + 1).val(model.options[key][0]);
+                $('#' + key + 2).val(model.options[key][1]);
             }
             else
-                $('#' + key).val(curModel.options[key])
+                $('#' + key).val(model.options[key])
         }
     };
 
@@ -817,6 +814,7 @@
      **************ONLOAD FUNCTION*******************
      ----------------------------------------------*/
     $(function () {
+        $("#app-content-wrapper").removeClass('show-nav');
         $('[data-toggle="tooltip"]').tooltip();
 
         openInitialModel();
