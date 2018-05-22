@@ -4,7 +4,7 @@ const opts = {units:'Units\t\t', headloss:'Headloss\t', specific:'Specific Gravi
     tolerance:'Tolerance\t', map:'Map\t'};
 
 
-function EPANET_Writer(curModel) {
+function EPANET_Writer(model) {
     let file_text = "";
 
     let titleText = "[TITLE]\n";
@@ -37,11 +37,11 @@ function EPANET_Writer(curModel) {
     let backText = "[BACKDROP]\n";
     let endText = "[END]";
 
-    let nodes = curModel.nodes;
-    let edges = curModel.edges;
-    let options = curModel.options;
+    let nodes = model.nodes;
+    let edges = model.edges;
+    let options = model.options;
 
-    titleText += curModel.title.join('\n') + '\n\n';
+    titleText += model.title.join('\n') + '\n\n';
 
     nodes.forEach(function (node) {
         if (node.type === "Junction") {

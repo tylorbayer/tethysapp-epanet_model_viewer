@@ -17,6 +17,9 @@ function EPANET_Reader(file_text, caller) {
         input = file_text.split('\n');
     let curType;
 
+    let model ={};
+    
+    let title = [];
     let nodes = [];
     let edges = [];
     let options = {};
@@ -25,8 +28,6 @@ function EPANET_Reader(file_text, caller) {
     let curves = [];
 
     let nodeSpec ={};
-
-    let title_text = "";
 
     if (input[0] === intType.TITLE) {
         curType = intType.TITLE;
@@ -46,7 +47,7 @@ function EPANET_Reader(file_text, caller) {
                     ++i;
                 }
                 else {
-                    title_text += input[i];
+                    title.push(input[i]);
                 }
                 break;
 
@@ -489,17 +490,13 @@ function EPANET_Reader(file_text, caller) {
                 }
                 break;
         }
+        model.title = title;
+        model.nodes = nodes;
+        model.edges = edges;
+        model.options = options;
     }
 
-    this.getNodes = function() {
-        return nodes;
-    };
-
-    this.getEdges = function() {
-        return edges;
-    };
-
-    this.getOptions = function() {
-        return options;
-    };
+    this.getModel = function() {
+        return model;
+    }
 }
