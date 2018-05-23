@@ -87,7 +87,8 @@ module.exports = function(grunt) {
     'renderers.edgeLabels',
     'renderers.parallelEdges',
     'renderers.snapshot',
-    'statistics.HITS'
+    'statistics.HITS',
+      'epanet.customPlugins'
   ];
 
   var pluginFiles = [],

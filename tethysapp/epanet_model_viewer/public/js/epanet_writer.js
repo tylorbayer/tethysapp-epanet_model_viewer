@@ -17,7 +17,7 @@ function EPANET_Writer(model) {
     let tagText = "[TAGS]\n";
     let demandText = "[DEMANDS]\n;Junction\tDemand\tPattern\tCategory\n";
     let statusText = "[STATUS]\n;ID\tStatus/Setting\n";
-    let patternText = "[PATTERNS]\n;ID\tMultipliers;\nEdited Curve\n";
+    let patternText = "[PATTERNS]\n;ID\tMultipliers;\n";
     let curvText = "[CURVES]\n;ID\tX-Value\tY-Value\n";
     let controlText = "[CONTROLS]\n";
     let ruleText = "[RULES]\n";
@@ -39,6 +39,7 @@ function EPANET_Writer(model) {
 
     let nodes = model.nodes;
     let edges = model.edges;
+    let patterns = model.patterns;
     let options = model.options;
 
     titleText += model.title.join('\n') + '\n\n';
@@ -57,7 +58,17 @@ function EPANET_Writer(model) {
             popNodeQC(node, node.values.length > 7);
         }
         else {
-            vertText += ' ' + node.id.substring(0, 2) + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+            vertText += ' ' + node.id.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+        }
+        if (node.tags) {
+            for (let i in node.tags) {
+                tagText += " NODE\t\t" + node.id + '\t\t' + node.tags[i] + '\n';
+            }
+        }
+        if (node.demands) {
+            for (let i in node.demands) {
+                demandText += ' ' + node.id + '\t\t' + node.demands[i].join('\t\t') + '\n';
+            }
         }
     });
 
@@ -70,7 +81,7 @@ function EPANET_Writer(model) {
 
     edges.forEach(function (edge) {
         if (edge.type === "Pipe") {
-           pipeText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
+            pipeText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
         }
         else if (edge.type === "Pump") {
             pumpText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join(' ') + '\t;\n';
@@ -79,19 +90,38 @@ function EPANET_Writer(model) {
             valvText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values[0] + '\t\t' +
                 edge.values[1] + '\t' + edge.values[2] + '\t\t' + edge.values[3] + '\t\t;\n';
         }
+        if (edge.tags) {
+            for (let i in edge.tags) {
+                tagText += " LINK\t\t" + edge.id + '\t\t' + edge.tags[i] + '\n';
+            }
+        }
+        if (edge.status) {
+            for (let i in edge.status) {
+                statusText += ' ' + edge.id + '\t\t' + edge.status[i] + '\n';
+            }
+        }
     });
 
     pipeText += '\n';
     pumpText += '\n';
     valvText += '\n';
 
-    for(let key in options) {
-            if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
-                optText += ' ' + opts[key] + '\t' + options[key][0] + ' ' + options[key][1] + '\n'
-            }
-            else
-                optText += ' ' + opts[key] + '\t' + options[key] + '\n'
+    for (let key in patterns) {
+        patternText += key + '\n';
+
+        for (let i in patterns[key]) {
+            patternText += ' ' + patterns[key][i].join('\t') + '\n';
         }
+        patternText += '\n';
+    }
+
+    for (let key in options) {
+        if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
+            optText += ' ' + opts[key] + '\t' + options[key][0] + ' ' + options[key][1] + '\n'
+        }
+        else
+            optText += ' ' + opts[key] + '\t' + options[key] + '\n'
+    }
 
     optText += '\n';
 

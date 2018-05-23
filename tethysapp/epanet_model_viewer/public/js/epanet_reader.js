@@ -18,14 +18,20 @@ function EPANET_Reader(file_text, caller) {
     let curType;
 
     let model ={};
-    
+
     let title = [];
     let nodes = [];
     let edges = [];
+    let patterns = {};
+    let curves = [];
+    let controls = [];
+    let rules = {};
+    let energy = [];
+    let reactions = [];
+    let times = [];
+    let report = [];
     let options = {};
     let backdrop = {};
-    let controls = [];
-    let curves = [];
 
     let nodeSpec ={};
 
@@ -197,18 +203,31 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.TAGS:
-                console.log(curType);
                 if (input[i] === intType.DEMANDS) {
                     curType = intType.DEMANDS;
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) === ';')
+                        ++i;
+                    let tag = input[i].match(/\S+/g);
 
+                    if (tag[0] === "NODE") {
+                        if (!nodeSpec[tag[1]].tags) {
+                            nodeSpec[tag[1]]["tags"] = [];
+                        }
+                        nodeSpec[tag[1]]["tags"].push(tags[2]);
+                    }
+                    else {
+                        if (!edges[tags[1]].tags) {
+                            edges[tags[1]]["tags"] = [];
+                        }
+                        edges[tags[1]]["tags"].push(tags[2]);
+                    }
                 }
                 break;
 
             case intType.DEMANDS:
-                console.log(curType);
                 if (input[i] === intType.STATUS) {
                     curType = intType.STATUS;
                     ++i;
@@ -216,36 +235,56 @@ function EPANET_Reader(file_text, caller) {
                 else {
                     if (input[i].charAt(0) === ';')
                         ++i;
+                    let demand = input[i].match(/\S+/g);
 
+                    if (!nodeSpec[demand[0]].demands) {
+                        nodeSpec[demand[0]]["demands"] = []
+                    }
+                    nodeSpec[demand[0]]["demands"].push(demand.slice(1,3));
                 }
                 break;
 
             case intType.STATUS:
-                console.log(curType);
                 if (input[i] === intType.PATTERNS) {
                     curType = intType.PATTERNS;
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) === ';')
+                        ++i;
+                    let status = input[i].match(/\S+/g);
 
+                    if (!edges[status[1]].status) {
+                        edges[status[1]]["status"] = [];
+                    }
+                    edges[status[1]]["status"].push(status[1]);
                 }
                 break;
 
             case intType.PATTERNS:
-                console.log(curType);
                 if (input[i] === intType.CURVES) {
                     curType = intType.CURVES;
                     ++i;
                 }
                 else {
-                    if (input[i].charAt(0) === ';')
-                        ++i;
+                    let pattern = input[i];
+                    patterns[pattern] = [];
+                    ++i;
 
+                    let next = false;
+                    while(!next) {
+                        if (input[i].charAt(0) === ";" || input[i] === '')
+                            next = true;
+                        else {
+                            let period = input[i].match(/\S+/g);
+                            patterns[pattern].push(period);
+                            ++i;
+                        }
+                    }
                 }
                 break;
 
             case intType.CURVES:
-                console.log(curType);
                 if (input[i] === intType.CONTROLS) {
                     curType = intType.CONTROLS;
                 }
@@ -271,7 +310,6 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.CONTROLS:
-                console.log(curType);
                 if (input[i] === intType.RULES) {
                     curType = intType.RULES;
                 }
@@ -283,34 +321,48 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.RULES:
-                console.log(curType);
                 if (input[i] === intType.ENERGY) {
                     curType = intType.ENERGY;
                 }
                 else {
+                    let rule = input[i];
+                    rules[rule] = [];
+                    ++i;
 
+                    let next = false;
+                    while(!next) {
+                        if (input[i] === '')
+                            next = true;
+                        else {
+                            let statement = input[i];
+                            rules[rule].push(statement);
+                            ++i;
+                        }
+                    }
                 }
                 break;
 
             case intType.ENERGY:
-                console.log(curType);
                 if (input[i] === intType.EMITTERS) {
                     curType = intType.EMITTERS;
                     ++i;
                 }
                 else {
-
+                    energy.push(input[i]);
                 }
                 break;
 
             case intType.EMITTERS:
-                console.log(curType);
                 if (input[i] === intType.QUALITY) {
                     curType = intType.QUALITY;
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) === ';')
+                        ++i;
+                    let emitter = input[i].match(/\S+/g);
 
+                    nodeSpec[emitter[0]]["emitter"] = emitter[1];
                 }
                 break;
 
@@ -328,18 +380,21 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.SOURCES:
-                console.log(curType);
                 if (input[i] + "1" === intType.REACTIONS1) {
                     curType = intType.REACTIONS1;
                     ++i;
                 }
                 else {
+                    if (input[i].charAt(0) === ';')
+                        ++i;
+                    let source = input[i].match(/\S+/g);
 
+                    nodeSpec[source[0]]["source"] = source.slice(1,4);
                 }
                 break;
 
             case intType.REACTIONS1:
-                console.log(curType);
+                // console.log(curType);
                 if (input[i] + "2" === intType.REACTIONS2) {
                     curType = intType.REACTIONS2;
                 }
@@ -349,45 +404,50 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.REACTIONS2:
-                console.log(curType);
                 if (input[i] === intType.MIXING) {
                     curType = intType.MIXING;
                     ++i;
                 }
                 else {
+                    let reaction = input[i].match(/\S+/g);
 
+                    for (let j in reaction) {
+                        if (!isNaN(reaction[j])) {
+                            reactions.push([reaction.slice(0,j).join(' '), reaction[j]]);
+                            break;
+                        }
+                    }
                 }
                 break;
 
             case intType.MIXING:
-                console.log(curType);
                 if (input[i] === intType.TIMES) {
                     curType = intType.TIMES;
                 }
                 else {
                     if (input[i].charAt(0) === ';')
                         ++i;
+                    let mix = input[i].match(/\S+/g);
 
+                    nodeSpec[mix[0]]["mixing"] = mix.slice(1,3);
                 }
                 break;
 
             case intType.TIMES:
-                console.log(curType);
                 if (input[i] === intType.REPORT) {
                     curType = intType.REPORT;
                 }
                 else {
-
+                    times.push(input[i]);
                 }
                 break;
 
             case intType.REPORT:
-                console.log(curType);
                 if (input[i] === intType.OPTIONS) {
                     curType = intType.OPTIONS;
                 }
                 else {
-
+                    report.push(input[i]);
                 }
                 break;
 
@@ -424,7 +484,10 @@ function EPANET_Reader(file_text, caller) {
                             values: nodeSpec[coord[0]]["values"],
                             size: 2,
                             color: nodeSpec[coord[0]]["color"],
-                            hover_color: '#000'
+                            hover_color: '#000',
+                            source: nodeSpec[coord[0]]["source"] || [],
+                            emitter: nodeSpec[coord[0]]["emitter"] || '',
+                            mixing: nodeSpec[coord[0]]["mixing"] || []
                         };
                         nodes.push(node);
                     }
@@ -463,17 +526,26 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.LABELS:
-                console.log(curType);
                 if (input[i] === intType.BACKDROP) {
                     curType = intType.BACKDROP;
                 }
                 else {
+                    let label = input[i].match(/\S+/g);
 
+                    let node = {
+                        id: Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10),
+                        label: label[2],
+                        x: 1 * label[0],
+                        y: -1 * label[1],
+                        size: 0,
+                        showLabel: true
+                    };
+
+                    nodes.push(node);
                 }
                 break;
 
             case intType.BACKDROP:
-                console.log(curType);
                 if (input[i] === intType.END) {
                     curType = intType.END;
                     ++i;
@@ -490,11 +562,21 @@ function EPANET_Reader(file_text, caller) {
                 }
                 break;
         }
-        model.title = title;
-        model.nodes = nodes;
-        model.edges = edges;
-        model.options = options;
     }
+
+    model.title = title;
+    model.nodes = nodes;
+    model.edges = edges;
+    model.patterns = patterns;
+    model.curves = curves;
+    model.controls = controls;
+    model.rules = rules;
+    model.energy = energy;
+    model.reactions = reactions;
+    model.times = times;
+    model.report = report;
+    model.options = options;
+    model.backdrop = backdrop;
 
     this.getModel = function() {
         return model;
