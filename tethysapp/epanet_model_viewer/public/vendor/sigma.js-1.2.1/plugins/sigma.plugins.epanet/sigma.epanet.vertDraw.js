@@ -1,8 +1,10 @@
-;(function(undefined) {
+(function(undefined) {
     'use strict';
 
-    sigma.utils.pkg('sigma.canvas.edges');
+    if (typeof sigma === 'undefined')
+        throw 'sigma is not declared';
 
+    sigma.utils.pkg('sigma.canvas.edges');
     sigma.canvas.edges.vert = function(edge, source, target, context, settings) {
         let color = edge.color,
             prefix = settings('prefix') || '';
@@ -16,10 +18,12 @@
             source[prefix + 'y']
         );
 
-        for (let i = 0; i < edge.vert.length; ++i) {
+        let verticies = edge.vert;
+
+        for (let i = 0; i < verticies.length; ++i) {
             try {
                 let nodesOnScreen = s.renderers["0"].nodesOnScreen;
-                let nextVert = nodesOnScreen.find(node => node.id === edge.vert[i]);
+                let nextVert = nodesOnScreen.find(node => node.epaId === verticies[i]);
 
                 context.lineTo(
                     nextVert[prefix + 'x'],
@@ -38,4 +42,4 @@
 
         context.stroke();
     };
-})();
+}).call(this);

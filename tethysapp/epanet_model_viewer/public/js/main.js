@@ -197,7 +197,7 @@
                         });
                     },250);
 
-                    let myNode = model.nodes.find(node => node.id === e.data.node.id);
+                    let myNode = model.nodes.find(node => node.epaId === e.data.node.epaId);
                     myNode.x = Math.round(e.data.node.x * 100) / 100;
                     myNode.y = Math.round(e.data.node.y * 100) / 100;
                 });
@@ -291,14 +291,14 @@
             for (let i in edges) {
                 if (edges[i].type === "vert") {
                     for (let j in edges[i].vert) {
-                        if (edges[i].vert[j] === curNode.id) {
+                        if (edges[i].vert[j] === curNode.epaId) {
                             edges[i].vert[j] = $('#node-id').val();
                         }
                     }
                 }
             }
 
-            curNode.id = $('#node-id').val();
+            curNode.epaId = $('#node-id').val();
             curNode.label = curNode.epaType + ' ' + $('#node-id').val();
 
             for (let i = 1; i < $modalNode.find('input').length; ++i) {
@@ -315,7 +315,7 @@
         $btnEdgeOk.click(function() {
             $modalEdge.modal('hide');
 
-            curEdge.id = $('#edge-id').val();
+            curEdge.epaId = $('#edge-id').val();
             curEdge.label = curEdge.epaType + ' ' + $('#edge-id').val();
 
             for (let i = 1; i < $modalEdge.find('input').length; ++i) {
@@ -391,7 +391,7 @@
 
                 let selectHtml = "<select id='select-node-edge'>";
                 for (let i in curNodes) {
-                    selectHtml += "<option value='" + i + "'>" + curNodes[i].epaType + " " + curNodes[i].id + "</option>";
+                    selectHtml += "<option value='" + i + "'>" + curNodes[i].epaType + " " + curNodes[i].epaId + "</option>";
                 }
                 selectHtml += "</select";
                 $nodeEdgeSelect.append(selectHtml);
@@ -435,7 +435,7 @@
 
                 let selectHtml = "<select id='select-node-edge'>";
                 for (let i in curEdges) {
-                    selectHtml += "<option value='" + i + "'>" + curEdges[i].epaType + " " + curEdges[i].id + "</option>";
+                    selectHtml += "<option value='" + i + "'>" + curEdges[i].epaType + " " + curEdges[i].epaId + "</option>";
                 }
                 selectHtml += "</select";
                 $nodeEdgeSelect.append(selectHtml);
@@ -492,7 +492,7 @@
         $modalNode.find('.modal-body').html(html);
         $modalNode.modal('show');
 
-        $('#node-id').val(curNode.id);
+        $('#node-id').val(curNode.epaId);
 
         for (let i = 0; i < values.length - 1; ++i) {
             $modalNode.find('input')[i + 1].value = curNode.values[i];
@@ -511,7 +511,7 @@
         $modalEdge.find('.modal-body').html(html);
         $modalEdge.modal('show');
 
-        $('#edge-id').val(curEdge.id);
+        $('#edge-id').val(curEdge.epaId);
 
         for (let i = 0; i < values.length - 1; ++i) {
             $modalEdge.find('input')[i + 1].value = curEdge.values[i];
@@ -840,7 +840,7 @@
             for (let i = 0; i < verticies.length; ++i) {
                 try {
                     let nodesOnScreen = s.renderers["0"].nodesOnScreen;
-                    let nextVert = nodesOnScreen.find(node => node.id === verticies[i]);
+                    let nextVert = nodesOnScreen.find(node => node.epaId === verticies[i]);
 
                     context.lineTo(
                         nextVert[prefix + 'x'],
@@ -900,7 +900,7 @@
             for (let i = 0; i < verticies.length; ++i) {
                 try {
                     let nodesOnScreen = s.renderers["0"].nodesOnScreen;
-                    let nextVert = nodesOnScreen.find(node => node.id === verticies[i]);
+                    let nextVert = nodesOnScreen.find(node => node.epaId === verticies[i]);
 
                     context.lineTo(
                         nextVert[prefix + 'x'],
@@ -914,51 +914,6 @@
             context.lineTo(tX, tY);
             context.stroke();
         };
-
-        (function(undefined) {
-            'use strict';
-
-            if (typeof sigma === 'undefined')
-                throw 'sigma is not declared';
-
-            // Initialize packages:
-            sigma.utils.pkg('sigma.canvas.labels');
-
-            /**
-             * This label renderer will just display the label on the right of the node.
-             *
-             * @param  {object}                   node     The node object.
-             * @param  {CanvasRenderingContext2D} context  The canvas context.
-             * @param  {configurable}             settings The settings function.
-             */
-            sigma.canvas.labels.def = function(node, context, settings) {
-                let fontSize,
-                    prefix = settings('prefix') || '',
-                    size = node[prefix + 'size'];
-
-                if (!node.showLabel)
-                    return;
-
-                if (!node.label || typeof node.label !== 'string')
-                    return;
-
-                fontSize = (settings('labelSize') === 'fixed') ?
-                    settings('defaultLabelSize') :
-                    settings('labelSizeRatio') * size;
-
-                context.font = (settings('fontStyle') ? settings('fontStyle') + ' ' : '') +
-                    fontSize + 'px ' + settings('font');
-                context.fillStyle = (settings('labelColor') === 'node') ?
-                    (node.color || settings('defaultNodeColor')) :
-                    settings('defaultLabelColor');
-
-                context.fillText(
-                    node.label,
-                    Math.round(node[prefix + 'x'] + size + 3),
-                    Math.round(node[prefix + 'y'] + fontSize / 3)
-                );
-            };
-        }).call(this);
     });
 
     /*-----------------------------------------------

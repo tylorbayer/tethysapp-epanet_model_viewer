@@ -80,9 +80,6 @@
     context.lineTo(x+size, y+lineWeight);
     context.lineTo(x+size, y-lineWeight);
     context.lineTo(x+lineWeight, y-lineWeight);
-    context.lineTo(x+lineWeight, y-size);
-    context.lineTo(x-lineWeight, y-size);
-    context.lineTo(x-lineWeight, y-lineWeight);
   }
   register("cross",genericDrawShape(drawCross),genericDrawBorder(drawCross));
 
