@@ -1,19 +1,10 @@
-;(function(undefined) {
+(function(undefined) {
     'use strict';
 
     if (typeof sigma === 'undefined')
         throw 'sigma is not declared';
 
-    // Initialize packages:
     sigma.utils.pkg('sigma.canvas.labels');
-
-    /**
-     * This label renderer will just display the label on the right of the node.
-     *
-     * @param  {object}                   node     The node object.
-     * @param  {CanvasRenderingContext2D} context  The canvas context.
-     * @param  {configurable}             settings The settings function.
-     */
     sigma.canvas.labels.def = function(node, context, settings) {
         let fontSize,
             prefix = settings('prefix') || '',
@@ -41,4 +32,4 @@
             Math.round(node[prefix + 'y'] + fontSize / 3)
         );
     };
-})();
+}).call(this);

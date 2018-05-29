@@ -46,28 +46,28 @@ function EPANET_Writer(model) {
 
     nodes.forEach(function (node) {
         if (node.type === "Junction") {
-            junctText += ' ' + node.id + '\t\t\t' + node.values.slice(0, 3).join('\t\t') + '\t\t\t;\n';
+            junctText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 3).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 3);
         }
         else if (node.type === "Reservoir") {
-            resText += ' ' + node.id + '\t\t\t' + node.values.slice(0, 2).join('\t\t') + '\t\t\t;\n';
+            resText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 2).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 2);
         }
         else if (node.type === "Tank") {
-            tankText += ' ' + node.id + '\t\t\t' + node.values.slice(0, 7).join('\t\t') + '\t\t\t;\n';
+            tankText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 7).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 7);
         }
         else {
-            vertText += ' ' + node.id.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+            vertText += ' ' + node.epaId.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
         }
         if (node.tags) {
             for (let i in node.tags) {
-                tagText += " NODE\t\t" + node.id + '\t\t' + node.tags[i] + '\n';
+                tagText += " NODE\t\t" + node.epaId + '\t\t' + node.tags[i] + '\n';
             }
         }
         if (node.demands) {
             for (let i in node.demands) {
-                demandText += ' ' + node.id + '\t\t' + node.demands[i].join('\t\t') + '\n';
+                demandText += ' ' + node.epaId + '\t\t' + node.demands[i].join('\t\t') + '\n';
             }
         }
     });
@@ -81,23 +81,23 @@ function EPANET_Writer(model) {
 
     edges.forEach(function (edge) {
         if (edge.type === "Pipe") {
-            pipeText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
+            pipeText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
         }
         else if (edge.type === "Pump") {
-            pumpText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join(' ') + '\t;\n';
+            pumpText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join(' ') + '\t;\n';
         }
         else {
-            valvText += ' ' + edge.id + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values[0] + '\t\t' +
+            valvText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values[0] + '\t\t' +
                 edge.values[1] + '\t' + edge.values[2] + '\t\t' + edge.values[3] + '\t\t;\n';
         }
         if (edge.tags) {
             for (let i in edge.tags) {
-                tagText += " LINK\t\t" + edge.id + '\t\t' + edge.tags[i] + '\n';
+                tagText += " LINK\t\t" + edge.epaId + '\t\t' + edge.tags[i] + '\n';
             }
         }
         if (edge.status) {
             for (let i in edge.status) {
-                statusText += ' ' + edge.id + '\t\t' + edge.status[i] + '\n';
+                statusText += ' ' + edge.epaId + '\t\t' + edge.status[i] + '\n';
             }
         }
     });
@@ -156,8 +156,8 @@ function EPANET_Writer(model) {
 
     function popNodeQC(node, hasQuality) {
         if (hasQuality)
-            qualText += ' ' + node.id + '\t\t\t' + node.values[node.values.length - 1] + '\n';
+            qualText += ' ' + node.epaId + '\t\t\t' + node.values[node.values.length - 1] + '\n';
 
-        coordText += ' ' + node.id + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+        coordText += ' ' + node.epaId + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
     }
 }
