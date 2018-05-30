@@ -193,10 +193,11 @@ function EPANET_Reader(file_text, caller) {
                     nodeSpec[tag[1]]["tags"].push(tag[2]);
                 }
                 else {
-                    if (!edges[tags[1]].tags) {
-                        edges[tags[1]]["tags"] = [];
+                    let edge = edges.find(edge => edge.id === tag[1]);
+                    if (!edge.tags) {
+                        edge["tags"] = [];
                     }
-                    edges[tags[1]]["tags"].push(tag[2]);
+                    edge["tags"].push(tag[2]);
                 }
 
                 break;
@@ -218,11 +219,11 @@ function EPANET_Reader(file_text, caller) {
                     break;
 
                 let status = input[i].match(/\S+/g);
-
-                if (!edges[status[1]].status) {
-                    edges[status[1]]["status"] = [];
+                let edge = edges.find(edge => edge.id === status[0]);
+                if (!edge.status) {
+                    edge["status"] = [];
                 }
-                edges[status[1]]["status"].push(status[1]);
+                edge["status"].push(status[1]);
                 break;
 
             case intType.PATTERNS:
