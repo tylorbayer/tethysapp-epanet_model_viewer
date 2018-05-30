@@ -349,6 +349,8 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.OPTIONS:
+                if (input[i].charAt(0) === ';')
+                    break;
                 let option = input[i].match(/\S+/g);
 
                 if (option[0].toLowerCase() === "unbalanced" || option[0].toLowerCase() === "quality" || option[0].toLowerCase() === "hydraulics")
