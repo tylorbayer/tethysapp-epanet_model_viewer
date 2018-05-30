@@ -158,13 +158,13 @@
 
                 let epanetWriter = new EPANET_Writer(model);
 
-                // let data = new FormData();
-                // data.append('model_title', $inpUlTitle.val());
-                // data.append('model_description', $inpUlDescription.val());
-                // data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
-                // data.append('model_file', epanetWriter.getFile());
-                //
-                // uploadModel(data);
+                let data = new FormData();
+                data.append('model_title', $inpUlTitle.val());
+                data.append('model_description', $inpUlDescription.val());
+                data.append('model_keywords', $inpUlKeywords.tagsinput('items'));
+                data.append('model_file', epanetWriter.getFile());
+
+                uploadModel(data);
 
                 $('#modal-upload').modal('hide');
                 resetUploadState();
@@ -650,21 +650,8 @@
                         if (message) {
                             addLogEntry('warning', message);
                         }
-                        if (response.hasOwnProperty('results') && response.hasOwnProperty('metadata')) {
-                            addModelToUI(response.results);
-                            addMetadataToUI(response.metadata);
-                            $modalModelRep.find('.modal-body').html('<img src="/static/epanet_model_viewer/images/loading-animation.gif">' +
-                                '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>');
-                            alert("Model has successfully been uploaded to HydroShare.");
-                            generateModelList();
-                        }
-                        else {
-                            $uploadContainer.addClass('hidden');
-                            $modalModelRep.find('.modal-body').html('<img src="/static/epanet_model_viewer/images/loading-animation.gif">' +
-                                '<br><p><b>Loading model repository...</b></p><p>Note: Loading will continue if dialog is closed.</p>');
-                            alert("Model has successfully been uploaded to HydroShare.");
-                            generateModelList();
-                        }
+                        $uploadContainer.addClass('hidden');
+                        alert("Model has successfully been uploaded to HydroShare.");
                     }
                 }
             }
