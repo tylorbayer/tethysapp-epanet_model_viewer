@@ -45,21 +45,21 @@ function EPANET_Writer(model) {
     titleText += model.title.join('\n') + '\n\n';
 
     nodes.forEach(function (node) {
-        if (node.type === "Junction") {
+        if (node.epaType === "Junction") {
             junctText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 3).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 3);
         }
-        else if (node.type === "Reservoir") {
+        else if (node.epaType === "Reservoir") {
             resText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 2).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 2);
         }
-        else if (node.type === "Tank") {
+        else if (node.epaType === "Tank") {
             tankText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 7).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 7);
         }
-        else {
-            vertText += ' ' + node.epaId.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
-        }
+        // else {
+        //     vertText += ' ' + node.epaId.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+        // }
         if (node.tags) {
             for (let i in node.tags) {
                 tagText += " NODE\t\t" + node.epaId + '\t\t' + node.tags[i] + '\n';
@@ -80,10 +80,10 @@ function EPANET_Writer(model) {
     coordText += '\n';
 
     edges.forEach(function (edge) {
-        if (edge.type === "Pipe") {
+        if (edge.epaType === "Pipe") {
             pipeText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
         }
-        else if (edge.type === "Pump") {
+        else if (edge.epaType === "Pump") {
             pumpText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join(' ') + '\t;\n';
         }
         else {
