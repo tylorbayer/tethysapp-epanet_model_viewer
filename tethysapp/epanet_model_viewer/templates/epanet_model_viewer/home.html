@@ -37,15 +37,46 @@
     <li><a href="#metadata-view">Metadata</a></li>
   </ul>
   <div id="model-view">
-    <h1 style="display: inline;">EPANET Model Display</h1>
-    <div style="float: right;">
-      <span>Drag Nodes:</span>
-      <label class="switch" style="top: 10px; margin-left: 0px;">
-        <input id="chk-graph" type="checkbox">
-        <span class="slider round"></span>
-      </label>
+    <div style="margin-bottom: 15px;">
+      <h1 style="display: inline;">EPANET Model Display</h1>
+      <div style="float: right;">
+        <button id="btn-edit-tools" class="btn btn-default">Edit Tools</button>
+      </div>
     </div>
     <div id="model-display">
+      <div id="edit-toolbar" class="icon-bar hidden">
+        <a data-toggle="tooltip" data-placement="top" title="junction" name="junction">
+          <img src="/static/epanet_model_viewer/images/junction.png" class="tool-icon">
+        </a>
+        <a data-toggle="tooltip" data-placement="top" title="reservoir" name="reservoir">
+          <img src="/static/epanet_model_viewer/images/reservoir.png" class="tool-icon">
+        </a>
+        <a data-toggle="tooltip" data-placement="top" title="tank" name="tank">
+          <img src="/static/epanet_model_viewer/images/tank.png" class="tool-icon">
+        </a>
+        <a data-toggle="tooltip" data-placement="top" title="pipe" name="pipe">
+          <img src="/static/epanet_model_viewer/images/pipe.png" class="tool-icon">
+        </a>
+        <a data-toggle="tooltip" data-placement="top" title="pump" name="pump">
+          <img src="/static/epanet_model_viewer/images/pump.png" class="tool-icon">
+        </a>
+        <a data-toggle="tooltip" data-placement="top" title="valve" name="valve">
+          <img src="/static/epanet_model_viewer/images/valve.png" class="tool-icon">
+        </a>
+        <a data-toggle="tooltip" data-placement="top" title="label" name="label">
+          <img src="/static/epanet_model_viewer/images/label.png" class="tool-icon">
+        </a>
+        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="default" name="default">
+          <img src="/static/epanet_model_viewer/images/cursor.png" style="width: 30px; height: 30px; margin-left: 5px;">
+        </a>
+        <div style="float: right;">
+        <span style="color: white;">Drag Nodes:</span>
+        <label class="switch" style="top: 10px; margin-left: 0px;">
+          <input id="chk-graph" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      </div>
       <div id="model-container"></div>
     </div>
     <dl>
@@ -251,18 +282,18 @@
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-            <tr>
-              <td><b>Title:</b></td>
-              <td><input id="inp-upload-title" class="model-properties" name="upload-title" type='text'><br></td>
-            </tr>
-            <tr>
-              <td><b>Description:</b></td>
-              <td><input id="inp-upload-description" class="model-properties" name="upload-description" type='text'></td>
-            </tr>
-            <tr>
-              <td><b>Keywords:</b></td>
-              <td><input id="tagsinp-upload-keywords" class="model-properties" name="upload-keywords" type="text" data-role="tagsinput"></td>
-            </tr>
+          <tr>
+            <td><b>Title:</b></td>
+            <td><input id="inp-upload-title" class="model-properties" name="upload-title" type='text'><br></td>
+          </tr>
+          <tr>
+            <td><b>Description:</b></td>
+            <td><input id="inp-upload-description" class="model-properties" name="upload-description" type='text'></td>
+          </tr>
+          <tr>
+            <td><b>Keywords:</b></td>
+            <td><input id="tagsinp-upload-keywords" class="model-properties" name="upload-keywords" type="text" data-role="tagsinput"></td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -289,6 +320,7 @@
           <input id="chk-node" type="checkbox">
           <span class="slider round"></span>
         </label>
+        <button type="button" id="btn-node-delete" class="btn btn-danger" disabled>Delete</button>
         <button type="button" id="btn-node-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
         <button type="button" id="btn-node-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
       </div>
@@ -311,6 +343,7 @@
           <input id="chk-edge" type="checkbox">
           <span class="slider round"></span>
         </label>
+        <button type="button" id="btn-edge-delete" class="btn btn-danger" disabled>Delete</button>
         <button type="button" id="btn-edge-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
         <button type="button" id="btn-edge-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
       </div>

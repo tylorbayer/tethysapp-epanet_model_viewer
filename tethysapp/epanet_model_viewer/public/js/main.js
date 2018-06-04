@@ -29,13 +29,15 @@
             Tank: '#8B4513',
             Pipe: '#808080',
             Pump: '#DAA520',
-            Valve: '#3333cc' };
+            Valve: '#3333cc' },
+        edgeSource = null,
+        isAddEdge = false,
+        isAddNode = false,
+        addType;
 
     //  *********FUNCTIONS***********
     let addInitialEventListeners,
-        generateModelList,
         initializeJqueryVariables,
-        openInitialModel,
         hideMainLoadAnim,
         setStateAfterLastModel,
         addLogEntry,
@@ -53,7 +55,9 @@
         addDefaultBehaviorToAjax,
         checkCsrfSafe,
         getCookie,
-        openModel;
+        openModel,
+        canvasClick,
+        setGraphEventListeners;
 
     //  **********Query Selectors************
     let $modelOptions,
@@ -63,7 +67,7 @@
         $modalEdge,
         $modalEdgeLabel,
         $btnOpenModel,
-        $chkGraphEdit,
+        $chkDragNodes,
         $modalLog,
         $loadFromLocal,
         $fileDisplayArea,
@@ -82,7 +86,11 @@
         $btnUlCancel,
         $viewTabs,
         $loadingModel,
-        $nodeEdgeSelect;
+        $nodeEdgeSelect,
+        $sideBar,
+        $btnEditTools,
+        $editToolbar,
+        $initialModel;
 
     //  *******Node/Edge Element Html********
     let nodeHtml = {
@@ -135,9 +143,58 @@
      ******************************************************/
 
     addInitialEventListeners = function () {
+        document.onkeydown = function(evt) {
+            evt = evt || window.event;
+            if (evt.keyCode == 27) {
+                $('#btn-default-edit').click();
+            }
+        };
+
         $('#btn-model-rep').click(function () {
             let curURL = window.location.href;
             window.open(curURL.substring(0, curURL.indexOf('/apps/') + 6) + "epanet-model-repository/", "modelRepository");
+        });
+
+        $editToolbar.find('a').click(function () {
+            $editToolbar.find('a').removeClass('active');
+            $(this).addClass('active');
+
+            if ($chkDragNodes.is(':checked'))
+                $chkDragNodes.click();
+
+            addType = this.name;
+            if (addType === "default") {
+                isAddEdge = false;
+                isAddNode = false;
+                $('#model-display').css("cursor", "default");
+            }
+            else if (addType === "junction" || addType === "reservoir" || addType === "tank" || addType === "label") {
+                isAddEdge = false;
+                isAddNode = true;
+                $('#model-display').css("cursor", "crosshair");
+            }
+            else {
+                isAddEdge = true;
+                isAddNode = false;
+                $('#model-display').css("cursor", "pointer");
+            }
+        });
+
+        $btnEditTools.click(function () {
+            if ($editToolbar.is(':hidden')) {
+                $editToolbar.removeClass('hidden');
+                $btnEditTools.css("background-color", "#915F6D");
+                $btnEditTools.css("color", "white");
+            }
+            else {
+                $editToolbar.addClass('hidden');
+                $editToolbar.find('a').removeClass('active');
+                $btnEditTools.css("background-color", "white");
+                $btnEditTools.css("color", "#555");
+                $('#model-display').css("cursor", "default");
+                isAddEdge = false;
+                isAddNode = false;
+            }
         });
 
         $loadFromLocal.addEventListener('change', function() {
@@ -178,8 +235,11 @@
             resetUploadState();
         });
 
-        $chkGraphEdit.click(function() {
-            if ($chkGraphEdit.is(':checked')) {
+        $chkDragNodes.click(function() {
+            if ($chkDragNodes.is(':checked')) {
+                $editToolbar.find('a').removeClass('active');
+                isAddEdge = false;
+                isAddNode = false;
                 let dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
 
                 dragListener.bind('startdrag', function(e) {
@@ -197,9 +257,9 @@
                         });
                     },250);
 
-                    let myNode = model.nodes.find(node => node.epaId === e.data.node.epaId);
-                    myNode.x = Math.round(e.data.node.x * 100) / 100;
-                    myNode.y = Math.round(e.data.node.y * 100) / 100;
+                    // let myNode = model.nodes.find(node => node.epaId === e.data.node.epaId);
+                    // myNode.x = Math.round(e.data.node.x * 100) / 100;
+                    // myNode.y = Math.round(e.data.node.y * 100) / 100;
                 });
 
                 $('#model-display').css("cursor", "-webkit-grab");
@@ -368,17 +428,105 @@
 
             s.cameras[0].goTo({ ratio: 1.2 });
 
-            s.bind('clickNodes', function(e) {
-                nodeClick(e);
-            });
-
-            s.bind('clickEdges', function(e) {
-                edgeClick(e);
-            });
+            setGraphEventListeners();
 
             s.refresh();
         });
     };
+
+    setGraphEventListeners = function () {
+        s.bind('clickStage', function(e) {
+            canvasClick(e);
+        });
+
+        s.bind('clickNodes', function(e) {
+            nodeClick(e);
+        });
+
+        s.bind('clickEdges', function(e) {
+            edgeClick(e);
+        });
+    };
+
+    canvasClick = function(e) {
+        if(!e.data.captor.isDragging && isAddNode) {
+            let newX,
+                newY;
+
+            let _renderer = e.data.renderer,
+                _camera = e.data.renderer.camera,
+                _prefix = _renderer.options.prefix;
+
+            let offset = calculateOffset(_renderer.container),
+                x = event.clientX - offset.left,
+                y = event.clientY - offset.top,
+                cos = Math.cos(_camera.angle),
+                sin = Math.sin(_camera.angle),
+                nodes = s.graph.nodes(),
+                ref = [];
+
+            // Getting and derotating the reference coordinates.
+            for (let i = 0; i < 2; i++) {
+                let n = nodes[i];
+                let aux = {
+                    x: n.x * cos + n.y * sin,
+                    y: n.y * cos - n.x * sin,
+                    renX: n[_prefix + 'x'],
+                    renY: n[_prefix + 'y'],
+                };
+                ref.push(aux);
+            }
+
+            // Applying linear interpolation.
+            // if the nodes are on top of each other, we use the camera ratio to interpolate
+            if (ref[0].x === ref[1].x && ref[0].y === ref[1].y) {
+                let xRatio = (ref[0].renX === 0) ? 1 : ref[0].renX;
+                let yRatio = (ref[0].renY === 0) ? 1 : ref[0].renY;
+                x = (ref[0].x / xRatio) * (x - ref[0].renX) + ref[0].x;
+                y = (ref[0].y / yRatio) * (y - ref[0].renY) + ref[0].y;
+            } else {
+                let xRatio = (ref[1].renX - ref[0].renX) / (ref[1].x - ref[0].x);
+                let yRatio = (ref[1].renY - ref[0].renY) / (ref[1].y - ref[0].y);
+
+                // if the coordinates are the same, we use the other ratio to interpolate
+                if (ref[1].x === ref[0].x) {
+                    xRatio = yRatio;
+                }
+
+                if (ref[1].y === ref[0].y) {
+                    yRatio = xRatio;
+                }
+
+                x = (x - ref[0].renX) / xRatio + ref[0].x;
+                y = (y - ref[0].renY) / yRatio + ref[0].y;
+            }
+
+            // Rotating the coordinates.
+            newX = x * cos - y * sin;
+            newY = y * cos + x * sin;
+
+            s.graph.addNode({
+                id: Math.random(),
+                size: 2,
+                x: newX,
+                y: newY
+            });
+
+            s.refresh();
+            _camera.goTo({ratio: 1.2});
+        }
+    };
+
+    function calculateOffset(element) {
+        let style = window.getComputedStyle(element);
+        let getCssProperty = function(prop) {
+            return parseInt(style.getPropertyValue(prop).replace('px', '')) || 0;
+        };
+        return {
+            left: element.getBoundingClientRect().left + getCssProperty('padding-left'),
+            top: element.getBoundingClientRect().top + getCssProperty('padding-top')
+        };
+    }
 
     nodeClick = function (e) {
         if(!e.data.captor.isDragging) {
@@ -418,7 +566,29 @@
             }
             else {
                 curNode = curNodes[0];
-                populateNodeModal();
+
+                if (isAddEdge) {
+                    if (edgeSource !== null) {
+                        // curNode.color = "#1affff";
+
+                        s.graph.addEdge({
+                            id: 'radno',
+                            source: edgeSource.id,
+                            target: curNode.id,
+                        });
+
+                        edgeSource.color = graphColors[edgeSource.epaType];
+                        edgeSource = null;
+                        s.refresh();
+                    }
+                    else {
+                        edgeSource = curNode;
+                        edgeSource.color = "#1affff";
+                    }
+                }
+                else {
+                    populateNodeModal();
+                }
             }
             s.refresh();
         }
@@ -534,13 +704,6 @@
         $inpUlKeywords.tagsinput('removeAll');
     };
 
-    openInitialModel = function () {
-        let $initialModel = $('#initial-model');
-        if ($initialModel.length) {
-            openModel($initialModel.html());
-        }
-    };
-
     initializeJqueryVariables = function () {
         $btnOpenModel = $('#btn-open-model');
         $modelOptions = $('#model-options-view');
@@ -550,7 +713,7 @@
         $modalEdge = $('#modal-edge');
         $modalEdgeLabel = $('#modal-edge-label');
         $modalLog = $('#modalLog');
-        $chkGraphEdit = $('#chk-graph');
+        $chkDragNodes = $('#chk-graph');
         $loadFromLocal = $("#load-from-local")[0];
         $fileDisplayArea = $("#file-display-area")[0];
         $btnOptionsOk = $('#btn-options-ok');
@@ -569,6 +732,10 @@
         $viewTabs = $('#view-tabs');
         $loadingModel = $('#loading-model');
         $nodeEdgeSelect = $('#node-edge-select');
+        $sideBar = $("#app-content-wrapper");
+        $btnEditTools = $('#btn-edit-tools');
+        $editToolbar = $('#edit-toolbar');
+        $initialModel = $('#initial-model');
     };
 
     openModel = function (modelId) {
@@ -796,12 +963,53 @@
      **************ONLOAD FUNCTION*******************
      ----------------------------------------------*/
     $(function () {
+        initializeJqueryVariables();
+        addInitialEventListeners();
+
+        if ($initialModel.length) {
+            openModel($initialModel.html());
+        }
+        else {
+            $btnEditTools.click();
+            s = new sigma({
+                graph: {
+                    nodes: [
+                        {
+                            id: 'rando1',
+                            size: 0,
+                            x: 0,
+                            y: 0
+                        },
+                        {
+                            id: 'rando2',
+                            size: 0,
+                            x: 100,
+                            y: 100
+                        }
+                    ]
+                },
+                renderer: {
+                    container: $("#model-container")[0],
+                    type: 'canvas'
+                },
+                settings: {
+                    minNodeSize: 0,
+                    maxNodeSize: 6.5,
+                    minEdgeSize: 0.5,
+                    maxEdgeSize: 4,
+                    enableEdgeHovering: true,
+                    edgeHoverSizeRatio: 1.5,
+                    nodesPowRatio: 0.3,
+                    edgesPowRatio: 0.2,
+                    immutable: false
+                }
+            });
+            setGraphEventListeners();
+        }
+
         $("#app-content-wrapper").removeClass('show-nav');
         $('[data-toggle="tooltip"]').tooltip();
 
-        openInitialModel();
-        initializeJqueryVariables();
-        addInitialEventListeners();
         addDefaultBehaviorToAjax();
 
         $viewTabs.tabs({ active: 0 });
@@ -849,7 +1057,7 @@
 
         sigma.utils.pkg('sigma.canvas.edgehovers');
         sigma.canvas.edgehovers.vert = function(edge, source, target, context, settings) {
-            var color = edge.color,
+            let color = edge.color,
                 prefix = settings('prefix') || '',
                 size = settings('edgeHoverSizeRatio') * (edge[prefix + 'size'] || 1),
                 edgeColor = settings('edgeColor'),
