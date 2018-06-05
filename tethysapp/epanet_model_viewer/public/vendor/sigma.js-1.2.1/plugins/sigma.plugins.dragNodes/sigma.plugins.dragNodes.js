@@ -233,7 +233,6 @@
             sin = Math.sin(_camera.angle),
             nodes = _s.graph.nodes(),
             ref = [];
-
         // Getting and derotating the reference coordinates.
         for (var i = 0; i < 2; i++) {
           var n = nodes[i];

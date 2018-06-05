@@ -132,7 +132,7 @@ input[type="radio"] {
 
 #modal-node .modal-dialog, #modal-edge .modal-dialog {
     position: absolute;
-    width: 300px;
+    width: 305px;
     height: 440px;
 }
 
@@ -182,7 +182,7 @@ a:focus {
     background: none !important;
 }
 .btn-default.focus, .btn-default:focus {
-    color: white !important;
+    color: white;
     background-color: #915F6D;
 }
 
@@ -248,7 +248,7 @@ input:checked + .slider:before {
 dl {
     position: relative;
     margin:0 auto;
-    width: 473px;
+    width: 599px;
     background: #fff;
     border: 1px solid #00000036;
     padding: 5px 15px;
@@ -261,9 +261,21 @@ dt, dd {
 dd {
     margin-right: 10px;
 }
-.node {
+.graphNode {
     height: 15px;
     width: 15px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.graphLabel {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.graphVertex {
+    height: 6px;
+    width: 6px;
     border-radius: 50%;
     display: inline-block;
 }
@@ -298,4 +310,37 @@ h1, h2, h3, h4, h5, h6 {
 }
 #filters-container {
     margin-top: 25px;
+}
+
+.icon-bar {
+    width: 800px;
+    margin:auto;
+    background-color: #555;
+    overflow: auto;
+    margin-top: 10px;
+}
+
+.icon-bar a {
+    float: left;
+    width: 83px;
+    height: 55px;
+    padding:10px;
+    text-align: center;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 1.5em;
+}
+
+.icon-bar a:hover {
+    background-color: #000;
+}
+
+.active {
+    background-color: #915F6D !important;
+}
+
+.tool-icon {
+    width: 40px;
+    height: 40px;
+    margin:auto;
 }
