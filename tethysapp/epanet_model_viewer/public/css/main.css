@@ -248,7 +248,7 @@ input:checked + .slider:before {
 dl {
     position: relative;
     margin:0 auto;
-    width: 473px;
+    width: 599px;
     background: #fff;
     border: 1px solid #00000036;
     padding: 5px 15px;
@@ -261,9 +261,21 @@ dt, dd {
 dd {
     margin-right: 10px;
 }
-.node {
+.graphNode {
     height: 15px;
     width: 15px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.graphLabel {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.graphVertex {
+    height: 6px;
+    width: 6px;
     border-radius: 50%;
     display: inline-block;
 }

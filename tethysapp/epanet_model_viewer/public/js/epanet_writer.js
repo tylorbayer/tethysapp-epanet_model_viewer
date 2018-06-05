@@ -57,6 +57,9 @@ function EPANET_Writer(model) {
             tankText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 7).join('\t\t') + '\t\t\t;\n';
             popNodeQC(node, node.values.length > 7);
         }
+        else if (node.epaType === "Label") {
+            labelText += " " +  node.x + '\t\t' + -1 * node.y + '\t\t' + node.label + '\n'
+        }
         // else {
         //     vertText += ' ' + node.epaId.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
         // }
@@ -76,6 +79,7 @@ function EPANET_Writer(model) {
     resText += '\n';
     tankText += '\n';
     vertText += '\n';
+    labelText += '\n';
     qualText += '\n';
     coordText += '\n';
 
@@ -140,7 +144,6 @@ function EPANET_Writer(model) {
     mixText += '\n';
     timeText += '\n';
     reportText += '\n';
-    labelText += '\n';
     backText += '\n';
     endText += '\n';
 

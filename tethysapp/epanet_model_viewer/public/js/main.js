@@ -16,24 +16,25 @@
     /************************************************************************
      *                      MODULE LEVEL / GLOBAL VARIABLES
      *************************************************************************/
-    let showLog,
-        s,
-        model,
+    let showLog = false,
+        s = {},
+        model = {},
         file_text,
-        curNode,
-        curEdge,
+        curNode = {},
+        curEdge = {},
         graphColors = {
             Junction: '#666',
             Vertex: "#666",
             Reservoir: '#5F9EA0',
             Tank: '#8B4513',
+            Label: '#d6d6c2',
             Pipe: '#808080',
             Pump: '#DAA520',
             Valve: '#3333cc' },
         edgeSource = null,
         isAddEdge = false,
         isAddNode = false,
-        addType;
+        addType = "";
 
     //  *********FUNCTIONS***********
     let addInitialEventListeners,
@@ -62,7 +63,6 @@
     //  **********Query Selectors************
     let $modelOptions,
         $modalNode,
-        $uploadContainer,
         $modalNodeLabel,
         $modalEdge,
         $modalEdgeLabel,
@@ -90,7 +90,11 @@
         $sideBar,
         $btnEditTools,
         $editToolbar,
-        $initialModel;
+        $initialModel,
+        $btnEdgeDelete,
+        $btnNodeDelete,
+        $nodeX,
+        $nodeY;
 
     //  *******Node/Edge Element Html********
     let nodeHtml = {
@@ -115,7 +119,9 @@
         "<tr><td>VolCurve:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
         Vertex:
-            "<tr><td><b>Vertex:</b></td><td><input type='text' id='node-id' readonly></td></tr>"
+            "<tr><td><b>Vertex:</b></td><td><input type='text' id='node-id' readonly></td></tr>",
+        Label:
+            "<tr><td><b>Label:</b></td><td><input type='text' id='node-id' readonly></td></tr>"
     };
 
     let edgeHtml = {
@@ -127,11 +133,11 @@
         "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Status:</td><td><input type='text' class='inp-properties'readonly><br><p>('Open', 'Closed', or 'CV')</p></td></tr>",
         Pump:
-        "<tr><td><b>Pump:</td><td><input type='text' id='edge-id' class='inp-properties'readonly></td></tr>" +
+        "<tr><td><b>Pump:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Parameters:</td><td><input type='text' class='inp-properties'readonly><br>" +
         "<input type='text' class='inp-properties'readonly></td></tr>",
         Valve:
-        "<div><b>Valve:</td><td><input type='text' id='edge-id' class='inp-properties'readonly></td></tr>" +
+        "<tr><td><b>Valve:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Diameter:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Type:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Setting:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
@@ -145,7 +151,7 @@
     addInitialEventListeners = function () {
         document.onkeydown = function(evt) {
             evt = evt || window.event;
-            if (evt.keyCode == 27) {
+            if (evt.keyCode === 27) {
                 $('#btn-default-edit').click();
             }
         };
@@ -162,20 +168,24 @@
             if ($chkDragNodes.is(':checked'))
                 $chkDragNodes.click();
 
+            isAddEdge = false;
+            isAddNode = false;
+            if (edgeSource) {
+                edgeSource.color = graphColors[edgeSource.epaType];
+                s.refresh();
+            }
+            edgeSource = null;
+
             addType = this.name;
-            if (addType === "default") {
-                isAddEdge = false;
-                isAddNode = false;
+            if (addType === "Default") {
                 $('#model-display').css("cursor", "default");
             }
-            else if (addType === "junction" || addType === "reservoir" || addType === "tank" || addType === "label") {
-                isAddEdge = false;
+            else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
                 isAddNode = true;
                 $('#model-display').css("cursor", "crosshair");
             }
             else {
                 isAddEdge = true;
-                isAddNode = false;
                 $('#model-display').css("cursor", "pointer");
             }
         });
@@ -211,7 +221,10 @@
 
         $btnUl.click(function() {
             if ($inpUlTitle.val() !== '' && $inpUlDescription.val() !== '' && $inpUlKeywords.val() !== '') {
+                $('#model-save-animation').removeAttr('hidden');
                 model.title = [$inpUlTitle.val(), $inpUlDescription.val()];
+                model.nodes = s.graph.nodes();
+                model.edges = s.graph.edges();
 
                 let epanetWriter = new EPANET_Writer(model);
 
@@ -256,10 +269,6 @@
                             nodeClick(e);
                         });
                     },250);
-
-                    // let myNode = model.nodes.find(node => node.epaId === e.data.node.epaId);
-                    // myNode.x = Math.round(e.data.node.x * 100) / 100;
-                    // myNode.y = Math.round(e.data.node.y * 100) / 100;
                 });
 
                 $('#model-display').css("cursor", "-webkit-grab");
@@ -273,12 +282,21 @@
 
         $modalNode.on('hidden.bs.modal', function () {
             curNode.color = graphColors[curNode.epaType];
+            if (edgeSource)
+                edgeSource.color = graphColors[edgeSource.epaType];
             s.refresh();
+            resetModelState();
         });
 
         $modalEdge.on('hidden.bs.modal', function () {
+            if (curNode)
+                curNode.color = graphColors[curNode.epaType];
+            if (edgeSource)
+                edgeSource.color = graphColors[edgeSource.epaType];
+
             curEdge.hover_color = graphColors[curEdge.epaType];
             s.refresh();
+            resetModelState();
         });
 
         $chkOptionsEdit.click(function () {
@@ -317,11 +335,13 @@
         $chkNodeEdit.click(function() {
             if ($chkNodeEdit.is(':checked')) {
                 $btnNodeOk.removeAttr('disabled');
+                $btnNodeDelete.removeAttr('disabled');
 
                 $modalNode.find('input').attr('readonly', false);
             }
             else {
                 $btnNodeOk.attr('disabled', true);
+                $btnNodeDelete.attr('disabled', true);
 
                 $modalNode.find('input').attr('readonly', true);
 
@@ -332,11 +352,13 @@
         $chkEdgeEdit.click(function() {
             if ($chkEdgeEdit.is(':checked')) {
                 $btnEdgeOk.removeAttr('disabled');
+                $btnEdgeDelete.removeAttr('disabled');
 
                 $modalEdge.find('input').attr('readonly', false);
             }
             else {
                 $btnEdgeOk.attr('disabled', true);
+                $btnEdgeDelete.attr('disabled', true);
 
                 $modalEdge.find('input').attr('readonly', true);
 
@@ -345,25 +367,74 @@
         });
 
         $btnNodeOk.click(function() {
-            $modalNode.modal('hide');
+            if ($('#node-id').val() === "")
+                alert("Id must have a value");
+            else {
+                $modalNode.modal('hide');
 
-            let edges = model.edges;
-            for (let i in edges) {
-                if (edges[i].type === "vert") {
-                    for (let j in edges[i].vert) {
-                        if (edges[i].vert[j] === curNode.epaId) {
-                            edges[i].vert[j] = $('#node-id').val();
+                if (curNode.epaType !== "Label") {
+                    let edges = s.graph.edges;
+                    for (let i in edges) {
+                        if (edges[i].type === "vert") {
+                            for (let j in edges[i].vert) {
+                                if (edges[i].vert[j] === curNode.epaId) {
+                                    edges[i].vert[j] = $('#node-id').val();
+                                }
+                            }
                         }
                     }
+
+                    curNode.epaId = $('#node-id').val();
+                    curNode.label = curNode.epaType + ' ' + $('#node-id').val();
+
+                    for (let i = 1; i < $modalNode.find('input').length; ++i) {
+                        curNode.values[i - 1] = $modalNode.find('input')[i].value;
+                    }
+                }
+                else {
+                    curNode.label = $('#node-id').val();
+                }
+
+                if ($nodeX.html() !== "") {
+                    if (curNode.epaType !== "Label") {
+                        curNode.id = curNode.epaId;
+                        curNode.label = curNode.epaType + " " + curNode.id;
+                        curNode.size = 2;
+                    }
+                    else {
+                        curNode.id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
+                        curNode.size = 1;
+                        curNode.showLabel = true;
+                    }
+
+                    curNode.color = graphColors[curNode.epaType];
+                    curNode.x = $nodeX.html();
+                    curNode.y = $nodeY.html();
+
+                    s.graph.addNode(curNode);
+
+                    s.refresh();
+
+                    $nodeX.empty();
+                    $nodeY.empty();
+                }
+                resetModelState();
+            }
+        });
+
+        $btnNodeDelete.click(function() {
+            $modalNode.modal('hide');
+
+            if (curNode.epaType === "Vertex") {
+                try {
+                    let verts = s.graph.edges().find(edge => edge.epaId === curNode.id.split(" ")[0]).vert;
+                    verts.splice(verts.indexOf(curNode.epaId), 1);
+                }
+                catch (e) {
+                    // vert edge is gone already
                 }
             }
-
-            curNode.epaId = $('#node-id').val();
-            curNode.label = curNode.epaType + ' ' + $('#node-id').val();
-
-            for (let i = 1; i < $modalNode.find('input').length; ++i) {
-                curNode.values[i - 1] = $modalNode.find('input')[i].value;
-            }
+            s.graph.dropNode(curNode.id);
 
             resetModelState();
         });
@@ -373,14 +444,41 @@
         });
 
         $btnEdgeOk.click(function() {
+            if ($('#edge-id').val() === "")
+                alert("Id must have a value");
+            else {
+                $modalEdge.modal('hide');
+
+                curEdge.epaId = $('#edge-id').val();
+                curEdge.label = curEdge.epaType + ' ' + $('#edge-id').val();
+
+                for (let i = 1; i < $modalEdge.find('input').length; ++i) {
+                    curEdge.values[i - 1] = $modalEdge.find('input')[i].value;
+                }
+
+                if (isAddEdge && edgeSource !== null) {
+                    curEdge.id = curEdge.epaId;
+                    curEdge.label = curEdge.epaType + " " + curEdge.epaId;
+                    curEdge.color = graphColors[curEdge.epaType];
+                    curEdge.hover_color = '#808080';
+                    curEdge.size = 1;
+                    curEdge.source = edgeSource.id;
+                    curEdge.target = curNode.id;
+                    s.graph.addEdge(curEdge);
+
+                    edgeSource.color = graphColors[edgeSource.epaType];
+                    edgeSource = null;
+                    s.refresh();
+                }
+
+                resetModelState();
+            }
+        });
+
+        $btnEdgeDelete.click(function() {
             $modalEdge.modal('hide');
 
-            curEdge.epaId = $('#edge-id').val();
-            curEdge.label = curEdge.epaType + ' ' + $('#edge-id').val();
-
-            for (let i = 1; i < $modalEdge.find('input').length; ++i) {
-                curEdge.values[i - 1] = $modalEdge.find('input')[i].value;
-            }
+            s.graph.dropEdge(curEdge.id);
 
             resetModelState();
         });
@@ -392,7 +490,6 @@
         $('#file-display-area').bind("DOMSubtreeModified",function(){
             $('#view-tabs').removeClass('hidden');
             $('#loading-model').addClass('hidden');
-            $uploadContainer.removeClass('hidden');
 
             $viewTabs.tabs({ active: 0 });
 
@@ -450,6 +547,8 @@
 
     canvasClick = function(e) {
         if(!e.data.captor.isDragging && isAddNode) {
+            curNode = {};
+
             let newX,
                 newY;
 
@@ -505,15 +604,14 @@
             newX = x * cos - y * sin;
             newY = y * cos + x * sin;
 
-            s.graph.addNode({
-                id: Math.random(),
-                size: 2,
-                x: newX,
-                y: newY
-            });
+            $nodeX.html(newX);
+            $nodeY.html(newY);
 
-            s.refresh();
-            _camera.goTo({ratio: 1.2});
+            curNode.epaType = addType;
+            curNode.values = [];
+            populateNodeModal();
+            $chkNodeEdit.click();
+            $btnNodeDelete.attr('disabled', true);
         }
     };
 
@@ -568,22 +666,24 @@
                 curNode = curNodes[0];
 
                 if (isAddEdge) {
-                    if (edgeSource !== null) {
-                        // curNode.color = "#1affff";
-
-                        s.graph.addEdge({
-                            id: 'radno',
-                            source: edgeSource.id,
-                            target: curNode.id,
-                        });
-
-                        edgeSource.color = graphColors[edgeSource.epaType];
-                        edgeSource = null;
-                        s.refresh();
-                    }
+                    if (curNode.epaType === "Label" || curNode.epaType === "Vertex")
+                        alert("Can't create edges off of Verticies or Labels");
                     else {
-                        edgeSource = curNode;
-                        edgeSource.color = "#1affff";
+                        if (edgeSource !== null) {
+                            curEdge = {};
+                            curNode.color = "#1affff";
+
+                            curEdge.epaType = addType;
+                            curEdge.values = [];
+                            curEdge.epaId = "";
+                            populateEdgeModal();
+                            $chkEdgeEdit.click();
+                            $btnEdgeDelete.attr('disabled', true);
+                        }
+                        else {
+                            edgeSource = curNode;
+                            edgeSource.color = "#1affff";
+                        }
                     }
                 }
                 else {
@@ -662,11 +762,15 @@
         $modalNode.find('.modal-body').html(html);
         $modalNode.modal('show');
 
-        $('#node-id').val(curNode.epaId);
+        if (curNode.epaType !== "Label") {
+            $('#node-id').val(curNode.epaId);
 
-        for (let i = 0; i < values.length - 1; ++i) {
-            $modalNode.find('input')[i + 1].value = curNode.values[i];
+            for (let i = 0; i < values.length - 1; ++i) {
+                $modalNode.find('input')[i + 1].value = curNode.values[i];
+            }
         }
+        else
+            $('#node-id').val(curNode.label);
     };
 
     populateEdgeModal = function () {
@@ -694,6 +798,8 @@
         $chkOptionsEdit.attr('checked', false);
         $btnNodeOk.attr('disabled', true);
         $btnEdgeOk.attr('disabled', true);
+        $btnNodeDelete.attr('disabled', true);
+        $btnEdgeDelete.attr('disabled', true);
         $chkNodeEdit.attr('checked', false);
         $chkEdgeEdit.attr('checked', false);
     };
@@ -707,7 +813,6 @@
     initializeJqueryVariables = function () {
         $btnOpenModel = $('#btn-open-model');
         $modelOptions = $('#model-options-view');
-        $uploadContainer = $('#upload-container');
         $modalNode = $('#modal-node');
         $modalNodeLabel = $('#modal-node-label');
         $modalEdge = $('#modal-edge');
@@ -736,6 +841,10 @@
         $btnEditTools = $('#btn-edit-tools');
         $editToolbar = $('#edit-toolbar');
         $initialModel = $('#initial-model');
+        $btnEdgeDelete = $('#btn-edge-delete');
+        $btnNodeDelete = $('#btn-node-delete');
+        $nodeX = $('#node-x');
+        $nodeY = $('#node-y');
     };
 
     openModel = function (modelId) {
@@ -803,6 +912,8 @@
                 let message;
 
                 if (response.hasOwnProperty('success')) {
+                    $('#model-save-animation').attr('hidden', true);
+
                     if (response.hasOwnProperty('message')) {
                         message = response.message;
                     }
@@ -817,7 +928,6 @@
                         if (message) {
                             addLogEntry('warning', message);
                         }
-                        $uploadContainer.addClass('hidden');
                         alert("Model has successfully been uploaded to HydroShare.");
                     }
                 }

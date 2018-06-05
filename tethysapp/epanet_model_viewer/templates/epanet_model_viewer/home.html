@@ -13,8 +13,14 @@
   <!--<button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository Quick View</button>-->
   <button id="btn-model-rep" class="btn btn-default model-btn">Model Repository</button>
   <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
-  <div id="upload-container" class="hidden">
+  <div id="upload-container">
     <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Save Model</button><br><br>
+  </div>
+  <div id="model-save-animation" hidden>
+    <img src="/static/epanet_model_repository/images/loading-animation.gif">
+    <br>
+    <p><b>Saving to model repository...</b></p>
+    <p>Note: You can continue to use the app while saving.</p>
   </div>
   {% if modelID %}
   <div id="initial-model" hidden>{{ modelID }}</div>
@@ -45,47 +51,51 @@
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
-        <a data-toggle="tooltip" data-placement="top" title="junction" name="junction">
+        <a data-toggle="tooltip" data-placement="top" title="Junction" name="Junction">
           <img src="/static/epanet_model_viewer/images/junction.png" class="tool-icon">
         </a>
-        <a data-toggle="tooltip" data-placement="top" title="reservoir" name="reservoir">
+        <a data-toggle="tooltip" data-placement="top" title="Reservoir" name="Reservoir">
           <img src="/static/epanet_model_viewer/images/reservoir.png" class="tool-icon">
         </a>
-        <a data-toggle="tooltip" data-placement="top" title="tank" name="tank">
+        <a data-toggle="tooltip" data-placement="top" title="Tank" name="Tank">
           <img src="/static/epanet_model_viewer/images/tank.png" class="tool-icon">
         </a>
-        <a data-toggle="tooltip" data-placement="top" title="pipe" name="pipe">
+        <a data-toggle="tooltip" data-placement="top" title="Pipe" name="Pipe">
           <img src="/static/epanet_model_viewer/images/pipe.png" class="tool-icon">
         </a>
-        <a data-toggle="tooltip" data-placement="top" title="pump" name="pump">
+        <a data-toggle="tooltip" data-placement="top" title="Pump" name="Pump">
           <img src="/static/epanet_model_viewer/images/pump.png" class="tool-icon">
         </a>
-        <a data-toggle="tooltip" data-placement="top" title="valve" name="valve">
+        <a data-toggle="tooltip" data-placement="top" title="Valve" name="Valve">
           <img src="/static/epanet_model_viewer/images/valve.png" class="tool-icon">
         </a>
-        <a data-toggle="tooltip" data-placement="top" title="label" name="label">
+        <a data-toggle="tooltip" data-placement="top" title="Label" name="Label">
           <img src="/static/epanet_model_viewer/images/label.png" class="tool-icon">
         </a>
-        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="default" name="default">
+        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="Default" name="Default">
           <img src="/static/epanet_model_viewer/images/cursor.png" style="width: 30px; height: 30px; margin-left: 5px;">
         </a>
         <div style="float: right;">
-        <span style="color: white;">Drag Nodes:</span>
-        <label class="switch" style="top: 10px; margin-left: 0px;">
-          <input id="chk-graph" type="checkbox">
-          <span class="slider round"></span>
-        </label>
-      </div>
+          <span style="color: white;">Drag Nodes:</span>
+          <label class="switch" style="top: 10px; margin-left: 0px;">
+            <input id="chk-graph" type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </div>
       </div>
       <div id="model-container"></div>
     </div>
     <dl>
-      <dt><span class="node" style="background-color: #666"></span></dt>
+      <dt><span class="graphNode" style="background-color: #666"></span></dt>
       <dd> Junction </dd>
-      <dt><span class="node" style="background-color: #5F9EA0"></span></dt>
+      <dt><span class="graphNode" style="background-color: #5F9EA0"></span></dt>
       <dd> Reservoir </dd>
-      <dt><span class="node" style="background-color: #8B4513"></span></dt>
+      <dt><span class="graphNode" style="background-color: #8B4513"></span></dt>
       <dd> Tank </dd>
+      <dt><span class="graphLabel" style="background-color: #d6d6c2"></span></dt>
+      <dd> Label </dd>
+      <dt><span class="graphVertex" style="background-color: #666"></span></dt>
+      <dd> Vertex </dd>
       <dt><span class="glyphicon glyphicon-minus" style="color:#ccc; font-size: 1.5em;"></span></dt>
       <dd> Pipe </dd>
       <dt><span class="glyphicon glyphicon-minus" style="color:#D2B48C; font-size: 1.5em;"></span></dt>
@@ -313,7 +323,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="modal-node-label">Node Properties</h5>
       </div>
-      <div class="modal-body"></div>
+      <div class="modal-body"><div id="node-x"></div><div id="node-y"></div></div>
       <div class="modal-footer">
         <span>Edit:</span>
         <label class="switch">
@@ -322,7 +332,7 @@
         </label>
         <button type="button" id="btn-node-delete" class="btn btn-danger" disabled>Delete</button>
         <button type="button" id="btn-node-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" id="btn-node-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
+        <button type="button" id="btn-node-ok" class="btn btn-primary" disabled>OK</button>
       </div>
     </div>
   </div>
@@ -345,7 +355,7 @@
         </label>
         <button type="button" id="btn-edge-delete" class="btn btn-danger" disabled>Delete</button>
         <button type="button" id="btn-edge-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" id="btn-edge-ok" class="btn btn-primary" data-dismiss="modal" disabled>OK</button>
+        <button type="button" id="btn-edge-ok" class="btn btn-primary" disabled>OK</button>
       </div>
     </div>
   </div>

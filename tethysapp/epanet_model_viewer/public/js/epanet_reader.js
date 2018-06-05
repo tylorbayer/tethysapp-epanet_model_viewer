@@ -377,7 +377,6 @@ function EPANET_Reader(file_text, caller) {
                         values: nodeSpec[coord[0]]["values"],
                         size: 2,
                         color: nodeSpec[coord[0]]["color"],
-                        hover_color: '#000',
                         source: nodeSpec[coord[0]]["source"] || [],
                         emitter: nodeSpec[coord[0]]["emitter"] || '',
                         mixing: nodeSpec[coord[0]]["mixing"] || []
@@ -405,9 +404,8 @@ function EPANET_Reader(file_text, caller) {
                         y: -1 * vert[2],
                         epaType: "Vertex",
                         values: [],
-                        size: 0.3,
+                        size: 0.6,
                         color: '#666',
-                        hover_color: '#000'
                     };
                     nodes.push(node);
                     edge["vert"].push(node.id);
@@ -421,10 +419,12 @@ function EPANET_Reader(file_text, caller) {
 
                 let node = {
                     id: Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10),
-                    label: label[2],
+                    epaType: "Label",
+                    label: label.slice(2).join(' '),
                     x: 1 * label[0],
                     y: -1 * label[1],
-                    size: 0,
+                    size: 1,
+                    color: '#d6d6c2',
                     showLabel: true
                 };
 
