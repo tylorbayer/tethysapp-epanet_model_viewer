@@ -28,6 +28,10 @@
             Reservoir: '#5F9EA0',
             Tank: '#8B4513',
             Label: '#d6d6c2',
+            Pipe: '#ccc',
+            Pump: '#D2B48C',
+            Valve: '#7070db' },
+        hoverColors = {
             Pipe: '#808080',
             Pump: '#DAA520',
             Valve: '#3333cc' },
@@ -162,31 +166,36 @@
         });
 
         $editToolbar.find('a').click(function () {
-            $editToolbar.find('a').removeClass('active');
-            $(this).addClass('active');
-
-            if ($chkDragNodes.is(':checked'))
-                $chkDragNodes.click();
-
-            isAddEdge = false;
-            isAddNode = false;
-            if (edgeSource) {
-                edgeSource.color = graphColors[edgeSource.epaType];
-                s.refresh();
-            }
-            edgeSource = null;
-
             addType = this.name;
-            if (addType === "Default") {
-                $('#model-display').css("cursor", "default");
-            }
-            else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
-                isAddNode = true;
-                $('#model-display').css("cursor", "crosshair");
-            }
+
+            if ($(this).hasClass('active') && addType !== "Default")
+                $('#btn-default-edit').click();
             else {
-                isAddEdge = true;
-                $('#model-display').css("cursor", "pointer");
+                $editToolbar.find('a').removeClass('active');
+                $(this).addClass('active');
+
+                if ($chkDragNodes.is(':checked'))
+                    $chkDragNodes.click();
+
+                isAddEdge = false;
+                isAddNode = false;
+                if (edgeSource) {
+                    edgeSource.color = graphColors[edgeSource.epaType];
+                    s.refresh();
+                }
+                edgeSource = null;
+
+                if (addType === "Default") {
+                    $('#model-display').css("cursor", "default");
+                }
+                else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
+                    isAddNode = true;
+                    $('#model-display').css("cursor", "crosshair");
+                }
+                else {
+                    isAddEdge = true;
+                    $('#model-display').css("cursor", "pointer");
+                }
             }
         });
 
@@ -199,6 +208,7 @@
             else {
                 $editToolbar.addClass('hidden');
                 $editToolbar.find('a').removeClass('active');
+                $('#btn-default-edit').addClass('active');
                 $btnEditTools.css("background-color", "white");
                 $btnEditTools.css("color", "#555");
                 $('#model-display').css("cursor", "default");
@@ -294,7 +304,7 @@
             if (edgeSource)
                 edgeSource.color = graphColors[edgeSource.epaType];
 
-            curEdge.hover_color = graphColors[curEdge.epaType];
+            curEdge.hover_color = hoverColors[curEdge.epaType];
             s.refresh();
             resetModelState();
         });
@@ -411,7 +421,12 @@
                     curNode.x = $nodeX.html();
                     curNode.y = $nodeY.html();
 
-                    s.graph.addNode(curNode);
+                    try {
+                        s.graph.addNode(curNode);
+                    }
+                    catch (e) {
+                        alert(e);
+                    }
 
                     s.refresh();
 
@@ -460,11 +475,17 @@
                     curEdge.id = curEdge.epaId;
                     curEdge.label = curEdge.epaType + " " + curEdge.epaId;
                     curEdge.color = graphColors[curEdge.epaType];
-                    curEdge.hover_color = '#808080';
+                    curEdge.hover_color = hoverColors[curEdge.epaType];
                     curEdge.size = 1;
                     curEdge.source = edgeSource.id;
                     curEdge.target = curNode.id;
-                    s.graph.addEdge(curEdge);
+
+                    try {
+                        s.graph.addEdge(curEdge);
+                    }
+                    catch (e) {
+                        alert(e);
+                    }
 
                     edgeSource.color = graphColors[edgeSource.epaType];
                     edgeSource = null;
