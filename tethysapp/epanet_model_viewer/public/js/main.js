@@ -98,7 +98,8 @@
         $btnEdgeDelete,
         $btnNodeDelete,
         $nodeX,
-        $nodeY;
+        $nodeY,
+        $btnRunModel;
 
     //  *******Node/Edge Element Html********
     let nodeHtml = {
@@ -256,6 +257,10 @@
 
         $btnUlCancel.click(function() {
             resetUploadState();
+        });
+
+        $btnRunModel.click(function() {
+            // rm
         });
 
         $chkDragNodes.click(function() {
@@ -568,6 +573,8 @@
 
     canvasClick = function(e) {
         if(!e.data.captor.isDragging && isAddNode) {
+            $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
+
             curNode = {};
 
             let newX,
@@ -691,6 +698,8 @@
                         alert("Can't create edges off of Verticies or Labels");
                     else {
                         if (edgeSource !== null) {
+                            $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
+
                             curEdge = {};
                             curNode.color = "#1affff";
 
@@ -866,6 +875,7 @@
         $btnNodeDelete = $('#btn-node-delete');
         $nodeX = $('#node-x');
         $nodeY = $('#node-y');
+        $btnRunModel = $('#btn-run-model');
     };
 
     openModel = function (modelId) {
@@ -968,6 +978,7 @@
 
     hideMainLoadAnim = function () {
         $('#div-loading').addClass('hidden');
+        $('#upload-container').removeAttr('hidden');
     };
 
     showLoadingCompleteStatus = function (success, message) {
@@ -1101,6 +1112,8 @@
             openModel($initialModel.html());
         }
         else {
+            $('#upload-container').removeAttr('hidden');
+
             $btnEditTools.click();
             s = new sigma({
                 graph: {
