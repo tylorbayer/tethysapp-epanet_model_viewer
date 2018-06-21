@@ -5,63 +5,13 @@ import os, tempfile, pprint
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
-from  epanettools.epanettools import EPANetSimulation, Node, Link, Network, Nodes, Links, Patterns, Pattern, Controls, Control
-from epanettools.examples import simple
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
 
 
-def get_epanet_model_list(request):
-    """
-    This is an example controller that uses the HydroShare API.
-    """
-    return_obj = {
-        'success': False,
-        'message': None,
-        'model_list': None
-    }
-
-    if request.is_ajax() and request.method == 'GET':
-        try:
-            hs = get_oauth_hs(request)
-        except:
-            hs = HydroShare()
-
-        model_list = []
-
-        try:
-            for model in hs.resources(type="ModelInstanceResource"):
-
-                science_metadata_json = hs.getScienceMetadata(model['resource_id'])
-
-                if not science_metadata_json['executed_by'] is None:
-                    if science_metadata_json['executed_by']['modelProgramName'] == 'EPANET_2.0':
-                        subjects = []
-                        for subject in science_metadata_json['subjects']:
-                            subjects.append(" " + subject['value'])
-
-                        model_list.append({
-                            'title': model['resource_title'],
-                            'id': model['resource_id'],
-                            'type': model['resource_type'],
-                            'owner': model['creator'],
-                            'subjects': subjects,
-                        })
-
-            return_obj['model_list'] = model_list
-            return_obj['success'] = True
-
-        except:
-            return_obj['message'] = 'The HydroShare server appears to be down.'
-    else:
-        return_obj['error'] = message_template_wrong_req_method.format(method="GET")
-
-    return JsonResponse(return_obj)
-
-
 def get_epanet_model(request):
-    pp = pprint.PrettyPrinter()
+    # pp = pprint.PrettyPrinter()
 
     return_obj = {
         'success': False,

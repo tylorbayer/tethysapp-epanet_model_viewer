@@ -10,11 +10,12 @@
 {% block app_content %}
 <div>
   <h1>Welcome to the EPANET Model Viewer</h1>
-  <!--<button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-model-rep">Model Repository Quick View</button>-->
-  <button id="btn-model-rep" class="btn btn-default model-btn">Model Repository</button>
-  <br><br><p>Or, select a local file:<input type="file" id="load-from-local"></p>
-  <div id="upload-container">
-    <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload">Save Model</button><br><br>
+  <div class="inline-group">
+    <div class="inline">
+      <button id="btn-model-rep" class="btn btn-default model-btn" style="margin: 5px">Model Repository</button>
+    </div>
+    <div class="inline"><p>Or, select a local file:<input type="file" id="load-from-local"></p></div>
+    <br class="clearBoth" />
   </div>
   <div id="model-save-animation" hidden>
     <img src="/static/epanet_model_repository/images/loading-animation.gif">
@@ -41,14 +42,15 @@
     <li><a href="#model-options-view">Model Options</a></li>
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
+    <div id="upload-container" style="float: right; height: 0px;" hidden>
+      <button id="btn-run-model" class="btn btn-default" style="margin-right: 15px;" disabled>Run Model</button>
+      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px;">Save Model</button>
+    </div>
   </ul>
   <div id="model-view">
-    <div style="margin-bottom: 15px;">
-      <h1 style="display: inline;">EPANET Model Display</h1>
-      <div style="float: right;">
+      <div style="position:absolute; right:0; margin-right: 23px">
         <button id="btn-edit-tools" class="btn btn-default">Edit Tools</button>
       </div>
-    </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
         <a data-toggle="tooltip" data-placement="top" title="Junction" name="Junction">

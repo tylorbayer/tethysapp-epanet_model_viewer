@@ -60,9 +60,9 @@ function EPANET_Writer(model) {
         else if (node.epaType === "Label") {
             labelText += " " +  node.x + '\t\t' + -1 * node.y + '\t\t' + node.label + '\n'
         }
-        // else {
-        //     vertText += ' ' + node.epaId.split(' ')[0] + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
-        // }
+        else {
+            vertText += ' ' + node.epaId.split(' ')[0] + '\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+        }
         if (node.tags) {
             for (let i in node.tags) {
                 tagText += " NODE\t\t" + node.epaId + '\t\t' + node.tags[i] + '\n';
