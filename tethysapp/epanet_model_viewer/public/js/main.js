@@ -289,6 +289,7 @@
                 $('#model-display').css("cursor", "-webkit-grab");
             }
             else {
+                $('#btn-default-edit').click();
                 sigma.plugins.killDragNodes(s);
 
                 $('#model-display').css("cursor", "default");
