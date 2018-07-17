@@ -73,7 +73,7 @@
 .modal-info {
     margin-right: 38%;
 }
-.model-btn {
+.model-btn, .run-btn {
     background-color: #915F6D;
     color: white;
 }
@@ -132,7 +132,7 @@ input[type="radio"] {
 
 #modal-node .modal-dialog, #modal-edge .modal-dialog {
     position: absolute;
-    width: 305px;
+    width: 315px;
     height: 440px;
 }
 

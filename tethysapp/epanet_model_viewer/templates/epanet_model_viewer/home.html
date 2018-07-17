@@ -43,14 +43,16 @@
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
     <div id="upload-container" style="float: right; height: 0px;" hidden>
-      <button id="btn-run-model" class="btn btn-default" style="margin-right: 15px;" disabled>Run Model</button>
+      <button id="btn-run-model" class="btn btn-default run-btn" style="margin-right: 15px;">Run Model</button>
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px;">Save Model</button>
     </div>
   </ul>
   <div id="model-view">
-      <div style="position:absolute; right:0; margin-right: 23px">
-        <button id="btn-edit-tools" class="btn btn-default">Edit Tools</button>
-      </div>
+    <div style="position:absolute; right:0; margin-right: 23px">
+      <button id="btn-edit-tools" class="btn btn-default">Edit Tools</button>
+      <button id="btn-play" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Play</button>
+      <button id="btn-reset" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Reset</button>
+    </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
         <a data-toggle="tooltip" data-placement="top" title="Junction" name="Junction">
@@ -325,7 +327,27 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="modal-node-label">Node Properties</h5>
       </div>
-      <div class="modal-body"><div id="node-x"></div><div id="node-y"></div></div>
+      <div class="modal-body">
+        <div id="node-tabs">
+          <ul>
+            <li id="node-view-tab"><a href="#node-properties-view">Properties</a></li>
+            <li id="node-results-tab"><a href="#node-results-view" class="ran-model hidden">Results</a></li>
+          </ul>
+          <div id="node-properties-view">
+            <div class="modal-body-content"></div>
+          </div>
+          <div id="node-results-view">
+            <h4>Result Type:</h4>
+            <select>
+              <option disabled selected value> -- select an option -- </option>
+              <option value="EN_DEMAND">Demand</option>
+              <option value="EN_PRESSURE">Pressure</option>
+            </select>
+            <div id="node-results"></div>
+          </div>
+        </div>
+        <div id="node-x" hidden></div><div id="node-y" hidden></div>
+      </div>
       <div class="modal-footer">
         <span>Edit:</span>
         <label class="switch">
@@ -348,7 +370,26 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="modal-edge-label">Edge Properties</h5>
       </div>
-      <div class="modal-body"></div>
+      <div class="modal-body">
+        <div id="edge-tabs">
+          <ul>
+            <li id="edge-view-tab"><a href="#edge-properties-view">Properties</a></li>
+            <li id="edge-results-tab"><a href="#edge-results-view" class="ran-model hidden">Results</a></li>
+          </ul>
+          <div id="edge-properties-view">
+            <div class="modal-body-content"></div>
+          </div>
+          <div id="edge-results-view">
+            <h4>Result Type:</h4>
+            <select>
+              <option disabled selected value> -- select an option -- </option>
+              <option value="EN_FLOW">Flow</option>
+              <option value="EN_VELOCITY">Velocity</option>
+            </select>
+            <div id="edge-results"></div>
+          </div>
+        </div>
+      </div>
       <div class="modal-footer">
         <span>Edit:</span>
         <label class="switch">

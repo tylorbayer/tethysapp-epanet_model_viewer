@@ -5,20 +5,20 @@ import os, tempfile, pprint
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
+from epanettools.epanettools import EPANetSimulation, Node, Link
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
 
 
 def get_epanet_model(request):
-    # pp = pprint.PrettyPrinter()
-
     return_obj = {
         'success': False,
         'message': None,
         'results': "",
         'metadata': ""
     }
+
     if request.is_ajax() and request.method == 'GET':
         if not request.GET.get('model_id'):
             return_obj['message'] = message_template_param_unfilled.format(param='model_id')
@@ -41,29 +41,11 @@ def get_epanet_model(request):
                 for line in hs.getResourceFile(model_id, model_name):
                     model += line
 
-                # with open('tmp.inp', 'w') as f:
-                #     f.write(model)
-                # es = EPANetSimulation('tmp.inp')
-                # os.remove('tmp.inp')
-                #
-                # print(len(es.network.nodes))
-                #
-                # print(pp.pprint(es.network.nodes['23'].results))
-                #
-                # es.run()
-                #
-                # p = Node.value_type['EN_PRESSURE']
-                #
-                # print(pp.pprint(Node.value_type))
-                # print(pp.pprint(es.network.nodes['23'].results))
-                # print(len(es.network.nodes['23'].results[p]))
-                # print("%.3f" % es.network.nodes['23'].results[p][5])
-
                 return_obj['results'] = model
                 return_obj['success'] = True
 
     else:
-        return_obj['message'] = message_template_wrong_req_method.format(method="GET")
+        return_obj['message'] = message_template_wrong_req_method.format(method="POST")
 
     return JsonResponse(return_obj)
 
@@ -102,8 +84,6 @@ def upload_epanet_model(request):
 
         metadata = '[{"creator":{"name":"' + hs.getUserInfo()['first_name'] + ' ' + hs.getUserInfo()['last_name'] + '"}}]'
 
-        print(fpath)
-
         resource_id = hs.createResource(rtype, title, resource_file=fpath, resource_filename=resource_filename, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
 
         hs.setAccessRules(resource_id, public=True)
@@ -113,5 +93,68 @@ def upload_epanet_model(request):
 
     else:
         return_obj['message'] = message_template_wrong_req_method.format(method="GET")
+
+    return JsonResponse(return_obj)
+
+
+def run_epanet_model(request):
+    pp = pprint.PrettyPrinter()
+
+    return_obj = {
+        'success': False,
+        'message': None,
+        'results': "",
+    }
+
+    if request.is_ajax() and request.method == 'GET':
+        model = request.GET.get('model')
+
+        with open('tmp.inp', 'w') as f:
+            f.write(model)
+        es = EPANetSimulation('tmp.inp')
+        os.remove('tmp.inp')
+
+        es.run()
+
+        nodes = {}
+        node_list = es.network.nodes
+
+        for node in node_list:
+            node_vals = {}
+            node_id = node_list[node].id
+
+            for val_type in Node.value_type:
+                try:
+                    node_vals[val_type] = ["%.2f" % member for member in node_list[node_id].results[Node.value_type[val_type]]]
+                except:
+                    pass
+
+            nodes[node_id] = node_vals
+
+        links = {}
+        link_list = es.network.links
+
+        for link in link_list:
+            link_vals = {}
+            link_id = link_list[link].id
+
+            for val_type in Link.value_type:
+                try:
+                    link_vals[val_type] = ["%.2f" % member for member in link_list[link_id].results[Link.value_type[val_type]]]
+                except:
+                    pass
+
+            links[link_id] = link_vals
+
+        report = {
+            'nodes': nodes,
+            'edges': links
+        }
+
+        return_obj['results'] = report
+        return_obj['success'] = True
+
+    else:
+        return_obj['message'] = message_template_wrong_req_method.format(method="POST")
 
     return JsonResponse(return_obj)

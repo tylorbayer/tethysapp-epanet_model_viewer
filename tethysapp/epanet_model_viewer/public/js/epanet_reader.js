@@ -74,7 +74,8 @@ function EPANET_Reader(file_text, caller) {
                 nodeSpec[junct[0]] = {
                     epaType: "Junction",
                     values: [junct[1], junct[2], lastVal],
-                    color: '#666'
+                    color: '#666',
+                    epaColor: '#666'
                 };
                 break;
             case intType.RESERVOIRS:
@@ -90,7 +91,8 @@ function EPANET_Reader(file_text, caller) {
                 nodeSpec[res[0]] = {
                     epaType: "Reservoir",
                     values: [res[1], lastVal],
-                    color: "#5F9EA0"
+                    color: "#5F9EA0",
+                    epaColor: "#5F9EA0"
                 };
 
                 break;
@@ -108,7 +110,8 @@ function EPANET_Reader(file_text, caller) {
                 nodeSpec[tank[0]] = {
                     epaType: "Tank",
                     values: [tank[1], tank[2], tank[3], tank[4], tank[5], tank[6], lastVal],
-                    color: '#8B4513'
+                    color: '#8B4513',
+                    epaColor: '#8B4513'
                 };
 
                 break;
@@ -130,6 +133,7 @@ function EPANET_Reader(file_text, caller) {
                         target: pipe[2],
                         size: 1,
                         color: '#ccc',
+                        epaColor: '#ccc',
                         hover_color: '#808080'
                     };
                     edges.push(edge);
@@ -152,6 +156,7 @@ function EPANET_Reader(file_text, caller) {
                         target: pump[2],
                         size: 1,
                         color: '#D2B48C',
+                        epaColor:'#D2B48C',
                         hover_color: '#DAA520'
                     };
                     edges.push(edge);
@@ -175,6 +180,7 @@ function EPANET_Reader(file_text, caller) {
                         target: valve[2],
                         size: 1,
                         color: '#7070db',
+                        epaColor: '#7070db',
                         hover_color: '#3333cc'
                     };
                     edges.push(edge);
@@ -377,6 +383,7 @@ function EPANET_Reader(file_text, caller) {
                         values: nodeSpec[coord[0]]["values"],
                         size: 2,
                         color: nodeSpec[coord[0]]["color"],
+                        epaColor: nodeSpec[coord[0]]["color"],
                         source: nodeSpec[coord[0]]["source"] || [],
                         emitter: nodeSpec[coord[0]]["emitter"] || '',
                         mixing: nodeSpec[coord[0]]["mixing"] || []
@@ -405,7 +412,7 @@ function EPANET_Reader(file_text, caller) {
                         epaType: "Vertex",
                         values: [],
                         size: 0.6,
-                        color: '#666',
+                        color: '#666'
                     };
                     nodes.push(node);
                     edge["vert"].push(node.id);
