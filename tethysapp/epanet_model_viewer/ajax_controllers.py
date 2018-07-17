@@ -106,8 +106,8 @@ def run_epanet_model(request):
         'results': "",
     }
 
-    if request.is_ajax() and request.method == 'GET':
-        model = request.GET.get('model')
+    if request.is_ajax() and request.method == 'POST':
+        model = request.POST['model']
 
         with open('tmp.inp', 'w') as f:
             f.write(model)

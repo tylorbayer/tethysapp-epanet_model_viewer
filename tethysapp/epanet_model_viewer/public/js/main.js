@@ -125,8 +125,9 @@
         "<tr><td>Head:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
-        Tank: "<tr><td><b>Tank:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
-        "<tr><td>Id:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+        Tank:
+        "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td>Elev:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>InitLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>MinLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>MaxLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
@@ -142,18 +143,18 @@
 
     let edgeHtml = {
         Pipe:
-        "<tr><td><b>Pipe:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Length:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Status:</td><td><input type='text' class='inp-properties'readonly><br><p>('Open', 'Closed', or 'CV')</p></td></tr>",
         Pump:
-        "<tr><td><b>Pump:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Parameters:</td><td><input type='text' class='inp-properties'readonly><br>" +
         "<input type='text' class='inp-properties'readonly></td></tr>",
         Valve:
-        "<tr><td><b>Valve:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
+        "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Diameter:</td><td><input type='number' class='inp-properties'readonly></td></tr>" +
         "<tr><td>Type:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Setting:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
@@ -274,7 +275,7 @@
             let data = {'model': file_text};
 
             $.ajax({
-                type: 'GET',
+                type: 'POST',
                 url: '/apps/epanet-model-viewer/run-epanet-model/',
                 dataType: 'json',
                 data: data,
@@ -359,7 +360,7 @@
             let data = [trace];
 
             var layout = {
-                title: $(this).find('option:selected').text() + " for Node " + curNode.id,
+                title: $(this).find('option:selected').text() + " for " + curNode.epaType + " " + curNode.id,
                 xaxis: {
                     title: 'Timestep'
                 },
@@ -390,7 +391,7 @@
             let data = [trace];
 
             var layout = {
-                title: $(this).find('option:selected').text() + " for Edge " + curEdge.id,
+                title: $(this).find('option:selected').text() + " for " + curEdge.epaType + " " + curEdge.id,
                 xaxis: {
                     title: 'Timestep'
                 },
