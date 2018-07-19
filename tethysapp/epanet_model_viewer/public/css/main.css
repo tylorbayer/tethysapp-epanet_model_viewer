@@ -261,6 +261,65 @@ dt, dd {
 dd {
     margin-right: 10px;
 }
+#animate-toolbar {
+    position: relative;
+    margin:0 auto;
+    width: 800px;
+    background: rgba(95, 95, 95, 0.26);
+    text-align: center;
+    align-items: center;
+}
+#animate-tools {
+    display: inline-block;
+    margin-right: 5px;
+}
+#animate-options {
+    display: inline-block;
+}
+.animate {
+    margin-bottom: 0 !important;
+}
+#slider {
+    margin: 5px;
+}
+.gradient {
+    width: 200px;
+    white-space: nowrap;
+    position: relative;
+    display: inline-block;
+    top: 4px;
+    padding-bottom: 15px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+.grad-step {
+    display: inline-block;
+    height: 20px;
+    width: 1%;
+}
+.gradient .domain-min {
+    position: absolute;
+    left: 0;
+    font-size: 11px;
+    bottom: 3px;
+}
+.gradient .domain-med {
+    position: absolute;
+    right: 25%;
+    left: 25%;
+    text-align: center;
+    font-size: 11px;
+    bottom: 3px;
+}
+.gradient .domain-max {
+    position: absolute;
+    right: 0;
+    font-size: 11px;
+    bottom: 3px;
+}
+.slct-results {
+    width: 100px;
+}
 .graphNode {
     height: 15px;
     width: 15px;
@@ -284,16 +343,16 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Lato', sans-serif;
 }
 .no-close .ui-dialog-titlebar-close {
-  display: none;
+    display: none;
 }
 .table th, .table td {
     white-space: nowrap !important;
     padding: 0 !important;
     border-top: none !important;
     padding-right: 10px !important;
- }
+}
 .table-nonfluid {
-   width: auto !important;
+    width: auto !important;
 }
 #modal-upload td {
     padding: 8px !important;

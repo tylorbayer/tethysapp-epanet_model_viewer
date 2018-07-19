@@ -22,15 +22,6 @@
         file_text,
         curNode = {},
         curEdge = {},
-        // graphColors = {
-        //     Junction: '#666',
-        //     Vertex: "#666",
-        //     Reservoir: '#5F9EA0',
-        //     Tank: '#8B4513',
-        //     Label: '#d6d6c2',
-        //     Pipe: '#ccc',
-        //     Pump: '#D2B48C',
-        //     Valve: '#7070db' },
         hoverColors = {
             Pipe: '#808080',
             Pump: '#DAA520',
@@ -39,9 +30,15 @@
         isAddEdge = false,
         isAddNode = false,
         addType = "",
-        colorMap,
+        nodeAnimColor,
+        edgeAnimColor,
         modelResults = {},
-        animate = [];
+        animate = [],
+        animationMaxStep = 0,
+        playing = false,
+        animationDelay = 1000,
+        nodeModalLeft = 0,
+        edgeModalLeft = 0;
 
     //  *********FUNCTIONS***********
     let addInitialEventListeners,
@@ -65,7 +62,12 @@
         getCookie,
         openModel,
         canvasClick,
-        setGraphEventListeners;
+        setGraphEventListeners,
+        resetPlay,
+        resetNodeAnim,
+        resetEdgeAnim,
+        stopAnimation,
+        resetAnimation;
 
     //  **********Query Selectors************
     let $modelOptions,
@@ -98,19 +100,32 @@
         $nodeEdgeSelect,
         $sideBar,
         $btnEditTools,
+        $btnAnimateTools,
         $editToolbar,
+        $animateToolbar,
         $initialModel,
         $btnEdgeDelete,
         $btnNodeDelete,
         $nodeX,
         $nodeY,
         $btnRunModel,
-        $btnPlayModel,
-        $btnResetModel,
+        $btnPlayAnimation,
+        $btnStopAnimation,
         $viewNodeResults,
         $nodeResults,
         $viewEdgeResults,
-        $edgeResults;
+        $edgeResults,
+        $loadingAnimation,
+        $animationSpeed,
+        $animationSlider,
+        $nodeLegend,
+        $edgeLegend,
+        $chkNode,
+        $chkEdge,
+        $nodeAnimColor,
+        $nodeAnimType,
+        $edgeAnimColor,
+        $edgeAnimType;
 
     //  *******Node/Edge Element Html********
     let nodeHtml = {
@@ -159,6 +174,13 @@
         "<tr><td>Type:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Setting:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
         "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' readonly></td></tr>"
+    };
+
+    let animationLegends = {
+        RdYlBu: '<div class="gradient"><span class="grad-step" style="background-color:#313695"></span><span class="grad-step" style="background-color:#333c98"></span><span class="grad-step" style="background-color:#35439b"></span><span class="grad-step" style="background-color:#37499e"></span><span class="grad-step" style="background-color:#394fa1"></span><span class="grad-step" style="background-color:#3b56a5"></span><span class="grad-step" style="background-color:#3d5ca8"></span><span class="grad-step" style="background-color:#3f62ab"></span><span class="grad-step" style="background-color:#4168ae"></span><span class="grad-step" style="background-color:#436fb1"></span><span class="grad-step" style="background-color:#4575b4"></span><span class="grad-step" style="background-color:#4a7bb7"></span><span class="grad-step" style="background-color:#4e80ba"></span><span class="grad-step" style="background-color:#5386bd"></span><span class="grad-step" style="background-color:#588bc0"></span><span class="grad-step" style="background-color:#5d91c3"></span><span class="grad-step" style="background-color:#6197c5"></span><span class="grad-step" style="background-color:#669cc8"></span><span class="grad-step" style="background-color:#6ba2cb"></span><span class="grad-step" style="background-color:#6fa7ce"></span><span class="grad-step" style="background-color:#74add1"></span><span class="grad-step" style="background-color:#7ab1d3"></span><span class="grad-step" style="background-color:#7fb6d6"></span><span class="grad-step" style="background-color:#85bad8"></span><span class="grad-step" style="background-color:#8abfdb"></span><span class="grad-step" style="background-color:#90c3dd"></span><span class="grad-step" style="background-color:#95c7df"></span><span class="grad-step" style="background-color:#9bcce2"></span><span class="grad-step" style="background-color:#a0d0e4"></span><span class="grad-step" style="background-color:#a6d5e7"></span><span class="grad-step" style="background-color:#abd9e9"></span><span class="grad-step" style="background-color:#b0dceb"></span><span class="grad-step" style="background-color:#b6deec"></span><span class="grad-step" style="background-color:#bbe1ee"></span><span class="grad-step" style="background-color:#c0e3ef"></span><span class="grad-step" style="background-color:#c5e6f1"></span><span class="grad-step" style="background-color:#cbe9f2"></span><span class="grad-step" style="background-color:#d0ebf4"></span><span class="grad-step" style="background-color:#d5eef5"></span><span class="grad-step" style="background-color:#dbf0f7"></span><span class="grad-step" style="background-color:#e0f3f8"></span><span class="grad-step" style="background-color:#e3f4f2"></span><span class="grad-step" style="background-color:#e6f5ed"></span><span class="grad-step" style="background-color:#e9f7e7"></span><span class="grad-step" style="background-color:#ecf8e1"></span><span class="grad-step" style="background-color:#eff9dc"></span><span class="grad-step" style="background-color:#f3fad6"></span><span class="grad-step" style="background-color:#f6fbd0"></span><span class="grad-step" style="background-color:#f9fdca"></span><span class="grad-step" style="background-color:#fcfec5"></span><span class="grad-step" style="background-color:#ffffbf"></span><span class="grad-step" style="background-color:#fffcba"></span><span class="grad-step" style="background-color:#fff9b6"></span><span class="grad-step" style="background-color:#fff6b1"></span><span class="grad-step" style="background-color:#fff3ac"></span><span class="grad-step" style="background-color:#ffefa7"></span><span class="grad-step" style="background-color:#feeca3"></span><span class="grad-step" style="background-color:#fee99e"></span><span class="grad-step" style="background-color:#fee699"></span><span class="grad-step" style="background-color:#fee395"></span><span class="grad-step" style="background-color:#fee090"></span><span class="grad-step" style="background-color:#fedb8b"></span><span class="grad-step" style="background-color:#fed687"></span><span class="grad-step" style="background-color:#fed182"></span><span class="grad-step" style="background-color:#fecc7d"></span><span class="grad-step" style="background-color:#fec778"></span><span class="grad-step" style="background-color:#fdc274"></span><span class="grad-step" style="background-color:#fdbd6f"></span><span class="grad-step" style="background-color:#fdb86a"></span><span class="grad-step" style="background-color:#fdb366"></span><span class="grad-step" style="background-color:#fdae61"></span><span class="grad-step" style="background-color:#fca85e"></span><span class="grad-step" style="background-color:#fba15b"></span><span class="grad-step" style="background-color:#fa9b58"></span><span class="grad-step" style="background-color:#f99455"></span><span class="grad-step" style="background-color:#f98e52"></span><span class="grad-step" style="background-color:#f8874f"></span><span class="grad-step" style="background-color:#f7814c"></span><span class="grad-step" style="background-color:#f67a49"></span><span class="grad-step" style="background-color:#f57346"></span><span class="grad-step" style="background-color:#f46d43"></span><span class="grad-step" style="background-color:#f16740"></span><span class="grad-step" style="background-color:#ee613d"></span><span class="grad-step" style="background-color:#eb5b3b"></span><span class="grad-step" style="background-color:#e85538"></span><span class="grad-step" style="background-color:#e64f35"></span><span class="grad-step" style="background-color:#e34832"></span><span class="grad-step" style="background-color:#e0422f"></span><span class="grad-step" style="background-color:#dd3c2d"></span><span class="grad-step" style="background-color:#da362a"></span><span class="grad-step" style="background-color:#d73027"></span><span class="grad-step" style="background-color:#d22b27"></span><span class="grad-step" style="background-color:#cd2627"></span><span class="grad-step" style="background-color:#c82227"></span><span class="grad-step" style="background-color:#c31d27"></span><span class="grad-step" style="background-color:#be1827"></span><span class="grad-step" style="background-color:#b91326"></span><span class="grad-step" style="background-color:#b40e26"></span><span class="grad-step" style="background-color:#af0a26"></span><span class="grad-step" style="background-color:#aa0526"></span><span class="grad-step" style="background-color:#a50026"></span><span class="domain-min"></span><span class="domain-med"></span><span class="domain-max"></span></div>',
+        YlGnBu: '<div class="gradient"><span class="grad-step" style="background-color:#ffffd9"></span><span class="grad-step" style="background-color:#fefed6"></span><span class="grad-step" style="background-color:#fcfed3"></span><span class="grad-step" style="background-color:#fbfdcf"></span><span class="grad-step" style="background-color:#f9fdcc"></span><span class="grad-step" style="background-color:#f8fcc9"></span><span class="grad-step" style="background-color:#f6fcc6"></span><span class="grad-step" style="background-color:#f5fbc3"></span><span class="grad-step" style="background-color:#f3fbbf"></span><span class="grad-step" style="background-color:#f2fabc"></span><span class="grad-step" style="background-color:#f1f9b9"></span><span class="grad-step" style="background-color:#eff9b6"></span><span class="grad-step" style="background-color:#eef8b3"></span><span class="grad-step" style="background-color:#ebf7b1"></span><span class="grad-step" style="background-color:#e8f6b1"></span><span class="grad-step" style="background-color:#e5f5b2"></span><span class="grad-step" style="background-color:#e2f4b2"></span><span class="grad-step" style="background-color:#dff3b2"></span><span class="grad-step" style="background-color:#dcf1b2"></span><span class="grad-step" style="background-color:#d9f0b3"></span><span class="grad-step" style="background-color:#d6efb3"></span><span class="grad-step" style="background-color:#d3eeb3"></span><span class="grad-step" style="background-color:#d0edb3"></span><span class="grad-step" style="background-color:#cdebb4"></span><span class="grad-step" style="background-color:#caeab4"></span><span class="grad-step" style="background-color:#c7e9b4"></span><span class="grad-step" style="background-color:#c1e7b5"></span><span class="grad-step" style="background-color:#bbe5b5"></span><span class="grad-step" style="background-color:#b6e2b6"></span><span class="grad-step" style="background-color:#b0e0b6"></span><span class="grad-step" style="background-color:#aadeb7"></span><span class="grad-step" style="background-color:#a4dcb7"></span><span class="grad-step" style="background-color:#9fd9b8"></span><span class="grad-step" style="background-color:#99d7b8"></span><span class="grad-step" style="background-color:#93d5b9"></span><span class="grad-step" style="background-color:#8dd3ba"></span><span class="grad-step" style="background-color:#88d0ba"></span><span class="grad-step" style="background-color:#82cebb"></span><span class="grad-step" style="background-color:#7dccbb"></span><span class="grad-step" style="background-color:#78cabc"></span><span class="grad-step" style="background-color:#73c8bd"></span><span class="grad-step" style="background-color:#6ec7be"></span><span class="grad-step" style="background-color:#69c5be"></span><span class="grad-step" style="background-color:#64c3bf"></span><span class="grad-step" style="background-color:#5fc1c0"></span><span class="grad-step" style="background-color:#5abfc0"></span><span class="grad-step" style="background-color:#55bdc1"></span><span class="grad-step" style="background-color:#50bcc2"></span><span class="grad-step" style="background-color:#4bbac3"></span><span class="grad-step" style="background-color:#46b8c3"></span><span class="grad-step" style="background-color:#41b6c4"></span><span class="grad-step" style="background-color:#3eb3c4"></span><span class="grad-step" style="background-color:#3bb0c3"></span><span class="grad-step" style="background-color:#38adc3"></span><span class="grad-step" style="background-color:#35aac3"></span><span class="grad-step" style="background-color:#33a7c2"></span><span class="grad-step" style="background-color:#30a4c2"></span><span class="grad-step" style="background-color:#2da1c2"></span><span class="grad-step" style="background-color:#2a9ec1"></span><span class="grad-step" style="background-color:#279bc1"></span><span class="grad-step" style="background-color:#2498c1"></span><span class="grad-step" style="background-color:#2195c0"></span><span class="grad-step" style="background-color:#1e92c0"></span><span class="grad-step" style="background-color:#1d8fbf"></span><span class="grad-step" style="background-color:#1e8bbd"></span><span class="grad-step" style="background-color:#1e87bb"></span><span class="grad-step" style="background-color:#1e83b9"></span><span class="grad-step" style="background-color:#1f7fb7"></span><span class="grad-step" style="background-color:#1f7bb5"></span><span class="grad-step" style="background-color:#2076b4"></span><span class="grad-step" style="background-color:#2072b2"></span><span class="grad-step" style="background-color:#206eb0"></span><span class="grad-step" style="background-color:#216aae"></span><span class="grad-step" style="background-color:#2166ac"></span><span class="grad-step" style="background-color:#2262aa"></span><span class="grad-step" style="background-color:#225ea8"></span><span class="grad-step" style="background-color:#225ba6"></span><span class="grad-step" style="background-color:#2257a5"></span><span class="grad-step" style="background-color:#2354a3"></span><span class="grad-step" style="background-color:#2351a2"></span><span class="grad-step" style="background-color:#234da0"></span><span class="grad-step" style="background-color:#234a9e"></span><span class="grad-step" style="background-color:#24469d"></span><span class="grad-step" style="background-color:#24439b"></span><span class="grad-step" style="background-color:#24409a"></span><span class="grad-step" style="background-color:#243c98"></span><span class="grad-step" style="background-color:#253996"></span><span class="grad-step" style="background-color:#253695"></span><span class="grad-step" style="background-color:#243392"></span><span class="grad-step" style="background-color:#22318d"></span><span class="grad-step" style="background-color:#1f2f88"></span><span class="grad-step" style="background-color:#1d2e83"></span><span class="grad-step" style="background-color:#1b2c7e"></span><span class="grad-step" style="background-color:#182a7a"></span><span class="grad-step" style="background-color:#162875"></span><span class="grad-step" style="background-color:#142670"></span><span class="grad-step" style="background-color:#11246b"></span><span class="grad-step" style="background-color:#0f2366"></span><span class="grad-step" style="background-color:#0d2162"></span><span class="grad-step" style="background-color:#0a1f5d"></span><span class="grad-step" style="background-color:#081d58"></span><span class="domain-min"></span><span class="domain-med"></span><span class="domain-max"></span></div>',
+        OrRd: '<div class="gradient"><span class="grad-step" style="background-color:#fff7ec"></span><span class="grad-step" style="background-color:#fff6e9"></span><span class="grad-step" style="background-color:#fff5e6"></span><span class="grad-step" style="background-color:#fff3e3"></span><span class="grad-step" style="background-color:#fff2e0"></span><span class="grad-step" style="background-color:#fff1de"></span><span class="grad-step" style="background-color:#fff0db"></span><span class="grad-step" style="background-color:#feefd8"></span><span class="grad-step" style="background-color:#feedd5"></span><span class="grad-step" style="background-color:#feecd2"></span><span class="grad-step" style="background-color:#feebcf"></span><span class="grad-step" style="background-color:#feeacc"></span><span class="grad-step" style="background-color:#fee9c9"></span><span class="grad-step" style="background-color:#fee7c6"></span><span class="grad-step" style="background-color:#fee6c3"></span><span class="grad-step" style="background-color:#fee4c0"></span><span class="grad-step" style="background-color:#fee2bc"></span><span class="grad-step" style="background-color:#fee1b9"></span><span class="grad-step" style="background-color:#fedfb6"></span><span class="grad-step" style="background-color:#fddeb2"></span><span class="grad-step" style="background-color:#fddcaf"></span><span class="grad-step" style="background-color:#fddaab"></span><span class="grad-step" style="background-color:#fdd9a8"></span><span class="grad-step" style="background-color:#fdd7a5"></span><span class="grad-step" style="background-color:#fdd6a1"></span><span class="grad-step" style="background-color:#fdd49e"></span><span class="grad-step" style="background-color:#fdd29c"></span><span class="grad-step" style="background-color:#fdd09a"></span><span class="grad-step" style="background-color:#fdce98"></span><span class="grad-step" style="background-color:#fdcc96"></span><span class="grad-step" style="background-color:#fdca94"></span><span class="grad-step" style="background-color:#fdc892"></span><span class="grad-step" style="background-color:#fdc68f"></span><span class="grad-step" style="background-color:#fdc48d"></span><span class="grad-step" style="background-color:#fdc28b"></span><span class="grad-step" style="background-color:#fdc089"></span><span class="grad-step" style="background-color:#fdbe87"></span><span class="grad-step" style="background-color:#fdbc85"></span><span class="grad-step" style="background-color:#fdb982"></span><span class="grad-step" style="background-color:#fdb57f"></span><span class="grad-step" style="background-color:#fdb27b"></span><span class="grad-step" style="background-color:#fdae78"></span><span class="grad-step" style="background-color:#fdaa75"></span><span class="grad-step" style="background-color:#fda771"></span><span class="grad-step" style="background-color:#fca36e"></span><span class="grad-step" style="background-color:#fc9f6a"></span><span class="grad-step" style="background-color:#fc9c67"></span><span class="grad-step" style="background-color:#fc9863"></span><span class="grad-step" style="background-color:#fc9460"></span><span class="grad-step" style="background-color:#fc915c"></span><span class="grad-step" style="background-color:#fc8d59"></span><span class="grad-step" style="background-color:#fb8a58"></span><span class="grad-step" style="background-color:#fa8756"></span><span class="grad-step" style="background-color:#f98355"></span><span class="grad-step" style="background-color:#f88054"></span><span class="grad-step" style="background-color:#f77d52"></span><span class="grad-step" style="background-color:#f67a51"></span><span class="grad-step" style="background-color:#f5774f"></span><span class="grad-step" style="background-color:#f4734e"></span><span class="grad-step" style="background-color:#f3704d"></span><span class="grad-step" style="background-color:#f26d4b"></span><span class="grad-step" style="background-color:#f16a4a"></span><span class="grad-step" style="background-color:#f06749"></span><span class="grad-step" style="background-color:#ee6346"></span><span class="grad-step" style="background-color:#ec5f43"></span><span class="grad-step" style="background-color:#ea5a40"></span><span class="grad-step" style="background-color:#e8563d"></span><span class="grad-step" style="background-color:#e65239"></span><span class="grad-step" style="background-color:#e44e36"></span><span class="grad-step" style="background-color:#e34933"></span><span class="grad-step" style="background-color:#e1452f"></span><span class="grad-step" style="background-color:#df412c"></span><span class="grad-step" style="background-color:#dd3d29"></span><span class="grad-step" style="background-color:#db3826"></span><span class="grad-step" style="background-color:#d93422"></span><span class="grad-step" style="background-color:#d7301f"></span><span class="grad-step" style="background-color:#d42c1d"></span><span class="grad-step" style="background-color:#d1281a"></span><span class="grad-step" style="background-color:#ce2418"></span><span class="grad-step" style="background-color:#cb2115"></span><span class="grad-step" style="background-color:#c91d13"></span><span class="grad-step" style="background-color:#c61910"></span><span class="grad-step" style="background-color:#c3150e"></span><span class="grad-step" style="background-color:#c0110b"></span><span class="grad-step" style="background-color:#bd0d09"></span><span class="grad-step" style="background-color:#ba0a06"></span><span class="grad-step" style="background-color:#b70604"></span><span class="grad-step" style="background-color:#b40201"></span><span class="grad-step" style="background-color:#b10000"></span><span class="grad-step" style="background-color:#ad0000"></span><span class="grad-step" style="background-color:#a90000"></span><span class="grad-step" style="background-color:#a40000"></span><span class="grad-step" style="background-color:#a00000"></span><span class="grad-step" style="background-color:#9c0000"></span><span class="grad-step" style="background-color:#980000"></span><span class="grad-step" style="background-color:#940000"></span><span class="grad-step" style="background-color:#900000"></span><span class="grad-step" style="background-color:#8b0000"></span><span class="grad-step" style="background-color:#870000"></span><span class="grad-step" style="background-color:#830000"></span><span class="grad-step" style="background-color:#7f0000"></span><span class="domain-min"></span><span class="domain-med"></span><span class="domain-max"></span></div>',
+        Spectral: '<div class="gradient"><span class="grad-step" style="background-color:#5e4fa2"></span><span class="grad-step" style="background-color:#5a55a5"></span><span class="grad-step" style="background-color:#555aa7"></span><span class="grad-step" style="background-color:#5160aa"></span><span class="grad-step" style="background-color:#4c66ad"></span><span class="grad-step" style="background-color:#486cb0"></span><span class="grad-step" style="background-color:#4471b2"></span><span class="grad-step" style="background-color:#3f77b5"></span><span class="grad-step" style="background-color:#3b7db8"></span><span class="grad-step" style="background-color:#3682ba"></span><span class="grad-step" style="background-color:#3288bd"></span><span class="grad-step" style="background-color:#378ebb"></span><span class="grad-step" style="background-color:#3c94b8"></span><span class="grad-step" style="background-color:#4299b6"></span><span class="grad-step" style="background-color:#479fb3"></span><span class="grad-step" style="background-color:#4ca5b1"></span><span class="grad-step" style="background-color:#51abaf"></span><span class="grad-step" style="background-color:#56b1ac"></span><span class="grad-step" style="background-color:#5cb6aa"></span><span class="grad-step" style="background-color:#61bca7"></span><span class="grad-step" style="background-color:#66c2a5"></span><span class="grad-step" style="background-color:#6dc5a5"></span><span class="grad-step" style="background-color:#74c7a5"></span><span class="grad-step" style="background-color:#7bcaa5"></span><span class="grad-step" style="background-color:#82cda5"></span><span class="grad-step" style="background-color:#89d0a5"></span><span class="grad-step" style="background-color:#8fd2a4"></span><span class="grad-step" style="background-color:#96d5a4"></span><span class="grad-step" style="background-color:#9dd8a4"></span><span class="grad-step" style="background-color:#a4daa4"></span><span class="grad-step" style="background-color:#abdda4"></span><span class="grad-step" style="background-color:#b1dfa3"></span><span class="grad-step" style="background-color:#b7e2a2"></span><span class="grad-step" style="background-color:#bde4a0"></span><span class="grad-step" style="background-color:#c3e79f"></span><span class="grad-step" style="background-color:#c8e99e"></span><span class="grad-step" style="background-color:#ceeb9d"></span><span class="grad-step" style="background-color:#d4ee9c"></span><span class="grad-step" style="background-color:#daf09a"></span><span class="grad-step" style="background-color:#e0f399"></span><span class="grad-step" style="background-color:#e6f598"></span><span class="grad-step" style="background-color:#e8f69c"></span><span class="grad-step" style="background-color:#ebf7a0"></span><span class="grad-step" style="background-color:#edf8a4"></span><span class="grad-step" style="background-color:#f0f9a8"></span><span class="grad-step" style="background-color:#f3faab"></span><span class="grad-step" style="background-color:#f5fbaf"></span><span class="grad-step" style="background-color:#f8fcb3"></span><span class="grad-step" style="background-color:#fafdb7"></span><span class="grad-step" style="background-color:#fdfebb"></span><span class="grad-step" style="background-color:#ffffbf"></span><span class="grad-step" style="background-color:#fffcba"></span><span class="grad-step" style="background-color:#fff9b5"></span><span class="grad-step" style="background-color:#fff6af"></span><span class="grad-step" style="background-color:#fff3aa"></span><span class="grad-step" style="background-color:#ffefa5"></span><span class="grad-step" style="background-color:#feeca0"></span><span class="grad-step" style="background-color:#fee99b"></span><span class="grad-step" style="background-color:#fee695"></span><span class="grad-step" style="background-color:#fee390"></span><span class="grad-step" style="background-color:#fee08b"></span><span class="grad-step" style="background-color:#fedb87"></span><span class="grad-step" style="background-color:#fed683"></span><span class="grad-step" style="background-color:#fed17e"></span><span class="grad-step" style="background-color:#fecc7a"></span><span class="grad-step" style="background-color:#fec776"></span><span class="grad-step" style="background-color:#fdc272"></span><span class="grad-step" style="background-color:#fdbd6e"></span><span class="grad-step" style="background-color:#fdb869"></span><span class="grad-step" style="background-color:#fdb365"></span><span class="grad-step" style="background-color:#fdae61"></span><span class="grad-step" style="background-color:#fca85e"></span><span class="grad-step" style="background-color:#fba15b"></span><span class="grad-step" style="background-color:#fa9b58"></span><span class="grad-step" style="background-color:#f99455"></span><span class="grad-step" style="background-color:#f98e52"></span><span class="grad-step" style="background-color:#f8874f"></span><span class="grad-step" style="background-color:#f7814c"></span><span class="grad-step" style="background-color:#f67a49"></span><span class="grad-step" style="background-color:#f57346"></span><span class="grad-step" style="background-color:#f46d43"></span><span class="grad-step" style="background-color:#f16844"></span><span class="grad-step" style="background-color:#ee6445"></span><span class="grad-step" style="background-color:#eb5f47"></span><span class="grad-step" style="background-color:#e85a48"></span><span class="grad-step" style="background-color:#e55649"></span><span class="grad-step" style="background-color:#e1514a"></span><span class="grad-step" style="background-color:#de4c4b"></span><span class="grad-step" style="background-color:#db474d"></span><span class="grad-step" style="background-color:#d8434e"></span><span class="grad-step" style="background-color:#d53e4f"></span><span class="grad-step" style="background-color:#d0384e"></span><span class="grad-step" style="background-color:#ca324c"></span><span class="grad-step" style="background-color:#c42c4b"></span><span class="grad-step" style="background-color:#bf264a"></span><span class="grad-step" style="background-color:#ba2049"></span><span class="grad-step" style="background-color:#b41947"></span><span class="grad-step" style="background-color:#af1346"></span><span class="grad-step" style="background-color:#a90d45"></span><span class="grad-step" style="background-color:#a40743"></span><span class="grad-step" style="background-color:#9e0142"></span><span class="domain-min"></span><span class="domain-med"></span><span class="domain-max"></span></div>'
     };
 
     /******************************************************
@@ -230,6 +252,19 @@
             }
         });
 
+        $btnAnimateTools.click(function () {
+            if ($animateToolbar.is(':hidden')) {
+                $animateToolbar.removeClass('hidden');
+                $btnAnimateTools.css("background-color", "#915F6D");
+                $btnAnimateTools.css("color", "white");
+            }
+            else {
+                $animateToolbar.addClass('hidden');
+                $btnAnimateTools.css("background-color", "white");
+                $btnAnimateTools.css("color", "#555");
+            }
+        });
+
         $loadFromLocal.addEventListener('change', function() {
             let file = $loadFromLocal.files[0];
 
@@ -244,7 +279,7 @@
 
         $btnUl.click(function() {
             if ($inpUlTitle.val() !== '' && $inpUlDescription.val() !== '' && $inpUlKeywords.val() !== '') {
-                $('#model-save-animation').removeAttr('hidden');
+                $loadingAnimation.removeAttr('hidden');
                 model.title = [$inpUlTitle.val(), $inpUlDescription.val()];
                 model.nodes = s.graph.nodes();
                 model.edges = s.graph.edges();
@@ -274,6 +309,8 @@
         $btnRunModel.click(function() {
             let data = {'model': file_text};
 
+            $loadingAnimation.removeAttr('hidden');
+
             $.ajax({
                 type: 'POST',
                 url: '/apps/epanet-model-viewer/run-epanet-model/',
@@ -288,7 +325,7 @@
                     let message;
 
                     if (response.hasOwnProperty('success')) {
-                        $('#model-save-animation').attr('hidden', true);
+                        $loadingAnimation.attr('hidden', true);
 
                         if (response.hasOwnProperty('message')) {
                             message = response.message;
@@ -305,6 +342,7 @@
                                 addLogEntry('warning', message);
                             }
                             if (response.hasOwnProperty('results')) {
+                                $loadingAnimation.attr('hidden', true);
                                 $('.ran-model').removeAttr('disabled');
                                 $('.ran-model').removeClass('hidden');
                                 modelResults = response.results;
@@ -312,17 +350,29 @@
 
                                 for (let i in modelResults['nodes']) {
                                     s.graph.nodes().find(node => node.epaId === i).modelResults = modelResults['nodes'][i];
+                                    if (animationMaxStep === 0)
+                                        animationMaxStep = modelResults['nodes'][i]['EN_DEMAND'].length;
                                 }
-
-                                let data = [];
 
                                 for (let i in modelResults['edges']) {
                                     s.graph.edges().find(edge => edge.epaId === i).modelResults = modelResults['edges'][i];
-                                    data = data.concat(modelResults['edges'][i]['EN_VELOCITY']);
                                 }
 
-                                colorMap = chroma.scale('RdYlBu')
-                                    .domain([Math.min(...data), Math.max(...data)]);
+                                $animationSlider.slider({
+                                    value: 0,
+                                    min: 0,
+                                    max: animationMaxStep - 1,
+                                    step: 1, //Assigning the slider step based on the depths that were retrieved in the controller
+                                    animate: "fast",
+                                    slide: function( event, ui ) {
+                                        stopAnimation();
+                                        playing = false;
+                                        $btnPlayAnimation.click();
+                                    }
+                                });
+
+                                resetNodeAnim();
+                                resetEdgeAnim();
                             }
                         }
                     }
@@ -330,20 +380,131 @@
             });
         });
 
-        $btnPlayModel.click(function () {
-            for (let j = 0; j < 11; ++j) {
-                animate.push(setTimeout(function () {
-                    for (let i in modelResults['edges']) {
-                        s.graph.edges().find(edge => edge.epaId === i).color = colorMap(modelResults['edges'][i]['EN_VELOCITY'][j]).hex();
+        $chkNode.click(function () {
+            playing = true;
+            $btnPlayAnimation.click();
+            if (!$(this).is(':checked')) {
+                for (let node in s.graph.nodes()) {
+                    s.graph.nodes()[node].color = s.graph.nodes()[node].epaColor;
+                }
+                s.refresh();
+            }
+            resetNodeAnim();
+        });
+
+        $nodeAnimType.change(function () {
+            playing = true;
+            $btnPlayAnimation.click();
+            resetNodeAnim();
+        });
+
+        $nodeAnimColor.change(function () {
+            playing = true;
+            $btnPlayAnimation.click();
+            resetNodeAnim();
+        });
+
+        $chkEdge.click(function () {
+            playing = true;
+            $btnPlayAnimation.click();
+            if (!$(this).is(':checked')) {
+                for (let edge in s.graph.edges()) {
+                    s.graph.edges()[edge].color = s.graph.edges()[edge].epaColor;
+                }
+                s.refresh();
+            }
+            resetEdgeAnim();
+        });
+
+        $edgeAnimType.change(function () {
+            playing = true;
+            $btnPlayAnimation.click();
+            resetEdgeAnim();
+        });
+
+        $edgeAnimColor.change(function () {
+            playing = true;
+            $btnPlayAnimation.click();
+            resetEdgeAnim();
+        });
+
+        $btnPlayAnimation.click(function () {
+            if ($chkNode.is(':checked') || $chkEdge.is(':checked')) {
+                if (playing === false) {
+                    resetPlay();
+
+                    let delayStep = -1;
+                    for (let j = $animationSlider.slider("value"); j <= animationMaxStep; ++j) {
+                        delayStep++;
+                        animate.push(setTimeout(function () {
+                            $animationSlider.slider("value", j);
+                            if (j === animationMaxStep)
+                                resetAnimation();
+                            else {
+                                if ($chkNode.is(':checked')) {
+                                    for (let node in s.graph.nodes()) {
+                                        try {
+                                            s.graph.nodes()[node].color = nodeAnimColor(s.graph.nodes()[node].modelResults[$nodeAnimType.val()][j]).hex();
+                                        }
+                                        catch (e) {
+                                            // nothing
+                                        }
+                                    }
+                                }
+
+                                if ($chkEdge.is(':checked')) {
+                                    for (let edge in s.graph.edges()) {
+                                        try {
+                                            s.graph.edges()[edge].color = edgeAnimColor(s.graph.edges()[edge].modelResults[$edgeAnimType.val()][j]).hex();
+                                        }
+                                        catch (e) {
+                                            // nothing
+                                        }
+                                    }
+                                }
+                                s.refresh();
+                            }
+                        }, animationDelay * delayStep));
                     }
-                    s.refresh();
-                }, 1000*j));
+                }
+                else {
+                    resetPlay();
+
+                    stopAnimation();
+                }
+            }
+            else {
+                $btnStopAnimation.click();
+            }
+        });
+
+        $btnStopAnimation.click(resetAnimation);
+
+        $("#btn-increase").on("click", function() {
+            if ($animationSpeed.val() < 20) {
+                $animationSpeed.val(parseInt($animationSpeed.val()) + 1);
+                animationDelay = 1000 / $animationSpeed.val();
+            }
+            if (playing === true) {
+                stopAnimation();
+                playing = false;
+                $btnPlayAnimation.click();
+            }
+        });
+
+        $("#btn-decrease").on("click", function() {
+            if ($animationSpeed.val() > 1) {
+                $animationSpeed.val(parseInt($animationSpeed.val()) - 1);
+                animationDelay = 1000 / $animationSpeed.val();
+            }
+            if (playing === true) {
+                stopAnimation();
+                playing = false;
+                $btnPlayAnimation.click();
             }
         });
 
         $viewNodeResults.find('select').change(function () {
-            console.log(curNode.modelResults[$(this).val()]);
-
             let dataset = curNode.modelResults[$(this).val()];
             let x=[], y=[];
             for (let i in dataset) {
@@ -373,8 +534,6 @@
         });
 
         $viewEdgeResults.find('select').change(function () {
-            console.log(curEdge.modelResults[$(this).val()]);
-
             let dataset = curEdge.modelResults[$(this).val()];
             let x=[], y=[];
             for (let i in dataset) {
@@ -404,37 +563,27 @@
         });
 
         $('#node-view-tab').click(function () {
+            $modalNode.find('.modal-dialog').css('left', nodeModalLeft);
             $modalNode.find('.modal-dialog').css('width', '315px');
             $modalNode.find('.modal-dialog').css('height', '440px');
         });
 
         $('#node-results-tab').click(function () {
+            $modalNode.find('.modal-dialog').css('left', '0');
             $modalNode.find('.modal-dialog').css('width', '1000px');
             $modalNode.find('.modal-dialog').css('height', '750px');
         });
 
         $('#edge-view-tab').click(function () {
+            $modalEdge.find('.modal-dialog').css('left', edgeModalLeft);
             $modalEdge.find('.modal-dialog').css('width', '315px');
             $modalEdge.find('.modal-dialog').css('height', '440px');
         });
 
         $('#edge-results-tab').click(function () {
+            $modalEdge.find('.modal-dialog').css('left', '0');
             $modalEdge.find('.modal-dialog').css('width', '1000px');
             $modalEdge.find('.modal-dialog').css('height', '750px');
-        });
-
-        $btnResetModel.click(function () {
-            animate.forEach(function(call) {
-                clearTimeout(call);
-            });
-
-            for (let node in s.graph.nodes()) {
-                s.graph.nodes()[node].color = s.graph.nodes()[node].epaColor;
-            }
-            for (let edge in s.graph.edges()) {
-                s.graph.edges()[edge].color = s.graph.edges()[edge].epaColor;
-            }
-            s.refresh();
         });
 
         $chkDragNodes.click(function() {
@@ -734,6 +883,88 @@
         });
     };
 
+    stopAnimation = function() {
+        animate.forEach(function(call) {
+            clearTimeout(call);
+        });
+    };
+
+    resetPlay = function() {
+        if (playing === false) {
+            playing = true;
+            $btnPlayAnimation.find('span').removeClass('glyphicon-play');
+            $btnPlayAnimation.find('span').addClass('glyphicon-pause');
+            $btnPlayAnimation.removeClass('btn-success');
+            $btnPlayAnimation.addClass('btn-warning');
+        }
+        else {
+            playing = false;
+            $btnPlayAnimation.find('span').addClass('glyphicon-play');
+            $btnPlayAnimation.find('span').removeClass('glyphicon-pause');
+            $btnPlayAnimation.removeClass('btn-warning');
+            $btnPlayAnimation.addClass('btn-success');
+        }
+    };
+
+    resetAnimation = function() {
+        playing = true;
+        resetPlay();
+
+        stopAnimation();
+
+        $animationSlider.slider("value", 0);
+
+        for (let node in s.graph.nodes()) {
+            s.graph.nodes()[node].color = s.graph.nodes()[node].epaColor;
+        }
+        for (let edge in s.graph.edges()) {
+            s.graph.edges()[edge].color = s.graph.edges()[edge].epaColor;
+        }
+
+        s.refresh();
+    };
+
+    resetNodeAnim = function() {
+        let nodeData = [];
+        for (let node in s.graph.nodes()) {
+            try {
+                nodeData = nodeData.concat(s.graph.nodes()[node].modelResults[$nodeAnimType.val()]);
+            }
+            catch (e) {
+                // nothing
+            }
+        }
+
+        $nodeLegend.html(animationLegends[$nodeAnimColor.val()]);
+        $nodeLegend.find('.domain-min').html(Math.floor(Math.min(...nodeData)));
+        $nodeLegend.find('.domain-med').html(Math.round((Math.max(...nodeData) + Math.min(...nodeData))/2));
+        $nodeLegend.find('.domain-max').html(Math.ceil(Math.max(...nodeData)));
+
+        nodeAnimColor = chroma.scale($nodeAnimColor.val())
+            .domain([Math.max(...nodeData), Math.min(...nodeData)]);
+
+    };
+
+    resetEdgeAnim = function() {
+        let edgeData = [];
+        for (let edge in s.graph.edges()) {
+            try {
+                edgeData = edgeData.concat(s.graph.edges()[edge].modelResults[$edgeAnimType.val()]);
+            }
+            catch (e) {
+                // nothing
+            }
+        }
+
+        $edgeLegend.html(animationLegends[$edgeAnimColor.val()]);
+        $edgeLegend.find('.domain-min').html(Math.floor(Math.min(...edgeData)));
+        $edgeLegend.find('.domain-med').html(Math.round((Math.max(...edgeData) + Math.min(...edgeData))/2));
+        $edgeLegend.find('.domain-max').html(Math.ceil(Math.max(...edgeData)));
+
+        edgeAnimColor = chroma.scale($edgeAnimColor.val())
+            .domain([Math.max(...edgeData), Math.min(...edgeData)]);
+    };
+
     setGraphEventListeners = function () {
         s.bind('clickStage', function(e) {
             canvasClick(e);
@@ -833,7 +1064,8 @@
 
     nodeClick = function (e) {
         if(!e.data.captor.isDragging) {
-            $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
+            nodeModalLeft = e.data.captor.clientX * 2 - 1600;
+            $('#node-dialog').css({top: e.data.captor.clientY - 10, left: nodeModalLeft});
 
             let curNodes = e.data.node;
             if (curNodes.length > 1) {
@@ -903,7 +1135,8 @@
 
     edgeClick = function(e) {
         if(!e.data.captor.isDragging) {
-            $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
+            edgeModalLeft = e.data.captor.clientX * 2 - 1600;
+            $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: edgeModalLeft});
 
             let curEdges = e.data.edge;
             if (curEdges.length > 1) {
@@ -1037,7 +1270,7 @@
         $modalEdge = $('#modal-edge');
         $modalEdgeLabel = $('#modal-edge-label');
         $modalLog = $('#modalLog');
-        $chkDragNodes = $('#chk-graph');
+        $chkDragNodes = $('#chk-drag');
         $loadFromLocal = $("#load-from-local")[0];
         $fileDisplayArea = $("#file-display-area")[0];
         $btnOptionsOk = $('#btn-options-ok');
@@ -1067,12 +1300,25 @@
         $nodeX = $('#node-x');
         $nodeY = $('#node-y');
         $btnRunModel = $('#btn-run-model');
-        $btnPlayModel = $('#btn-play');
-        $btnResetModel = $('#btn-reset');
+        $btnPlayAnimation = $('#btn-play');
+        $btnStopAnimation = $('#btn-stop');
         $viewNodeResults = $('#node-results-view');
         $nodeResults = $('#node-results');
         $viewEdgeResults = $('#edge-results-view');
         $edgeResults = $('#edge-results');
+        $loadingAnimation = $('#loading-animation');
+        $animationSpeed = $("#speed");
+        $animationSlider = $("#slider");
+        $btnAnimateTools = $('#btn-animate-tools');
+        $animateToolbar = $('#animate-toolbar');
+        $nodeLegend = $("#node-leg");
+        $edgeLegend = $("#edge-leg");
+        $chkNode = $('#chk-nodes');
+        $chkEdge = $('#chk-edges');
+        $nodeAnimColor = $('#node-anim-color');
+        $nodeAnimType = $('#node-anim-type');
+        $edgeAnimColor = $('#edge-anim-color');
+        $edgeAnimType = $('#edge-anim-type');
     };
 
     openModel = function (modelId) {
@@ -1140,7 +1386,7 @@
                 let message;
 
                 if (response.hasOwnProperty('success')) {
-                    $('#model-save-animation').attr('hidden', true);
+                    $loadingAnimation.attr('hidden', true);
 
                     if (response.hasOwnProperty('message')) {
                         message = response.message;
@@ -1175,7 +1421,7 @@
 
     hideMainLoadAnim = function () {
         $('#div-loading').addClass('hidden');
-        $('#upload-container').removeAttr('hidden');
+        $('#model-tools-container').removeAttr('hidden');
     };
 
     showLoadingCompleteStatus = function (success, message) {
@@ -1309,7 +1555,7 @@
             openModel($initialModel.html());
         }
         else {
-            $('#upload-container').removeAttr('hidden');
+            $('#model-tools-container').removeAttr('hidden');
 
             $btnEditTools.click();
             s = new sigma({

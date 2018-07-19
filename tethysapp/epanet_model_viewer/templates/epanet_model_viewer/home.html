@@ -17,7 +17,7 @@
     <div class="inline"><p>Or, select a local file:<input type="file" id="load-from-local"></p></div>
     <br class="clearBoth" />
   </div>
-  <div id="model-save-animation" hidden>
+  <div id="loading-animation" hidden>
     <img src="/static/epanet_model_repository/images/loading-animation.gif">
     <br>
     <p><b>Saving to model repository...</b></p>
@@ -42,7 +42,7 @@
     <li><a href="#model-options-view">Model Options</a></li>
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
-    <div id="upload-container" style="float: right; height: 0px;" hidden>
+    <div id="model-tools-container" style="float: right; height: 0px;" hidden>
       <button id="btn-run-model" class="btn btn-default run-btn" style="margin-right: 15px;">Run Model</button>
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px;">Save Model</button>
     </div>
@@ -50,8 +50,7 @@
   <div id="model-view">
     <div style="position:absolute; right:0; margin-right: 23px">
       <button id="btn-edit-tools" class="btn btn-default">Edit Tools</button>
-      <button id="btn-play" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Play</button>
-      <button id="btn-reset" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Reset</button>
+      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Animate Tools</button>
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
@@ -82,12 +81,111 @@
         <div style="float: right;">
           <span style="color: white;">Drag Nodes:</span>
           <label class="switch" style="top: 10px; margin-left: 0px;">
-            <input id="chk-graph" type="checkbox">
+            <input id="chk-drag" type="checkbox">
             <span class="slider round"></span>
           </label>
         </div>
       </div>
       <div id="model-container"></div>
+    </div>
+    <!--<div class="container-fluid">-->
+      <!--<div class="row">-->
+        <!--<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">-->
+          <!--<table class="table table-nonfluid">-->
+            <!--<tbody>-->
+            <!--<tr>-->
+              <!--<span>Nodes:</span>-->
+            <!--</tr>-->
+            <!--<tr>-->
+              <!--<span>Edges:</span>-->
+            <!--</tr>-->
+            <!--</tbody>-->
+          <!--</table>-->
+        <!--</div>-->
+        <!--<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">-->
+          <!--<table class="table table-nonfluid">-->
+            <!--<tbody>-->
+            <!--<tr>-->
+            <!--</tr>-->
+            <!--</tbody>-->
+          <!--</table>-->
+        <!--</div>-->
+        <!--<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">-->
+          <!--<table class="table table-nonfluid">-->
+            <!--<tbody>-->
+            <!--<tr>-->
+            <!--</tr>-->
+            <!--</tbody>-->
+          <!--</table>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+    <div id="animate-toolbar" class="hidden">
+      <div id="animate-options">
+        <div>
+          <span>Nodes:</span>
+          <label class="switch" style="top: 10px;">
+            <input id="chk-nodes" type="checkbox">
+            <span class="slider round"></span>
+          </label>
+          <div class="animate form-group" style="display: inline-block">
+            <select id="node-anim-type" class="form-control" style="width: 92px !important;">
+              <option value="EN_HEAD">Head</option>
+              <option value="EN_PRESSURE">Pressure</option>
+              <option value="EN_DEMAND">Demand</option>
+              <option value="EN_QUALITY">Quality</option>
+            </select>
+          </div>
+          <div class="animate form-group" style="display: inline-block">
+            <select id="node-anim-color" class="form-control">
+              <option value="RdYlBu">R-Y-B</option>
+              <option value="YlGnBu">Y-G-B</option>
+              <option value="OrRd">O-R</option>
+              <option value="Spectral">Spectral</option>
+            </select>
+          </div>
+          <div id="node-leg" style="display: inline;"></div>
+        </div>
+        <div style="margin-bottom: 8px;">
+          <span style="margin-right: 9.5px">Links: </span>
+          <label class="switch" style="top: 10px;">
+            <input id="chk-edges" type="checkbox">
+            <span class="slider round"></span>
+          </label>
+          <div class="animate form-group" style="display: inline-block">
+            <select id="edge-anim-type" class="form-control" style="width: 92px !important;">
+              <option value="EN_FLOW">Flow</option>
+              <option value="EN_VELOCITY">Velocity</option>
+              <option value="EN_ENERGY">Energy</option>
+              <option value="EN_HEADLOSS">Head Loss</option>
+            </select>
+          </div>
+          <div class="animate form-group" style="display: inline-block">
+            <select id="edge-anim-color" class="form-control">
+              <option value="RdYlBu">R-Y-B</option>
+              <option value="YlGnBu">Y-G-B</option>
+              <option value="OrRd">O-R</option>
+              <option value="Spectral">Spectral</option>
+            </select>
+          </div>
+          <div id="edge-leg" style="display: inline;"></div>
+        </div>
+      </div>
+      <div id="animate-tools">
+        <div id="btn-play" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-play"></span></div>
+        <div id="btn-stop" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-stop"></span></div>
+        <div id="btn-decrease" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-backward"></span></div>
+        <div id="btn-increase" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-forward"></span></div>
+        <div id="slider"></div>
+        <div>
+          <label id="speed-label" for="speed">Animation Speed(fps):</label>
+          <input type="text" id="speed" readonly style="border:0; color:#f6931f; font-weight:normal; width: 18px; background: transparent;" value="1">
+        </div>
+      </div>
+    </div>
+    <div id="animation-legend">
+      <div id="node-legend"></div>
+      <div id="edge-legend"></div>
     </div>
     <dl>
       <dt><span class="graphNode" style="background-color: #666"></span></dt>
@@ -337,12 +435,16 @@
             <div class="modal-body-content"></div>
           </div>
           <div id="node-results-view">
-            <h4>Result Type:</h4>
-            <select>
-              <option disabled selected value> -- select an option -- </option>
-              <option value="EN_DEMAND">Demand</option>
-              <option value="EN_PRESSURE">Pressure</option>
-            </select>
+            <h4 style="display: inline;">Result Type:</h4>
+            <div class="animate form-group" style="display: inline-block">
+              <select class="form-control">
+                <option disabled selected value>-- result --</option>
+                <option value="EN_HEAD">Head</option>
+                <option value="EN_PRESSURE">Pressure</option>
+                <option value="EN_DEMAND">Demand</option>
+                <option value="EN_QUALITY">Quality</option>
+              </select>
+            </div>
             <div id="node-results"></div>
           </div>
         </div>
@@ -380,12 +482,16 @@
             <div class="modal-body-content"></div>
           </div>
           <div id="edge-results-view">
-            <h4>Result Type:</h4>
-            <select>
-              <option disabled selected value> -- select an option -- </option>
-              <option value="EN_FLOW">Flow</option>
-              <option value="EN_VELOCITY">Velocity</option>
-            </select>
+            <h4 style="display: inline;">Result Type:</h4>
+            <div class="animate form-group" style="display: inline-block">
+              <select class="form-control">
+                <option disabled selected value>-- result --</option>
+                <option value="EN_FLOW">Flow</option>
+                <option value="EN_VELOCITY">Velocity</option>
+                <option value="EN_ENERGY">Energy</option>
+                <option value="EN_HEADLOSS">Head Loss</option>
+              </select>
+            </div>
             <div id="edge-results"></div>
           </div>
         </div>

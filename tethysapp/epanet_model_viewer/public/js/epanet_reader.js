@@ -412,7 +412,8 @@ function EPANET_Reader(file_text, caller) {
                         epaType: "Vertex",
                         values: [],
                         size: 0.6,
-                        color: '#666'
+                        color: '#666',
+                        epaColor: '#666'
                     };
                     nodes.push(node);
                     edge["vert"].push(node.id);
@@ -432,6 +433,7 @@ function EPANET_Reader(file_text, caller) {
                     y: -1 * label[1],
                     size: 1,
                     color: '#d6d6c2',
+                    epaColor: '#d6d6c2',
                     showLabel: true
                 };
 
