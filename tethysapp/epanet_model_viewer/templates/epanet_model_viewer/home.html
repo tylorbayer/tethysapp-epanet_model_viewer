@@ -20,8 +20,12 @@
   <div id="loading-animation" hidden>
     <img src="/static/epanet_model_repository/images/loading-animation.gif">
     <br>
-    <p><b>Saving to model repository...</b></p>
-    <p>Note: You can continue to use the app while saving.</p>
+    <p><b>Saving to model repository...</b><br>Note: You can continue to use the app while saving.</p>
+  </div>
+  <div id="loading-animation-run" hidden>
+    <img src="/static/epanet_model_repository/images/loading-animation.gif">
+    <br>
+    <p><b>Running EPANET model...</b><br>Note: You can continue to use the app while running.</p>
   </div>
   {% if modelID %}
   <div id="initial-model" hidden>{{ modelID }}</div>
@@ -43,14 +47,14 @@
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
     <div id="model-tools-container" style="float: right; height: 0px;" hidden>
-      <button id="btn-run-model" class="btn btn-default run-btn" style="margin-right: 15px;">Run Model</button>
-      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px;">Save Model</button>
+      <button id="btn-run-model" class="btn btn-default run-btn" style="margin-right: 9px; width: 128px;">Run Model</button>
+      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 128px;">Save Model</button>
     </div>
   </ul>
   <div id="model-view">
     <div style="position:absolute; right:0; margin-right: 23px">
-      <button id="btn-edit-tools" class="btn btn-default">Edit Tools</button>
-      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Animate Tools</button>
+      <button id="btn-edit-tools" class="btn btn-default" style="width: 125px;">Network Tools</button>
+      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Animation Tools</button>
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
@@ -106,7 +110,7 @@
           </div>
           <div class="animate form-group" style="display: inline-block">
             <select id="node-anim-color" class="form-control">
-              <option value="RdYlBu">R-Y-B</option>
+              <option value="RdYlBu">B-Y-R</option>
               <option value="YlGnBu">Y-G-B</option>
               <option value="OrRd">O-R</option>
               <option value="Spectral">Spectral</option>
@@ -130,7 +134,7 @@
           </div>
           <div class="animate form-group" style="display: inline-block">
             <select id="edge-anim-color" class="form-control">
-              <option value="RdYlBu">R-Y-B</option>
+              <option value="RdYlBu">B-Y-R</option>
               <option value="YlGnBu" selected>Y-G-B</option>
               <option value="OrRd">O-R</option>
               <option value="Spectral">Spectral</option>
