@@ -410,7 +410,6 @@ function EPANET_Reader(file_text, caller) {
                         x: 1 * vert[1],
                         y: -1 * vert[2],
                         epaType: "Vertex",
-                        values: [],
                         size: 0.6,
                         color: '#666',
                         epaColor: '#666'

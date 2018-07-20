@@ -88,44 +88,12 @@
       </div>
       <div id="model-container"></div>
     </div>
-    <!--<div class="container-fluid">-->
-      <!--<div class="row">-->
-        <!--<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">-->
-          <!--<table class="table table-nonfluid">-->
-            <!--<tbody>-->
-            <!--<tr>-->
-              <!--<span>Nodes:</span>-->
-            <!--</tr>-->
-            <!--<tr>-->
-              <!--<span>Edges:</span>-->
-            <!--</tr>-->
-            <!--</tbody>-->
-          <!--</table>-->
-        <!--</div>-->
-        <!--<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">-->
-          <!--<table class="table table-nonfluid">-->
-            <!--<tbody>-->
-            <!--<tr>-->
-            <!--</tr>-->
-            <!--</tbody>-->
-          <!--</table>-->
-        <!--</div>-->
-        <!--<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">-->
-          <!--<table class="table table-nonfluid">-->
-            <!--<tbody>-->
-            <!--<tr>-->
-            <!--</tr>-->
-            <!--</tbody>-->
-          <!--</table>-->
-        <!--</div>-->
-      <!--</div>-->
-    <!--</div>-->
     <div id="animate-toolbar" class="hidden">
       <div id="animate-options">
         <div>
-          <span>Nodes:</span>
+          <span style="font-weight: 700;">Nodes:</span>
           <label class="switch" style="top: 10px;">
-            <input id="chk-nodes" type="checkbox">
+            <input id="chk-nodes" type="checkbox" checked>
             <span class="slider round"></span>
           </label>
           <div class="animate form-group" style="display: inline-block">
@@ -147,9 +115,9 @@
           <div id="node-leg" style="display: inline;"></div>
         </div>
         <div style="margin-bottom: 8px;">
-          <span style="margin-right: 9.5px">Links: </span>
+          <span style="margin-right: 9.5px; font-weight: 700;">Links: </span>
           <label class="switch" style="top: 10px;">
-            <input id="chk-edges" type="checkbox">
+            <input id="chk-edges" type="checkbox" checked>
             <span class="slider round"></span>
           </label>
           <div class="animate form-group" style="display: inline-block">
@@ -163,7 +131,7 @@
           <div class="animate form-group" style="display: inline-block">
             <select id="edge-anim-color" class="form-control">
               <option value="RdYlBu">R-Y-B</option>
-              <option value="YlGnBu">Y-G-B</option>
+              <option value="YlGnBu" selected>Y-G-B</option>
               <option value="OrRd">O-R</option>
               <option value="Spectral">Spectral</option>
             </select>
@@ -180,6 +148,12 @@
         <div>
           <label id="speed-label" for="speed">Animation Speed(fps):</label>
           <input type="text" id="speed" readonly style="border:0; color:#f6931f; font-weight:normal; width: 18px; background: transparent;" value="1">
+        </div>
+        <div>
+          <label for="timestep">Time-step:</label>
+          <input type="text" id="timestep" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;" value="0">
+          <label for="total-timesteps">of </label>
+          <input type="text" id="total-timesteps" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
         </div>
       </div>
     </div>
@@ -429,7 +403,7 @@
         <div id="node-tabs">
           <ul>
             <li id="node-view-tab"><a href="#node-properties-view">Properties</a></li>
-            <li id="node-results-tab"><a href="#node-results-view" class="ran-model hidden">Results</a></li>
+            <li id="node-results-tab" class="ran-model hidden"><a href="#node-results-view">Results</a></li>
           </ul>
           <div id="node-properties-view">
             <div class="modal-body-content"></div>
@@ -438,7 +412,6 @@
             <h4 style="display: inline;">Result Type:</h4>
             <div class="animate form-group" style="display: inline-block">
               <select class="form-control">
-                <option disabled selected value>-- result --</option>
                 <option value="EN_HEAD">Head</option>
                 <option value="EN_PRESSURE">Pressure</option>
                 <option value="EN_DEMAND">Demand</option>
@@ -476,7 +449,7 @@
         <div id="edge-tabs">
           <ul>
             <li id="edge-view-tab"><a href="#edge-properties-view">Properties</a></li>
-            <li id="edge-results-tab"><a href="#edge-results-view" class="ran-model hidden">Results</a></li>
+            <li id="edge-results-tab" class="ran-model hidden"><a href="#edge-results-view">Results</a></li>
           </ul>
           <div id="edge-properties-view">
             <div class="modal-body-content"></div>
@@ -485,7 +458,6 @@
             <h4 style="display: inline;">Result Type:</h4>
             <div class="animate form-group" style="display: inline-block">
               <select class="form-control">
-                <option disabled selected value>-- result --</option>
                 <option value="EN_FLOW">Flow</option>
                 <option value="EN_VELOCITY">Velocity</option>
                 <option value="EN_ENERGY">Energy</option>
