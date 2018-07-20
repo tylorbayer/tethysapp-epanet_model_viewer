@@ -329,7 +329,7 @@
         $btnRunModel.click(function() {
             let data = {'model': file_text};
 
-            $loadingAnimation.removeAttr('hidden');
+            $('#loading-animation-run').removeAttr('hidden');
 
             $.ajax({
                 type: 'POST',
@@ -343,7 +343,7 @@
                     addLogEntry('danger', message, true);
                 },
                 success: function (response) {
-                    $loadingAnimation.attr('hidden', true);
+                    $('#loading-animation-run').attr('hidden', true);
                     let message;
 
                     if (response.hasOwnProperty('success')) {
@@ -406,6 +406,8 @@
         });
 
         $chkNode.click(function () {
+            let reStart = playing;
+
             playing = true;
             $btnPlayAnimation.click();
             if (!$(this).is(':checked')) {
@@ -415,21 +417,36 @@
                 s.refresh();
             }
             resetNodeAnim();
+
+            if (reStart)
+                $btnPlayAnimation.click();
         });
 
         $nodeAnimType.change(function () {
+            let reStart = playing;
+
             playing = true;
             $btnPlayAnimation.click();
             resetNodeAnim();
+
+            if (reStart)
+                $btnPlayAnimation.click();
         });
 
         $nodeAnimColor.change(function () {
+            let reStart = playing;
+
             playing = true;
             $btnPlayAnimation.click();
             resetNodeAnim();
+
+            if (reStart)
+                $btnPlayAnimation.click();
         });
 
         $chkEdge.click(function () {
+            let reStart = playing;
+            
             playing = true;
             $btnPlayAnimation.click();
             if (!$(this).is(':checked')) {
@@ -439,18 +456,31 @@
                 s.refresh();
             }
             resetEdgeAnim();
+
+            if (reStart)
+                $btnPlayAnimation.click();
         });
 
         $edgeAnimType.change(function () {
+            let reStart = playing;
+
             playing = true;
             $btnPlayAnimation.click();
             resetEdgeAnim();
+
+            if (reStart)
+                $btnPlayAnimation.click();
         });
 
         $edgeAnimColor.change(function () {
+            let reStart = playing;
+
             playing = true;
             $btnPlayAnimation.click();
             resetEdgeAnim();
+
+            if (reStart)
+                $btnPlayAnimation.click();
         });
 
         $btnPlayAnimation.click(function () {
@@ -507,7 +537,7 @@
         $btnStopAnimation.click(resetAnimation);
 
         $("#btn-increase").on("click", function() {
-            if ($animationSpeed.val() < 100) {
+            if ($animationSpeed.val() < 99) {
                 $animationSpeed.val(parseInt($animationSpeed.val()) + 1);
                 animationDelay = 1000 / $animationSpeed.val();
             }
