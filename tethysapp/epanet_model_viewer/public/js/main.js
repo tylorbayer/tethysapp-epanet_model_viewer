@@ -22,6 +22,15 @@
         file_text,
         curNode = {},
         curEdge = {},
+        graphColors = {
+            Junction: '#666',
+            Vertex: "#666",
+            Reservoir: '#5F9EA0',
+            Tank: '#8B4513',
+            Label: '#d6d6c2',
+            Pipe: '#ccc',
+            Pump: '#D2B48C',
+            Valve: '#7070db' },
         hoverColors = {
             Pipe: '#808080',
             Pump: '#DAA520',
@@ -38,7 +47,9 @@
         playing = false,
         animationDelay = 1000,
         nodeModalLeft = 0,
-        edgeModalLeft = 0;
+        edgeModalLeft = 0,
+        edgeVerts = [],
+        ranModel = false;
 
     //  *********FUNCTIONS***********
     let addInitialEventListeners,
@@ -188,6 +199,13 @@
      ******************************************************/
 
     addInitialEventListeners = function () {
+        // $('#model-display').contextmenu(function (e) {
+        //     e.preventDefault();
+        // });
+        // $('.modal').contextmenu(function (e) {
+        //     e.preventDefault();
+        // });
+
         document.onkeydown = function(evt) {
             evt = evt || window.event;
             if (evt.keyCode === 27) {
@@ -216,20 +234,22 @@
                 isAddNode = false;
                 if (edgeSource) {
                     edgeSource.color = edgeSource.epaColor;
+                    curNode.color = curNode.epaColor;
                     s.refresh();
                 }
                 edgeSource = null;
 
                 if (addType === "Default") {
-                    $('#model-display').css("cursor", "default");
+                    $('#model-container').css("cursor", "default");
+                    s.refresh();
                 }
                 else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
                     isAddNode = true;
-                    $('#model-display').css("cursor", "crosshair");
+                    $('#model-container').css("cursor", "crosshair");
                 }
                 else {
                     isAddEdge = true;
-                    $('#model-display').css("cursor", "pointer");
+                    $('#model-container').css("cursor", "pointer");
                 }
             }
         });
@@ -246,7 +266,7 @@
                 $('#btn-default-edit').addClass('active');
                 $btnEditTools.css("background-color", "white");
                 $btnEditTools.css("color", "#555");
-                $('#model-display').css("cursor", "default");
+                $('#model-container').css("cursor", "default");
                 isAddEdge = false;
                 isAddNode = false;
             }
@@ -317,11 +337,13 @@
                 dataType: 'json',
                 data: data,
                 error: function () {
+                    $loadingAnimation.attr('hidden', true);
                     let message = 'An unexpected error occurred while uploading the model ';
 
-                    addLogEntry('danger', message);
+                    addLogEntry('danger', message, true);
                 },
                 success: function (response) {
+                    $loadingAnimation.attr('hidden', true);
                     let message;
 
                     if (response.hasOwnProperty('success')) {
@@ -336,13 +358,12 @@
                                 message = 'An unexpected error occurred while uploading the model';
                             }
 
-                            addLogEntry('danger', message);
+                            addLogEntry('danger', message, true);
                         } else {
                             if (message) {
-                                addLogEntry('warning', message);
+                                addLogEntry('warning', message, true);
                             }
                             if (response.hasOwnProperty('results')) {
-                                $loadingAnimation.attr('hidden', true);
                                 $('.ran-model').removeAttr('disabled');
                                 $('.ran-model').removeClass('hidden');
                                 modelResults = response.results;
@@ -353,6 +374,8 @@
                                     if (animationMaxStep === 0)
                                         animationMaxStep = modelResults['nodes'][i]['EN_DEMAND'].length;
                                 }
+
+                                $('#total-timesteps').val(animationMaxStep);
 
                                 for (let i in modelResults['edges']) {
                                     s.graph.edges().find(edge => edge.epaId === i).modelResults = modelResults['edges'][i];
@@ -373,6 +396,8 @@
 
                                 resetNodeAnim();
                                 resetEdgeAnim();
+
+                                ranModel = true;
                             }
                         }
                     }
@@ -438,6 +463,7 @@
                         delayStep++;
                         animate.push(setTimeout(function () {
                             $animationSlider.slider("value", j);
+                            $('#timestep').val(j);
                             if (j === animationMaxStep)
                                 resetAnimation();
                             else {
@@ -481,7 +507,7 @@
         $btnStopAnimation.click(resetAnimation);
 
         $("#btn-increase").on("click", function() {
-            if ($animationSpeed.val() < 20) {
+            if ($animationSpeed.val() < 100) {
                 $animationSpeed.val(parseInt($animationSpeed.val()) + 1);
                 animationDelay = 1000 / $animationSpeed.val();
             }
@@ -505,61 +531,71 @@
         });
 
         $viewNodeResults.find('select').change(function () {
-            let dataset = curNode.modelResults[$(this).val()];
-            let x=[], y=[];
-            for (let i in dataset) {
-                y.push(dataset[i]);
-                x.push(i);
-            }
-
-            let trace = {
-                x: x,
-                y: y,
-                type: 'scatter'
-            };
-
-            let data = [trace];
-
-            var layout = {
-                title: $(this).find('option:selected').text() + " for " + curNode.epaType + " " + curNode.id,
-                xaxis: {
-                    title: 'Timestep'
-                },
-                yaxis: {
-                    title: $(this).find('option:selected').text()
+            try {
+                let dataset = curNode.modelResults[$(this).val()];
+                let x = [], y = [];
+                for (let i in dataset) {
+                    y.push(dataset[i]);
+                    x.push(i);
                 }
-            };
 
-            Plotly.newPlot('node-results', data, layout);
+                let trace = {
+                    x: x,
+                    y: y,
+                    type: 'scatter'
+                };
+
+                let data = [trace];
+
+                var layout = {
+                    title: $(this).find('option:selected').text() + " for " + curNode.epaType + " " + curNode.id,
+                    xaxis: {
+                        title: 'Timestep'
+                    },
+                    yaxis: {
+                        title: $(this).find('option:selected').text()
+                    },
+                };
+
+                Plotly.newPlot('node-results', data, layout);
+            }
+            catch (e) {
+                $('#node-results').html('<p>Results data for this node have not been computed</p>');
+            }
         });
 
         $viewEdgeResults.find('select').change(function () {
-            let dataset = curEdge.modelResults[$(this).val()];
-            let x=[], y=[];
-            for (let i in dataset) {
-                y.push(dataset[i]);
-                x.push(i);
-            }
-
-            let trace = {
-                x: x,
-                y: y,
-                type: 'scatter'
-            };
-
-            let data = [trace];
-
-            var layout = {
-                title: $(this).find('option:selected').text() + " for " + curEdge.epaType + " " + curEdge.id,
-                xaxis: {
-                    title: 'Timestep'
-                },
-                yaxis: {
-                    title: $(this).find('option:selected').text()
+            try {
+                let dataset = curEdge.modelResults[$(this).val()];
+                let x = [], y = [];
+                for (let i in dataset) {
+                    y.push(dataset[i]);
+                    x.push(i);
                 }
-            };
 
-            Plotly.newPlot('edge-results', data, layout);
+                let trace = {
+                    x: x,
+                    y: y,
+                    type: 'scatter'
+                };
+
+                let data = [trace];
+
+                var layout = {
+                    title: $(this).find('option:selected').text() + " for " + curEdge.epaType + " " + curEdge.id,
+                    xaxis: {
+                        title: 'Timestep'
+                    },
+                    yaxis: {
+                        title: $(this).find('option:selected').text()
+                    }
+                };
+
+                Plotly.newPlot('edge-results', data, layout);
+            }
+            catch (e) {
+                $('#edge-results').html('<p>Results data for this edge have not been computed</p>');
+            }
         });
 
         $('#node-view-tab').click(function () {
@@ -594,13 +630,13 @@
                 let dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
 
                 dragListener.bind('startdrag', function(e) {
-                    $('#model-display').css("cursor", "-webkit-grabbing");
+                    $('#model-container').css("cursor", "-webkit-grabbing");
                 });
                 dragListener.bind('drag', function(e) {
                     s.unbind('clickNodes');
                 });
                 dragListener.bind('dragend', function(e) {
-                    $('#model-display').css("cursor", "-webkit-grab");
+                    $('#model-container').css("cursor", "-webkit-grab");
 
                     setTimeout(function(){
                         s.bind('clickNodes', function(e) {
@@ -609,33 +645,56 @@
                     },250);
                 });
 
-                $('#model-display').css("cursor", "-webkit-grab");
+                $('#model-container').css("cursor", "-webkit-grab");
             }
             else {
                 $('#btn-default-edit').click();
                 sigma.plugins.killDragNodes(s);
 
-                $('#model-display').css("cursor", "default");
+                $('#model-container').css("cursor", "default");
             }
         });
 
         $modalNode.on('hidden.bs.modal', function () {
-            curNode.color = curNode.epaColor;
-            if (edgeSource)
-                edgeSource.color = edgeSource.epaColor;
+            if (edgeVerts.length === 0) {
+                curNode.color = graphColors[curNode.epaType];
+                if (edgeSource)
+                    edgeSource.color = graphColors[edgeSource.epaType];
+                s.refresh();
+                resetModelState();
+            }
+        });
+
+        $modalNode.on('shown.bs.modal', function () {
+            if (ranModel && !isAddNode && (curNode.epaType !== "Vertex" && curNode.epaType !== "Label"))
+                $('#node-results-view').find('select').change();
+            else {
+                $modalNode.find('input')[0].focus();
+                $modalNode.find('input').keyup(function(event) {
+                    if (event.keyCode === 13) {
+                        $btnNodeOk.click();
+                    }
+                });
+            }
+        });
+
+        $modalEdge.on('hidden.bs.modal', function () {
+            curEdge.hover_color = hoverColors[curEdge.epaType];
             s.refresh();
             resetModelState();
         });
 
-        $modalEdge.on('hidden.bs.modal', function () {
-            if (curNode)
-                curNode.color = curNode.epaColor;
-            if (edgeSource)
-                edgeSource.color = edgeSource.epaColor;
-
-            curEdge.hover_color = curEdge.epaColor;
-            s.refresh();
-            resetModelState();
+        $modalEdge.on('shown.bs.modal', function () {
+            if (ranModel && isAddEdge === false)
+                $('#edge-results-view').find('select').change();
+            else {
+                $modalEdge.find('input')[0].focus();
+                $modalEdge.find('input').keyup(function(event) {
+                    if (event.keyCode === 13) {
+                        $btnEdgeOk.click();
+                    }
+                });
+            }
         });
 
         $chkOptionsEdit.click(function () {
@@ -677,6 +736,14 @@
                 $btnNodeDelete.removeAttr('disabled');
 
                 $modalNode.find('input').attr('readonly', false);
+
+                $modalNode.find('input')[0].focus();
+                $modalNode.find('input')[0].select();
+                $modalNode.find('input').keyup(function(event) {
+                    if (event.keyCode === 13) {
+                        $btnNodeOk.click();
+                    }
+                });
             }
             else {
                 $btnNodeOk.attr('disabled', true);
@@ -684,7 +751,7 @@
 
                 $modalNode.find('input').attr('readonly', true);
 
-                populateNodeModal(curNode);
+                populateNodeModal(true);
             }
         });
 
@@ -694,6 +761,14 @@
                 $btnEdgeDelete.removeAttr('disabled');
 
                 $modalEdge.find('input').attr('readonly', false);
+
+                $modalEdge.find('input')[0].focus();
+                $modalEdge.find('input')[0].select();
+                $modalEdge.find('input').keyup(function(event) {
+                    if (event.keyCode === 13) {
+                        $btnEdgeOk.click();
+                    }
+                });
             }
             else {
                 $btnEdgeOk.attr('disabled', true);
@@ -701,18 +776,17 @@
 
                 $modalEdge.find('input').attr('readonly', true);
 
-                populateEdgeModal(curEdge);
+                populateEdgeModal(true);
             }
         });
 
         $btnNodeOk.click(function() {
-            if ($('#node-id').val() === "")
+            if ($('#node-id').val() === "" && curNode.epaType !== "Vertex")
                 alert("Id must have a value");
             else {
-                $modalNode.modal('hide');
-
                 if (curNode.epaType !== "Label") {
                     let edges = s.graph.edges;
+
                     for (let i in edges) {
                         if (edges[i].type === "vert") {
                             for (let j in edges[i].vert) {
@@ -723,11 +797,16 @@
                         }
                     }
 
-                    curNode.epaId = $('#node-id').val();
-                    curNode.label = curNode.epaType + ' ' + $('#node-id').val();
-
-                    for (let i = 1; i < $modalNode.find('input').length; ++i) {
-                        curNode.values[i - 1] = $modalNode.find('input')[i].value;
+                    if (curNode.epaType !== "Vertex") {
+                        curNode.epaId = $('#node-id').val();
+                        curNode.label = curNode.epaType + ' ' + $('#node-id').val();
+                        for (let i = 1; i < $modalNode.find('input').length; ++i) {
+                            curNode.values[i - 1] = $modalNode.find('input')[i].value;
+                        }
+                    }
+                    else {
+                        curNode.epaId = "vert " + edgeVerts.length;
+                        curNode.label = "vert " + edgeVerts.length;
                     }
                 }
                 else {
@@ -735,7 +814,12 @@
                 }
 
                 if ($nodeX.html() !== "") {
-                    if (curNode.epaType !== "Label") {
+                    if (curNode.epaType === "Vertex") {
+                        curNode.id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
+                        curNode.size = 0.6;
+                        edgeVerts.push(curNode.epaId);
+                    }
+                    else if (curNode.epaType !== "Label") {
                         curNode.id = curNode.epaId;
                         curNode.label = curNode.epaType + " " + curNode.id;
                         curNode.size = 2;
@@ -746,15 +830,17 @@
                         curNode.showLabel = true;
                     }
 
-                    curNode.color = curNode.epaColor;
+                    curNode.color = graphColors[curNode.epaType];
                     curNode.x = $nodeX.html();
                     curNode.y = $nodeY.html();
 
                     try {
                         s.graph.addNode(curNode);
+                        $modalNode.modal('hide');
                     }
                     catch (e) {
                         alert(e);
+                        return;
                     }
 
                     s.refresh();
@@ -771,8 +857,14 @@
 
             if (curNode.epaType === "Vertex") {
                 try {
-                    let verts = s.graph.edges().find(edge => edge.epaId === curNode.id.split(" ")[0]).vert;
-                    verts.splice(verts.indexOf(curNode.epaId), 1);
+                    let edge = s.graph.edges().find(edge => edge.epaId === curNode.id.split(" ")[0]);
+                    let verts = edge.vert;
+                    if (verts.length === 1) {
+                        delete edge.vert;
+                        delete edge.type;
+                    }
+                    else
+                        verts.splice(verts.indexOf(curNode.epaId), 1);
                 }
                 catch (e) {
                     // vert edge is gone already
@@ -791,8 +883,6 @@
             if ($('#edge-id').val() === "")
                 alert("Id must have a value");
             else {
-                $modalEdge.modal('hide');
-
                 curEdge.epaId = $('#edge-id').val();
                 curEdge.label = curEdge.epaType + ' ' + $('#edge-id').val();
 
@@ -803,21 +893,48 @@
                 if (isAddEdge && edgeSource !== null) {
                     curEdge.id = curEdge.epaId;
                     curEdge.label = curEdge.epaType + " " + curEdge.epaId;
-                    curEdge.color = curEdge.epaColor;
+                    curEdge.color = graphColors[curEdge.epaType];
                     curEdge.hover_color = hoverColors[curEdge.epaType];
                     curEdge.size = 1;
                     curEdge.source = edgeSource.id;
                     curEdge.target = curNode.id;
 
+                    if (edgeVerts.length > 0) {
+                        curEdge.type = "vert";
+
+                        for (let vert in edgeVerts) {
+                            let node = s.graph.nodes().find(node => node.epaId === edgeVerts[vert]);
+                            s.graph.dropNode(node.id);
+                            node.epaId = curEdge.id + " " + edgeVerts[vert].substr(edgeVerts[vert].indexOf('vert'));
+                            node.id = node.epaId;
+                            node.label = node.epaId;
+                            edgeVerts[vert] = node.id;
+
+                            try {
+                                s.graph.addNode(node);
+                            }
+                            catch (e) {
+                                alert(e);
+                                return;
+                            }
+                        }
+
+                        curEdge.vert = edgeVerts;
+                    }
+
                     try {
                         s.graph.addEdge(curEdge);
+                        $modalEdge.modal('hide');
+                        edgeVerts = [];
                     }
                     catch (e) {
                         alert(e);
+                        return;
                     }
 
-                    edgeSource.color = edgeSource.epaColor;
+                    edgeSource.color = graphColors[edgeSource.epaType];
                     edgeSource = null;
+                    curNode.color = graphColors[curNode.epaType];
                     s.refresh();
                 }
 
@@ -830,6 +947,12 @@
 
             s.graph.dropEdge(curEdge.id);
 
+            if (curEdge.type === "vert") {
+                for (let vert in curEdge.vert) {
+                    s.graph.dropNode(curEdge.vert[vert]);
+                }
+            }
+
             resetModelState();
         });
 
@@ -840,10 +963,6 @@
         $('#file-display-area').bind("DOMSubtreeModified",function(){
             $('#view-tabs').removeClass('hidden');
             $('#loading-model').addClass('hidden');
-
-            $viewTabs.tabs({ active: 0 });
-            $nodeTabs.tabs({ active: 0 });
-            $edgeTabs.tabs({ active: 0 });
 
             $("#model-container").remove();
             $("#model-display").append("<div id='model-container'></div>");
@@ -913,6 +1032,7 @@
         stopAnimation();
 
         $animationSlider.slider("value", 0);
+        $('#timestep').val(0);
 
         for (let node in s.graph.nodes()) {
             s.graph.nodes()[node].color = s.graph.nodes()[node].epaColor;
@@ -970,6 +1090,10 @@
             canvasClick(e);
         });
 
+        // s.bind('rightClickStage', function(e) {
+        //     addVertClick(e);
+        // });
+
         s.bind('clickNodes', function(e) {
             nodeClick(e);
         });
@@ -980,7 +1104,7 @@
     };
 
     canvasClick = function(e) {
-        if(!e.data.captor.isDragging && isAddNode) {
+        if(!e.data.captor.isDragging && (isAddNode || edgeSource !== null)) {
             $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
 
             curNode = {};
@@ -1043,11 +1167,18 @@
             $nodeX.html(newX);
             $nodeY.html(newY);
 
-            curNode.epaType = addType;
-            curNode.values = [];
-            populateNodeModal();
-            $chkNodeEdit.click();
-            $btnNodeDelete.attr('disabled', true);
+            if (edgeSource !== null) {
+                curNode.epaType = "Vertex";
+                populateNodeModal(true);
+                $btnNodeOk.click();
+            }
+            else {
+                curNode.epaType = addType;
+                curNode.values = [];
+                populateNodeModal();
+                $chkNodeEdit.click();
+                $btnNodeDelete.attr('disabled', true);
+            }
         }
     };
 
@@ -1106,7 +1237,7 @@
                     if (curNode.epaType === "Label" || curNode.epaType === "Vertex")
                         alert("Can't create edges off of Verticies or Labels");
                     else {
-                        if (edgeSource !== null) {
+                        if (edgeSource !== null && edgeSource.epaId !== curNode.epaId) {
                             $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
 
                             curEdge = {};
@@ -1190,7 +1321,7 @@
         }
     };
 
-    populateNodeModal = function () {
+    populateNodeModal = function (nOpen) {
         curNode.color = "#1affff";
         s.refresh();
 
@@ -1200,24 +1331,35 @@
 
         $modalNodeLabel.html(curNode.epaType);
         $modalNode.find('.modal-body-content').html(html);
-        $modalNode.modal('show');
+
+        if (ranModel && !isAddNode && curNode.epaType !== "Vertex" && curNode.epaType !== "Label" && typeof nOpen === 'undefined') {
+            $('#node-results-tab').removeClass('hidden');
+            $nodeTabs.tabs({active: 1});
+            $('#node-results-tab').click();
+        }
+        else {
+            $('#node-results-tab').addClass('hidden');
+            $nodeTabs.tabs({active: 0});
+            $('#node-view-tab').click();
+        }
+
+        if (typeof nOpen === 'undefined')
+            $modalNode.modal('show');
 
         if (curNode.epaType !== "Label") {
             $('#node-id').val(curNode.epaId);
 
-            for (let i = 0; i < values.length - 1; ++i) {
-                $modalNode.find('input')[i + 1].value = curNode.values[i];
-            }
-
-            if (!$('#node-results-view').hasClass('hidden')) {
-
+            if (curNode.epaType !== "Vertex") {
+                for (let i = 0; i < values.length - 1; ++i) {
+                    $modalNode.find('input')[i + 1].value = curNode.values[i];
+                }
             }
         }
         else
             $('#node-id').val(curNode.label);
     };
 
-    populateEdgeModal = function () {
+    populateEdgeModal = function (nOpen) {
         curEdge.hover_color = "#1affff";
         s.refresh();
 
@@ -1227,16 +1369,23 @@
 
         $modalEdgeLabel.html(curEdge.epaType);
         $modalEdge.find('.modal-body-content').html(html);
-        $modalEdge.modal('show');
+
+        if (ranModel && isAddEdge === false) {
+            $edgeTabs.tabs({active: 1});
+            $('#edge-results-tab').click();
+        }
+        else {
+            $edgeTabs.tabs({active: 0});
+            $('#edge-view-tab').click();
+        }
+
+        if (typeof nOpen === 'undefined')
+            $modalEdge.modal('show');
 
         $('#edge-id').val(curEdge.epaId);
 
         for (let i = 0; i < values.length - 1; ++i) {
             $modalEdge.find('input')[i + 1].value = curEdge.values[i];
-        }
-
-        if (!$('#edge-results-view').hasClass('hidden')) {
-
         }
     };
 
@@ -1250,9 +1399,7 @@
         $btnEdgeDelete.attr('disabled', true);
         $chkNodeEdit.attr('checked', false);
         $chkEdgeEdit.attr('checked', false);
-        $viewNodeResults.find('select').val("");
         $nodeResults.empty();
-        $viewEdgeResults.find('select').val("");
         $edgeResults.empty();
     };
 
@@ -1600,6 +1747,9 @@
         addDefaultBehaviorToAjax();
 
         $viewTabs.tabs({ active: 0 });
+        $viewTabs.tabs({ active: 0 });
+        $nodeTabs.tabs({ active: 0 });
+        $edgeTabs.tabs({ active: 0 });
         $nodeEdgeSelect.dialog({ autoOpen: false });
 
         // Custom edge render for edges with vertices
