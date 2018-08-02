@@ -43,11 +43,12 @@
 <div id="view-tabs">
   <ul>
     <li><a href="#model-view">EPANET Model View</a></li>
+    <li class="ran-model hidden"><a href="#results-view">Results Overview</a></li>
     <li><a href="#model-options-view">Model Options</a></li>
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
     <div id="model-tools-container" style="float: right; height: 0px;" hidden>
-      <button id="btn-run-model" class="btn btn-default run-btn" style="margin-right: 9px; width: 128px;">Run Model</button>
+      <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 128px;">Run Model</button>
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 128px;">Save Model</button>
     </div>
   </ul>
@@ -183,6 +184,54 @@
       <dt><span class="glyphicon glyphicon-minus" style="color:#7070db; font-size: 1.5em;"></span></dt>
       <dd> Valve </dd>
     </dl>
+  </div>
+  <div id="results-view">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12" style="margin-bottom: 10px;">
+          <div id="nodes-results">
+            <span style="margin-right: 10px; font-size: 20px; vertical-align: middle;">Nodes Results</span>
+            <div class="button-group" style="display: inline-block;">
+              <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-th-list"></span> <span class="caret"></span></button>
+              <ul class="dropdown-menu"></ul>
+            </div>
+            <div class="animate form-group" style="display: inline-block">
+              <select class="form-control" style="width: 92px !important;">
+                <option value="EN_HEAD" selected>Head</option>
+                <option value="EN_PRESSURE">Pressure</option>
+                <option value="EN_DEMAND">Demand</option>
+                <option value="EN_QUALITY">Quality</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="nodes-plot"></div>
+        <div id="nodes-stats"></div>
+      </div>
+    </div>
+    <div id="edges-results">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <span style="margin-right: 10px; font-size: 20px; vertical-align: middle;">Edges Results</span>
+            <div class="button-group" style="display: inline-block;">
+              <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-th-list"></span> <span class="caret"></span></button>
+              <ul class="dropdown-menu"></ul>
+            </div>
+            <div class="animate form-group" style="display: inline-block">
+              <select class="form-control" style="width: 92px !important;">
+                <option value="EN_FLOW" selected>Flow</option>
+                <option value="EN_VELOCITY">Velocity</option>
+                <option value="EN_ENERGY">Energy</option>
+                <option value="EN_HEADLOSS">Head Loss</option>
+              </select>
+            </div>
+          </div>
+          <div id="edges-plot"></div>
+          <div id="edges-stats"></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div id="model-options-view">
     <h1 style="display: inline;">Global Options</h1>
@@ -422,7 +471,10 @@
                 <option value="EN_QUALITY">Quality</option>
               </select>
             </div>
-            <div id="node-results"></div>
+            <div id="node-results">
+              <div id="node-plot"></div>
+              <div id="node-stats"></div>
+            </div>
           </div>
         </div>
         <div id="node-x" hidden></div><div id="node-y" hidden></div>
@@ -468,7 +520,10 @@
                 <option value="EN_HEADLOSS">Head Loss</option>
               </select>
             </div>
-            <div id="edge-results"></div>
+            <div id="edge-results">
+              <div id="edge-plot"></div>
+              <div id="edge-stats"></div>
+            </div>
           </div>
         </div>
       </div>
