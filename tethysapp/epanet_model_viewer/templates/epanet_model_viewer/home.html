@@ -48,6 +48,7 @@
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
     <div id="model-tools-container" style="float: right; height: 0px;" hidden>
+      <button id="btn-update-inp" class="btn btn-default" style="margin-right: 9px; width: 128px;" disabled>Update .inp</button>
       <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 128px;">Run Model</button>
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 128px;">Save Model</button>
     </div>
@@ -187,7 +188,7 @@
   </div>
   <div id="results-view">
     <div class="container">
-      <div class="row">
+      <div class="row" style="display: grid;">
         <div class="col-lg-12" style="margin-bottom: 10px;">
           <div id="nodes-results">
             <span style="margin-right: 10px; font-size: 20px; vertical-align: middle;">Nodes Results</span>
@@ -211,7 +212,7 @@
     </div>
     <div id="edges-results">
       <div class="container">
-        <div class="row">
+        <div class="row" style="display: grid;">
           <div class="col-lg-12">
             <span style="margin-right: 10px; font-size: 20px; vertical-align: middle;">Edges Results</span>
             <div class="button-group" style="display: inline-block;">
