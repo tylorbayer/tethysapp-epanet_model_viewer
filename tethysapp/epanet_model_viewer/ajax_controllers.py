@@ -4,8 +4,11 @@ import os, tempfile, pprint
 
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+from .app import EpanetModelViewer as app
 
 from epanettools.epanettools import EPANetSimulation, Node, Link
+
+import uuid
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
@@ -109,10 +112,14 @@ def run_epanet_model(request):
     if request.is_ajax() and request.method == 'POST':
         model = request.POST['model']
 
-        with open('tmp.inp', 'w') as f:
+        temp = 'tmp_' + str(uuid.uuid4()) + '.inp'
+
+        with open(temp, 'w') as f:
             f.write(model)
-        es = EPANetSimulation('tmp.inp')
-        os.remove('tmp.inp')
+        es = EPANetSimulation(temp)
+        os.remove(temp)
+
+        # print app.get_user_workspace(request).path
 
         es.run()
 
