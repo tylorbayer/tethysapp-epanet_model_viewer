@@ -218,9 +218,94 @@
 
         document.onkeydown = function(evt) {
             evt = evt || window.event;
-            if (evt.keyCode === 27) {
-                $('#btn-default-edit').click();
+
+            switch(evt.which) {
+                case 27: // esc
+                    $('#btn-default-edit').click();
+                case 37: // left
+                    if ($modalNode.is(':visible')) {
+                        curNode.color = curNode.epaColor;
+                        s.renderers[0].dispatchEvent('outNode', {node: curNode});
+
+                        let nodes = s.graph.nodes();
+
+                        for (let i = 0; i < nodes.length; ++i) {
+                            if (nodes[i].epaId === curNode.epaId) {
+                                if (i === 0)
+                                    curNode = nodes[nodes.length - 1];
+                                else
+                                    curNode = nodes[i - 1];
+
+                                s.renderers[0].dispatchEvent('overNode', {node: curNode});
+                                populateNodeModal();
+                                break;
+                            }
+                        }
+                    }
+                    else if ($modalEdge.is(':visible')) {
+                        curEdge.hover_color = hoverColors[curEdge.epaType];
+                        s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
+
+                        let edges = s.graph.edges();
+
+                        for (let i = 0; i < edges.length; ++i) {
+                            if (edges[i].epaId === curEdge.epaId) {
+                                if (i === 0)
+                                    curEdge = edges[edges.length - 1];
+                                else
+                                    curEdge = edges[i - 1];
+
+                                s.renderers[0].dispatchEvent('overEdge', {edge: curEdge});
+                                populateEdgeModal();
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case 39: // right
+                    if ($modalNode.is(':visible')) {
+                        curNode.color = curNode.epaColor;
+                        s.renderers[0].dispatchEvent('outNode', {node: curNode});
+
+                        let nodes = s.graph.nodes();
+
+                        for (let i = 0; i < nodes.length; ++i) {
+                            if (nodes[i].epaId === curNode.epaId) {
+                                if (i + 1 === nodes.length)
+                                    curNode = nodes[0];
+                                else
+                                    curNode = nodes[i + 1];
+
+                                s.renderers[0].dispatchEvent('overNode', {node: curNode});
+                                populateNodeModal();
+                                break;
+                            }
+                        }
+                    }
+                    else if ($modalEdge.is(':visible')) {
+                        curEdge.hover_color = hoverColors[curEdge.epaType];
+                        s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
+
+                        let edges = s.graph.edges();
+
+                        for (let i = 0; i < edges.length; ++i) {
+                            if (edges[i].epaId === curEdge.epaId) {
+                                if (i + 1 === edges.length)
+                                    curEdge = edges[0];
+                                else
+                                    curEdge = edges[i + 1];
+
+                                s.renderers[0].dispatchEvent('overEdge', {edge: curEdge});
+                                populateEdgeModal();
+                                break;
+                            }
+                        }
+                    }
+                    break;
+
+                default: return; // exit this handler for other keys
             }
+            evt.preventDefault();
         };
 
         $('#btn-model-rep').click(function () {
@@ -405,9 +490,9 @@
                                     step: 1, //Assigning the slider step based on the depths that were retrieved in the controller
                                     animate: "fast",
                                     slide: function( event, ui ) {
-                                        stopAnimation();
-                                        playing = false;
+                                        playing = true;
                                         $btnPlayAnimation.click();
+                                        // console.log(event);
                                     }
                                 });
 
@@ -1217,7 +1302,7 @@
                 },
                 yaxis: {
                     title: resultType.text()
-                },
+                }
             };
 
             Plotly.newPlot('nodes-plot', plotData, layout);
@@ -1397,10 +1482,6 @@
         s.bind('clickStage', function(e) {
             canvasClick(e);
         });
-
-        // s.bind('rightClickStage', function(e) {
-        //     addVertClick(e);
-        // });
 
         s.bind('clickNodes', function(e) {
             nodeClick(e);

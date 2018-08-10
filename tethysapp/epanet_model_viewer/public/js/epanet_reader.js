@@ -424,8 +424,10 @@ function EPANET_Reader(file_text, caller) {
                     break;
                 let label = input[i].match(/\S+/g);
 
+                let id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
                 let node = {
-                    id: Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10),
+                    id: id,
+                    epaId: id,
                     epaType: "Label",
                     label: label.slice(2).join(' '),
                     x: 1 * label[0],
