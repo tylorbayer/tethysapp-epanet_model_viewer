@@ -82,7 +82,8 @@
         stopAnimation,
         resetAnimation,
         populateNodesResults,
-        populateEdgesResults;
+        populateEdgesResults,
+        updateInp;
 
     //  **********Query Selectors************
     let $modelOptions,
@@ -146,7 +147,8 @@
         $nodesPlot,
         $nodesStats,
         $edgesPlot,
-        $edgesStats;
+        $edgesStats,
+        $btnUdInp;
 
     //  *******Node/Edge Element Html********
     let nodeHtml = {
@@ -155,12 +157,12 @@
             "<tr><td>Elev:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Demand:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
-            "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
+            "<tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>",
         Reservoir:
             "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Head:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
-            "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
+            "<tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>",
         Tank:
             "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Elev:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
@@ -170,7 +172,7 @@
             "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>MinVol:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>VolCurve:</td><td><input type='text' class='inp-properties' readonly></td></tr>" +
-            "<tr><td>Quality:</td><td><input type='number' class='inp-properties' readonly></td></tr>",
+            "<tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>",
         Vertex:
             "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' readonly></td></tr>",
         Label:
@@ -181,8 +183,8 @@
         Pipe:
             "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Length:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
-            "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
+            "<tr><td>Roughness:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' readonly></td></tr>" +
             "<tr><td>Status:</td><td><input type='text' class='inp-properties' readonly><br><p>('Open', 'Closed', or 'CV')</p></td></tr>",
         Pump:
@@ -223,7 +225,7 @@
                 case 27: // esc
                     $('#btn-default-edit').click();
                 case 37: // left
-                    if ($modalNode.is(':visible')) {
+                    if ($modalNode.is(':visible') && !$chkNodeEdit.is(':checked')) {
                         curNode.color = curNode.epaColor;
                         s.renderers[0].dispatchEvent('outNode', {node: curNode});
 
@@ -242,7 +244,7 @@
                             }
                         }
                     }
-                    else if ($modalEdge.is(':visible')) {
+                    else if ($modalEdge.is(':visible') && !$chkEdgeEdit.is(':checked')) {
                         curEdge.hover_color = hoverColors[curEdge.epaType];
                         s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
 
@@ -263,7 +265,7 @@
                     }
                     break;
                 case 39: // right
-                    if ($modalNode.is(':visible')) {
+                    if ($modalNode.is(':visible') && !$chkNodeEdit.is(':checked')) {
                         curNode.color = curNode.epaColor;
                         s.renderers[0].dispatchEvent('outNode', {node: curNode});
 
@@ -282,7 +284,7 @@
                             }
                         }
                     }
-                    else if ($modalEdge.is(':visible')) {
+                    else if ($modalEdge.is(':visible') && !$chkEdgeEdit.is(':checked')) {
                         curEdge.hover_color = hoverColors[curEdge.epaType];
                         s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
 
@@ -305,7 +307,6 @@
 
                 default: return; // exit this handler for other keys
             }
-            evt.preventDefault();
         };
 
         $('#btn-model-rep').click(function () {
@@ -424,6 +425,8 @@
         $btnRunModel.click(function() {
             let data = {'model': file_text};
 
+            console.log(file_text);
+
             $('#loading-animation-run').removeAttr('hidden');
 
             $.ajax({
@@ -432,7 +435,7 @@
                 dataType: 'json',
                 data: data,
                 error: function () {
-                    $loadingAnimation.attr('hidden', true);
+                    $('#loading-animation-run').attr('hidden', true);
                     let message = 'An unexpected error occurred while uploading the model ';
 
                     addLogEntry('danger', message, true);
@@ -442,8 +445,6 @@
                     let message;
 
                     if (response.hasOwnProperty('success')) {
-                        $loadingAnimation.attr('hidden', true);
-
                         if (response.hasOwnProperty('message')) {
                             message = response.message;
                         }
@@ -976,6 +977,7 @@
             $modelOptions.find('select').attr('disabled', true);
             resetModelState();
             populateModelOptions();
+            updateInp();
         });
 
         $chkNodeEdit.click(function() {
@@ -1097,7 +1099,9 @@
                     $nodeY.empty();
                 }
                 resetModelState();
+                $chkNodeEdit.trigger('click');
             }
+            updateInp();
         });
 
         $btnNodeDelete.click(function() {
@@ -1187,7 +1191,9 @@
                 }
 
                 resetModelState();
+                $chkEdgeEdit.trigger('click');
             }
+            updateInp();
         });
 
         $btnEdgeDelete.click(function() {
@@ -1773,21 +1779,13 @@
 
         $('#edge-id').val(curEdge.epaId);
 
-        for (let i = 0; i < values.length - 1; ++i) {
+        for (let i = 0; i < values.length; ++i) {
             $modalEdge.find('input')[i + 1].value = curEdge.values[i];
         }
     };
 
     resetModelState = function() {
         s.refresh();
-        $btnOptionsOk.attr('disabled', true);
-        $chkOptionsEdit.attr('checked', false);
-        $btnNodeOk.attr('disabled', true);
-        $btnEdgeOk.attr('disabled', true);
-        $btnNodeDelete.attr('disabled', true);
-        $btnEdgeDelete.attr('disabled', true);
-        $chkNodeEdit.attr('checked', false);
-        $chkEdgeEdit.attr('checked', false);
         $nodePlot.empty();
         $nodeStats.empty();
         $edgePlot.empty();
@@ -1863,6 +1861,7 @@
         $nodesStats = $('#nodes-stats');
         $edgesPlot = $('#edges-plot');
         $edgesStats = $('#edges-stats');
+        $btnUdInp = $('#btn-update-inp');
     };
 
     openModel = function (modelId) {
@@ -1951,6 +1950,12 @@
                 }
             }
         });
+    };
+
+    updateInp = function () {
+        let epanetWriter = new EPANET_Writer(model);
+
+        $fileDisplayArea.innerText = epanetWriter.getFile();
     };
 
     setStateAfterLastModel = function () {

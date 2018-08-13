@@ -26,10 +26,11 @@ function EPANET_Reader(file_text, caller) {
     let curves = [];
     let controls = [];
     let rules = {};
-    let energy = [];
-    let reactions = [];
-    let times = [];
-    let report = [];
+    let energy = {};
+    let quality = {};
+    let reactions = {};
+    let times = {};
+    let report = {};
     let options = {};
     let backdrop = {};
 
@@ -233,40 +234,19 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.PATTERNS:
-                let pattern = input[i];
-                patterns[pattern] = [];
-                ++i;
+                if (input[i].charAt(0) === ';')
+                    break;
 
-                next = false;
-                while(!next) {
-                    if (input[i].charAt(0) === ";" || input[i] === '')
-                        next = true;
-                    else {
-                        let period = input[i].match(/\S+/g);
-                        patterns[pattern].push(period);
-                        ++i;
-                    }
-                }
+                let pattern = input[i].match(/\S+/g);
+                patterns[pattern[0]] = pattern.slice(1);
                 break;
 
             case intType.CURVES:
-                let curve = input[i];
-                ++i;
+                if (input[i].charAt(0) === ';')
+                    break;
 
-                next = false;
-                if (curve.charAt(0) === ";") {
-                    let values = [];
-                    while (!next) {
-                        if (input[i].charAt(0) === ";" || input[i] === '')
-                            next = true;
-                        else {
-                            values.push(input[i].match(/\S+/g));
-                            ++i;
-                        }
-                    }
-                    curves.push([curve, values]);
-                    --i;
-                }
+                let curve = input[i].match(/\S+/g);
+                curves[curve[0]] = curve.slice(1);
                 break;
 
             case intType.CONTROLS:
@@ -293,7 +273,8 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.ENERGY:
-                energy.push(input[i]);
+                let en = input[i].match(/\S+/g);
+                energy[en.slice(0,2).join(' ')] = en[2];
                 break;
 
             case intType.EMITTERS:
@@ -309,8 +290,8 @@ function EPANET_Reader(file_text, caller) {
                 if (input[i].charAt(0) === ';')
                     break;
 
-                let quality = input[i].match(/\S+/g);
-                nodeSpec[quality[0]]["values"].push(quality[1]);
+                let qual = input[i].match(/\S+/g);
+                quality[qual[0]] = qual[1];
 
                 break;
 
@@ -330,12 +311,7 @@ function EPANET_Reader(file_text, caller) {
             case intType.REACTIONS2:
                 let reaction = input[i].match(/\S+/g);
 
-                for (let j in reaction) {
-                    if (!isNaN(reaction[j])) {
-                        reactions.push([reaction.slice(0,j).join(' '), reaction[j]]);
-                        break;
-                    }
-                }
+                reactions[reaction.slice(0,2).join(' ')] = reaction[2];
                 break;
 
             case intType.MIXING:
@@ -348,16 +324,30 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.TIMES:
-                times.push(input[i]);
+                let time = input[i].match(/\S+/g);
+
+                if (time[0].toLowerCase() === 'start')
+                    times[time[0].toLowerCase()] = [time[time.length - 2], time[time.length - 1]];
+                else if (time[0].toLowerCase() === 'pattern' || time[0].toLowerCase() === 'report') {
+                    if (!times['pattern']) {
+                        times['pattern'] = [];
+                        times['report'] = [];
+                    }
+                    times[time[0].toLowerCase()].push(time[time.length - 1]);
+                }
+                else
+                    times[time[0].toLowerCase()] = time[time.length - 1];
                 break;
 
             case intType.REPORT:
-                report.push(input[i]);
+                let rep = input[i].match(/\S+/g);
+                report[rep[0]] = rep[rep.length - 1];
                 break;
 
             case intType.OPTIONS:
                 if (input[i].charAt(0) === ';')
                     break;
+
                 let option = input[i].match(/\S+/g);
 
                 if (option[0].toLowerCase() === "unbalanced" || option[0].toLowerCase() === "quality" || option[0].toLowerCase() === "hydraulics")
@@ -462,6 +452,7 @@ function EPANET_Reader(file_text, caller) {
     model.controls = controls;
     model.rules = rules;
     model.energy = energy;
+    model.quality = quality;
     model.reactions = reactions;
     model.times = times;
     model.report = report;
