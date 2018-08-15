@@ -120,9 +120,9 @@
     //  VARIABLES
     let resultsNodes = [], resultsEdges = [];
     //  QUERY SELECTORS
-    let $nodesPlot, $nodesStats, $edgesPlot, $edgesStats;
+    let $ddNodes, $nodesPlot, $nodesStats, $ddEdges, $edgesPlot, $edgesStats;
     // FUNCTIONS
-    let populateNodesResults, populateEdgesResults;
+    let populateNodesResults, populateEdgesResults, resetResultsOverview;
 
 
     //  ********** Other **********
@@ -729,7 +729,7 @@
             $nodesStats.empty();
         }
         else {
-            let resultType = $('#nodes-results').find('option:selected');
+            let resultType = $ddNodes.find('option:selected');
             let plotData = [];
             let statsValues = [[],[],[],[]];
 
@@ -763,9 +763,7 @@
                     statsValues[2].push(Math.max.apply(null, y).toFixed(2));
                     statsValues[3].push((total / y.length).toFixed(2));
                 }
-                catch (e) {
-                    // $('#nodes-results').append('<p>Results data for this node have not been computed</p>');
-                }
+                catch (e) {}
             }
 
             let layout = {
@@ -807,7 +805,7 @@
             $edgesStats.empty();
         }
         else {
-            let resultType = $('#edges-results').find('option:selected');
+            let resultType = $ddEdges.find('option:selected');
             let plotData = [];
             let statsData = [];
 
@@ -866,6 +864,17 @@
 
             Plotly.newPlot('edges-stats', statsData, layout);
         }
+    };
+
+    resetResultsOverview = function () {
+        $nodesPlot.empty();
+        $nodesStats.empty();
+        $ddNodes.find('ul').empty();
+        resultsNodes = [];
+        $edgesPlot.empty();
+        $edgesStats.empty();
+        $ddEdges.find('ul').empty();
+        resultsEdges = [];
     };
 
 
@@ -962,8 +971,10 @@
 
 
         //  ********** Results Overview **********
+        $ddNodes = $('#nodes-results');
         $nodesPlot = $('#nodes-plot');
         $nodesStats = $('#nodes-stats');
+        $ddEdges = $('#edges-results')
         $edgesPlot = $('#edges-plot');
         $edgesStats = $('#edges-stats');
 
@@ -1112,13 +1123,13 @@
                 $btnRunModel.trigger('mouseout');
 
                 ranModel = false;
-                resultsNodes = [];
-                resultsEdges = [];
             }
         });
 
         $btnRunModel.click(function() {
             let data = {'model': file_text};
+
+            resetResultsOverview();
 
             $('#loading-animation-run').removeAttr('hidden');
 
@@ -1190,7 +1201,7 @@
                                     }
                                 });
 
-                                let nodesDropdown = $('#nodes-results').find('.dropdown-menu');
+                                let nodesDropdown = $ddNodes.find('.dropdown-menu');
                                 for (let i in s.graph.nodes()) {
                                     let node = s.graph.nodes()[i];
                                     if (node.epaType !== "Vertex" && node.epaType !== "Label")
@@ -1199,7 +1210,7 @@
                                             node.epaId + '</a></li>');
                                 }
 
-                                $('#nodes-results').find('.dropdown-menu a').on('click', function(event) {
+                                $ddNodes.find('.dropdown-menu a').on('click', function(event) {
                                     let $target = $(event.currentTarget);
                                     let val = $target.attr('data-value');
                                     let $inp = $target.find('input');
@@ -1220,11 +1231,11 @@
                                     return false;
                                 });
 
-                                $('#nodes-results').find('select').change(function () {
+                                $ddNodes.find('select').change(function () {
                                     populateNodesResults();
                                 });
 
-                                let edgesDropdown = $('#edges-results').find('.dropdown-menu');
+                                let edgesDropdown = $ddEdges.find('.dropdown-menu');
                                 for (let i in s.graph.edges()) {
                                     let edge = s.graph.edges()[i];
                                     edgesDropdown.append('<li><a href="#" class="dropdown-item" data-value="' + edge.epaId +
@@ -1232,7 +1243,7 @@
                                         edge.epaId + '</a></li>');
                                 }
 
-                                $('#edges-results').find('.dropdown-menu a').on('click', function(event) {
+                                $ddEdges.find('.dropdown-menu a').on('click', function(event) {
                                     let $target = $(event.currentTarget);
                                     let val = $target.attr('data-value');
                                     let $inp = $target.find('input');
@@ -1253,7 +1264,7 @@
                                     return false;
                                 });
 
-                                $('#edges-results').find('select').change(function () {
+                                $ddEdges.find('select').change(function () {
                                     populateEdgesResults();
                                 });
 
