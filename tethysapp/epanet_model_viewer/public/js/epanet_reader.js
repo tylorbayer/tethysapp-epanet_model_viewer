@@ -1,4 +1,3 @@
-const INP_FILE_ERROR = "Input file incorrect";
 const intType = {TITLE:"[TITLE]", JUNCTIONS:"[JUNCTIONS]", RESERVOIRS:"[RESERVOIRS]",
     TANKS:"[TANKS]", PIPES:"[PIPES]", PUMPS:"[PUMPS]", VALVES:"[VALVES]",
     TAGS:"[TAGS]", DEMANDS:"[DEMANDS]", STATUS:"[STATUS]", PATTERNS:"[PATTERNS]",
@@ -376,7 +375,7 @@ function EPANET_Reader(file_text, caller) {
                         epaColor: nodeSpec[coord[0]]["color"],
                         source: nodeSpec[coord[0]]["source"] || [],
                         emitter: nodeSpec[coord[0]]["emitter"] || '',
-                        mixing: nodeSpec[coord[0]]["mixing"] || []
+                        mixing: nodeSpec[coord[0]]["mixing"] || [],
                     };
                     nodes.push(node);
                 }
@@ -385,6 +384,7 @@ function EPANET_Reader(file_text, caller) {
             case intType.VERTICES:
                 if (input[i].charAt(0) === ';')
                     break;
+
                 let vert = input[i].match(/\S+/g);
                 if (vert !== null) {
                     let edge = edges.find(edge => edge.id === vert[0]);
@@ -412,6 +412,7 @@ function EPANET_Reader(file_text, caller) {
             case intType.LABELS:
                 if (input[i].charAt(0) === ';')
                     break;
+
                 let label = input[i].match(/\S+/g);
 
                 let id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
@@ -432,15 +433,9 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.BACKDROP:
-                let backdropInfo = input[i].match(/\S+/g);
+                let back = input[i].match(/\S+/g);
 
-                if (backdropInfo[0].toLowerCase() === "dimensions")
-                    backdrop[backdropInfo[0].toLowerCase()] = [backdropInfo[1], backdropInfo[2], backdropInfo[3], backdropInfo[4]];
-                else if (backdropInfo[0].toLowerCase() === "offset")
-                    backdrop[backdropInfo[0].toLowerCase()] = [backdropInfo[1], backdropInfo[2]];
-                else
-                    backdrop[backdropInfo[0].toLowerCase()] = backdropInfo[1];
-                break;
+                backdrop[back[0]] = back.slice(1);
         }
     }
 

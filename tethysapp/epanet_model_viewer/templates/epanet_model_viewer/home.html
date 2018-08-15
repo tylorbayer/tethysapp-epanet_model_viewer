@@ -32,7 +32,7 @@
   {% else %}
   {% endif %}
 
-  <div id="node-edge-select"></div>
+  <div id="multiple-node-select"></div>
 </div>
 
 <div class="hidden" id="loading-model">
@@ -42,12 +42,12 @@
 </div>
 <div id="view-tabs">
   <ul>
-    <li><a href="#model-view">EPANET Model View</a></li>
+    <li id="#model-view"><a href="#model-view">EPANET Model View</a></li>
     <li class="ran-model hidden"><a href="#results-view">Results Overview</a></li>
     <li><a href="#model-options-view">Model Options</a></li>
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
-    <div id="model-tools-container" style="float: right; height: 0px;" hidden>
+    <div id="model-tools-container" style="float: right; height: 0px;">
       <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 128px;">Run Model</button>
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 128px;">Save Model</button>
     </div>
@@ -55,7 +55,7 @@
   <div id="model-view">
     <div style="position:absolute; right:0; margin-right: 23px">
       <button id="btn-edit-tools" class="btn btn-default" style="width: 125px;">Network Tools</button>
-      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px" disabled>Animation Tools</button>
+      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px">Animation Tools</button>
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
@@ -368,6 +368,27 @@
           </label>
           <button type="button" id="btn-options-ok" class="btn btn-primary" disabled>OK</button>
         </div>
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+          <table class="table table-nonfluid">
+            <tbody>
+            <tr>
+              <td>
+                <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-time" style="width: 128px; margin-bottom: 10px;">Time Options</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-curve" style="width: 128px; margin-bottom: 10px;">Curve Editor</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-pattern" style="width: 128px; margin-bottom: 10px;">Pattern Editor</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -383,33 +404,6 @@
 
 {# Use the after_app_content block for modals #}
 {% block after_app_content %}
-<!-- EPANET Model Repository Modal -->
-<div id="modal-model-rep" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">EPANET Model Repository Quick View</h4>
-      </div>
-      <div class="modal-body">
-        <img src="/static/epanet_model_viewer/images/loading-animation.gif">
-        <br>
-        <p><b>Loading model repository...</b></p>
-        <p>Note: Loading will continue if dialog is closed.</p>
-      </div>
-      <div class="modal-footer">
-        <div class="button-group flex1-0">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button id="btn-open-model" type="button" class="btn btn-primary btn-upload hidden" disabled>Open</button>
-        </div>
-      </div>
-    </div>
-    <!--End modal content-->
-  </div>
-</div>
-<!--End modal-->
-
 <!-- Upload/Save Model Modal -->
 <div id="modal-upload" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog" id="upload-dialog">
@@ -439,6 +433,129 @@
       <div class="modal-footer">
         <button id="btn-upload-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
         <button id="btn-upload" type="button" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Time Options Modal -->
+<div id="modal-time" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" id="time-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h5 class="modal-title" id="time-modal-label">Time Options</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table table-nonfluid">
+          <tbody>
+          <tr>
+            <td><b>Duration:</b></td>
+            <td><input id="duration" class="model-options" name="upload-title" type='text' readonly><br></td>
+          </tr>
+          <tr>
+            <td><b>Hydraulic Timestep:</b></td>
+            <td><input id="hydraulic" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Quality Timestep:</b></td>
+            <td><input id="quality" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Pattern Timestep:</b></td>
+            <td><input id="pattern1" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Pattern Start:</b></td>
+            <td><input id="pattern2" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Report Timestep:</b></td>
+            <td><input id="report1" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Report Start:</b></td>
+            <td><input id="report2" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Start ClockTime:</b></td>
+            <td><input id="start" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          <tr>
+            <td><b>Statistic:</b></td>
+            <td><input id="statistic" class="model-options" name="upload-description" type='text' readonly></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <span>Edit:</span>
+        <label class="switch">
+          <input id="chk-time-edit" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+        <button id="btn-time-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button id="btn-time-ok" type="button" class="btn btn-primary" disabled>Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Curve Editor Modal -->
+<div id="modal-curve" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" id="curve-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h5 class="modal-title" id="curve-modal-label">Curve Editor</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table table-nonfluid">
+          <tbody>
+          <tr>
+            <td><b>Title:</b></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <span>Edit:</span>
+        <label class="switch">
+          <input id="chk-curve-edit" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+        <button id="btn-curve-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button id="btn-curve-ok" type="button" class="btn btn-primary">Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pattern Editor Modal -->
+<div id="modal-pattern" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" id="pattern-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h5 class="modal-title" id="pattern-modal-label">Pattern Editor</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table table-nonfluid">
+          <tbody>
+          <tr>
+            <td><b>Title:</b></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <span>Edit:</span>
+        <label class="switch">
+          <input id="chk-pattern-edit" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+        <button id="btn-pattern-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button id="btn-pattern-ok" type="button" class="btn btn-primary">Ok</button>
       </div>
     </div>
   </div>
