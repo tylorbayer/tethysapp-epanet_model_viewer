@@ -26,7 +26,7 @@ function EPANET_Writer(model) {
     let ruleText = "[RULES]\n";
     let energyText = "[ENERGY]\n";
     let emmitText = "[EMITTERS]\n;Junction\tCoefficient\n";
-    let qualText = "[QUALITY]\n;Node\t\t\tInitQual\n";
+    let qualText = "[QUALITY]\n;Node\t\tInitQual\n";
     let sourceText = "[SOURCES]\n;Node\tType\tQuality\tPattern\t\n";
     let react1Text = "[REACTIONS]\n;Type\tPipe/Tank\tCoefficient\n";
     let react2Text = "[REACTIONS]\n";
@@ -49,22 +49,21 @@ function EPANET_Writer(model) {
     let curves = model.curves;
     let quality = model.quality;
     let reactions = model.reactions;
+    let backdrop = model.backdrop;
+    let energy = model.energy;
 
     titleText += model.title.join('\n') + '\n\n';
 
     nodes.forEach(function (node) {
         if (node.epaType === "Junction") {
-            console.log(node);
             junctText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 3).join('\t\t') + '\t\t\t;\n';
             popNodeCoord(node);
         }
         else if (node.epaType === "Reservoir") {
-            console.log(node);
             resText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 2).join('\t\t') + '\t\t\t;\n';
             popNodeCoord(node);
         }
         else if (node.epaType === "Tank") {
-            console.log(node);
             tankText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 7).join('\t\t') + '\t\t\t;\n';
             popNodeCoord(node);
         }
@@ -94,6 +93,9 @@ function EPANET_Writer(model) {
     coordText += '\n';
 
     edges.forEach(function (edge) {
+        edge.source = nodes.find(node => edge.source === node.id).epaId;
+        edge.target = nodes.find(node => edge.target === node.id).epaId;
+
         if (edge.epaType === "Pipe") {
             pipeText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
         }
@@ -145,11 +147,19 @@ function EPANET_Writer(model) {
     }
 
     for (let key in quality) {
-        qualText += ' ' + key + '\t' + quality[key] + '\n';
+        qualText += ' ' + key + '\t\t' + quality[key] + '\n';
     }
 
     for (let key in reactions) {
-        react2Text += ' ' + key + '\t' + reactions[key] + '\n';
+        react2Text += ' ' + key + '\t\t' + reactions[key] + '\n';
+    }
+
+    for (let key in backdrop) {
+        backText += ' ' + key + '\t\t' + backdrop[key].join('\t') + '\n';
+    }
+
+    for (let key in energy) {
+        energyText += ' ' + key + '\t\t' + energy[key] + '\n';
     }
 
     qualText += '\n';
@@ -175,8 +185,6 @@ function EPANET_Writer(model) {
     file_text += titleText + junctText + resText + tankText + pipeText + pumpText + valvText + tagText + demandText + statusText +
         patternText + curvText + controlText + ruleText + energyText + emmitText + qualText + sourceText + react1Text + react2Text +
         mixText + timeText + reportText + optText + coordText + vertText + labelText + backText + endText;
-
-    console.log(file_text);
 
     this.getFile = function() {
         return file_text;
