@@ -525,7 +525,7 @@
           <span class="slider round"></span>
         </label>
         <button id="btn-curve-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button id="btn-curve-ok" type="button" class="btn btn-primary">Ok</button>
+        <button id="btn-curve-ok" type="button" class="btn btn-primary" disabled>Ok</button>
       </div>
     </div>
   </div>
@@ -543,10 +543,25 @@
         <table class="table table-nonfluid">
           <tbody>
           <tr>
-            <td><b>Title:</b></td>
+            <td><b>Id:</b></td>
+            <td>
+              <div id="pattern-select" class="animate form-group" style="display: inline-block">
+                <select class="form-control">
+                </select>
+              </div>
+              <input type='text' id='inp-pattern-id' class='model-options' hidden>
+            </td>
+            <td>
+              <div id="btn-add-pattern" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-plus"></span></div>
+            </td>
+          </tr>
+          <tr>
+            <td><b>Multipliers:</b></td>
+            <td><input id="tagsinp-pattern-mults" class="model-options" type="text" data-role="tagsinput" disabled></td>
           </tr>
           </tbody>
         </table>
+        <div id="pattern-display"></div>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
@@ -554,8 +569,9 @@
           <input id="chk-pattern-edit" type="checkbox">
           <span class="slider round"></span>
         </label>
+        <button type="button" id="btn-pattern-delete" class="btn btn-danger" disabled>Delete</button>
         <button id="btn-pattern-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button id="btn-pattern-ok" type="button" class="btn btn-primary">Ok</button>
+        <button id="btn-pattern-ok" type="button" class="btn btn-primary" disabled>Ok</button>
       </div>
     </div>
   </div>
