@@ -80,9 +80,10 @@
     let populateCurveModal;
     //  ---------- Pattern
     //  QUERY SELECTORS
-    let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternCancel;
+    let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternCancel, $btnPatternDelete, $patternSelect, $inpPatternMults,
+        $patternDisplay, $btnAddPattern, $inpPatternId;
     //  FUNCTIONS
-    let populatePatternModal;
+    let populatePatternModal, resetPatternState, drawPattern;
 
 
     //  ********** Upload **********
@@ -138,6 +139,7 @@
     /******************************************************
      *               FUNCTION DECLARATIONS
      ******************************************************/
+
     /*-----------------------------------------------
      ************ Model/Graph FUNCTIONS ************
      ----------------------------------------------*/
@@ -579,7 +581,79 @@
     };
     //  ---------- Pattern
     populatePatternModal = function () {
-        console.log("pop pattern modal");
+        for (let key in model.patterns) {
+            $patternSelect.find('select').append('<option>' + key + '</option>');
+        }
+    };
+
+    resetPatternState = function () {
+        updateInp();
+        $chkPatternEdit.trigger('click');
+        $inpPatternId.val('');
+        $inpPatternMults.tagsinput('removeAll');
+
+        $patternSelect.find('select').change();
+    };
+
+    drawPattern = function (multipliers) {
+        if (multipliers !== undefined) {
+            let trace1 = {
+                x: [],
+                y: [],
+                fill: 'tozeroy',
+                type: 'scatter',
+                name: 'Pattern ' + $patternSelect.find('select').val()
+            };
+
+            let interval = 24 / multipliers.length;
+            let total = 0;
+
+            for (let i = 0; i < multipliers.length; ++i) {
+                total += parseFloat(multipliers[i]);
+
+                if (i !== 0) {
+                    trace1.x.push(i * interval);
+                    trace1.y.push(multipliers[i - 1]);
+                }
+
+                trace1.x.push(i * interval);
+                trace1.y.push(multipliers[i]);
+
+                if (i === multipliers.length - 1) {
+                    trace1.x.push(24);
+                    trace1.y.push(multipliers[i]);
+                }
+            }
+
+            let avg = total / multipliers.length;
+
+            let trace2 = {
+                x: [0, 24],
+                y: [avg, avg],
+                type: 'line',
+                name: 'Average'
+            };
+
+            let layout = {
+                showLegend: false,
+                xaxis: {
+                    title: 'Time (Time Period = ' + interval.toFixed(2) + ' hrs)',
+                    range: [0, 24]
+                },
+                yaxis: {
+                    title: 'Multiplier'
+                }
+            };
+
+            let data = [trace1, trace2];
+
+            Plotly.newPlot('pattern-display', data, layout);
+        }
+        else {
+            $patternSelect.find('select').empty();
+            $patternDisplay.empty();
+            $btnAddPattern.click();
+        }
     };
 
 
@@ -934,8 +1008,14 @@
         //  ---------- Pattern
         $modalPattern = $('#modal-pattern');
         $chkPatternEdit = $('#chk-pattern-edit');
-        $btnPatternOk = $('#btn-pattern-ok-ok');
+        $btnPatternOk = $('#btn-pattern-ok');
         $btnPatternCancel = $('#btn-pattern-cancel');
+        $btnPatternDelete = $('#btn-pattern-delete');
+        $patternSelect = $('#pattern-select');
+        $inpPatternMults = $('#tagsinp-pattern-mults');
+        $patternDisplay = $('#pattern-display');
+        $btnAddPattern = $('#btn-add-pattern');
+        $inpPatternId = $('#inp-pattern-id');
 
 
         //  ********** Upload **********
@@ -1805,6 +1885,89 @@
         //  ---------- Pattern
         $modalPattern.on('shown.bs.modal', function () {
             populatePatternModal();
+            $patternSelect.find('select').change();
+        });
+
+        $btnPatternOk.click(function () {
+            if ($btnAddPattern.hasClass('btn-success')) {
+                model.patterns[$patternSelect.find('select').val()] = $inpPatternMults.tagsinput('items');
+                resetPatternState();
+            }
+            else {
+                let patternId = $inpPatternId.val();
+                model.patterns[patternId] = $inpPatternMults.tagsinput('items');
+                $btnAddPattern.click();
+                $patternSelect.find('select').empty();
+                populatePatternModal();
+                $patternSelect.find('select').val(patternId);
+                $patternSelect.find('select').change();
+            }
+        });
+
+        $btnPatternDelete.click(function () {
+            delete model.patterns[$patternSelect.find('select').val()];
+            resetPatternState();
+        });
+
+        $chkPatternEdit.click(function () {
+            if ($chkPatternEdit.is(':checked')) {
+                $btnPatternOk.removeAttr('disabled');
+                $btnPatternDelete.removeAttr('disabled');
+
+                $inpPatternMults.attr('disabled', false);
+
+                $modalPattern.find('input')[0].focus();
+                $modalPattern.find('input')[0].select();
+            }
+            else {
+                $btnPatternOk.attr('disabled', true);
+                $btnPatternDelete.attr('disabled', true);
+
+                $inpPatternMults.attr('disabled', true);
+            }
+        });
+
+        $patternSelect.find('select').change(function () {
+            let multipliers = model.patterns[$(this).val()];
+
+            $inpPatternMults.tagsinput('removeAll');
+            for (let i in multipliers) {
+                $inpPatternMults.tagsinput('add', multipliers[i]);
+            }
+
+            drawPattern(multipliers);
+        });
+
+        $inpPatternMults.on('itemAdded', function(event) {
+            let item = event.item;
+
+            if (isNaN(item)) {
+                $inpPatternMults.tagsinput('remove', item);
+                alert('Pattern multiplier must be a number.');
+            }
+        });
+
+        $btnAddPattern.click(function () {
+            if ($btnAddPattern.hasClass('btn-success')) {
+                if (!$chkPatternEdit.is(':checked'))
+                    $chkPatternEdit.trigger('click');
+
+                $btnAddPattern.removeClass('btn-success').addClass('btn-danger');
+                $btnAddPattern.find('span').removeClass('glyphicon-plus').addClass('glyphicon-remove');
+                $patternSelect.addClass('hidden');
+                $inpPatternId.removeAttr('hidden');
+
+                $inpPatternMults.tagsinput('removeAll');
+                $patternDisplay.empty();
+            }
+            else {
+                $btnAddPattern.removeClass('btn-danger').addClass('btn-success');
+                $btnAddPattern.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                $patternSelect.removeClass('hidden');
+                $inpPatternId.attr('hidden', true);
+
+                resetPatternState();
+            }
         });
 
 
