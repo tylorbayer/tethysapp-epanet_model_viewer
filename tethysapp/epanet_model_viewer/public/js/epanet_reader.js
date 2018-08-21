@@ -22,7 +22,8 @@ function EPANET_Reader(file_text, caller) {
     let nodes = [];
     let edges = [];
     let patterns = {};
-    let curves = [];
+    let curves = {};
+    let nextCurveType = "";
     let controls = [];
     let rules = {};
     let energy = {};
@@ -237,15 +238,32 @@ function EPANET_Reader(file_text, caller) {
                     break;
 
                 let pattern = input[i].match(/\S+/g);
-                patterns[pattern[0]] = pattern.slice(1);
+
+                if (!(pattern[0] in patterns))
+                    patterns[pattern[0]] = pattern.slice(1);
+                else
+                    patterns[pattern[0]] = patterns[pattern[0]].concat(pattern.slice(1));
+
                 break;
 
             case intType.CURVES:
-                if (input[i].charAt(0) === ';')
+                if (input[i].charAt(0) === ';' && input[i].charAt(1) !== 'I') {
+                    nextCurveType = input[i];
+                    break;
+                }
+                else if (input[i].charAt(0) === ';')
                     break;
 
                 let curve = input[i].match(/\S+/g);
-                curves[curve[0]] = curve.slice(1);
+
+                if (!(curve[0] in curves)) {
+                    curves[curve[0]] = {};
+                    curves[curve[0]]["type"] = nextCurveType.substr(1, nextCurveType.length - 3);
+                    curves[curve[0]]["values"] = curve.slice(1);
+                }
+                else
+                    curves[curve[0]]["values"] = curves[curve[0]]["values"].concat(curve.slice(1));
+
                 break;
 
             case intType.CONTROLS:

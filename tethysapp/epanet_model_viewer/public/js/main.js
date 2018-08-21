@@ -74,10 +74,20 @@
     //  FUNCTIONS
     let populateTimeModal;
     //  ---------- Curve
+    //  VARIABLES
+    let dataTableLoadModels;
     //  QUERY SELECTORS
-    let $modalCurve, $chkCurveEdit, $btnCurveOk, $btnCurveCancel;
+    let $modalCurve, $chkCurveEdit, $btnCurveOk, $btnCurveCancel, $btnCurveDelete, $curveSelect, $inpCurveType,
+        $curveDisplay, $curveTable, $btnAddCurve, $inpCurveId;
+    //  CONSTANTS
+    let curveGraphLabels = {
+        PUMP: ['Flow', 'Head'],
+        EFFICIENCY: ['Flow', 'Efficiency'],
+        VOLUME: ['Water Level', 'Volume'],
+        HEADLOSS: ['Flow', 'Headloss']
+    };
     //  FUNCTIONS
-    let populateCurveModal;
+    let populateCurveModal, resetCurveState, drawCurve, setRemovePointListener;
     //  ---------- Pattern
     //  QUERY SELECTORS
     let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternCancel, $btnPatternDelete, $patternSelect, $inpPatternMults,
@@ -577,10 +587,77 @@
     };
     //  ---------- Curve
     populateCurveModal = function () {
-        console.log("pop curve modal");
+        $curveSelect.find('select').empty();
+
+        for (let key in model.curves) {
+            $curveSelect.find('select').append('<option>' + key + '</option>');
+        }
+    };
+
+    resetCurveState = function () {
+        updateInp();
+        $chkCurveEdit.trigger('click');
+        $inpCurveId.val('');
+
+        $curveSelect.find('select').change();
+    };
+
+    drawCurve = function (values) {
+        if (values !== undefined) {
+            let x = [];
+            let y = [];
+
+            if (values.length === 2 && $inpCurveType.val() === "PUMP") {
+                x = [0, values[0], 2 * values[0]];
+                y = [1.33 * values[1], values[1], 0];
+            }
+            else {
+                for (let i = 0; i < values.length; ++i) {
+                    x.push(values[i]);
+                    ++i;
+                    y.push(values[i]);
+                }
+            }
+
+            let trace1 = {
+                x: x,
+                y: y,
+                mode: 'lines+markers',
+                type: 'scatter',
+                name: 'Curve ' + $curveSelect.find('select').val(),
+                line: {shape: 'spline'}
+            };
+
+            let layout = {
+                xaxis: {
+                    title: curveGraphLabels[$inpCurveType.val()][0]
+                },
+                yaxis: {
+                    title: curveGraphLabels[$inpCurveType.val()][1]
+                }
+            };
+
+            let data = [trace1];
+
+            Plotly.newPlot('curve-display', data, layout);
+        }
+        else {
+            $curveSelect.find('select').empty();
+            $curveDisplay.empty();
+            $curveTable.find('tbody').empty();
+            $btnAddCurve.click();
+        }
+    };
+
+    setRemovePointListener = function () {
+      $('.curve-table-edit').click(function (e) {
+          $(this).parents('tr').remove();
+      });
     };
     //  ---------- Pattern
     populatePatternModal = function () {
+        $patternSelect.find('select').empty();
+
         for (let key in model.patterns) {
             $patternSelect.find('select').append('<option>' + key + '</option>');
         }
@@ -607,6 +684,8 @@
 
             let interval = 24 / multipliers.length;
             let total = 0;
+            let minY = multipliers[0];
+            let maxY = multipliers[0];
 
             for (let i = 0; i < multipliers.length; ++i) {
                 total += parseFloat(multipliers[i]);
@@ -623,6 +702,11 @@
                     trace1.x.push(24);
                     trace1.y.push(multipliers[i]);
                 }
+
+                if (multipliers[i] < minY)
+                    minY = multipliers[i];
+                if (multipliers[i] > maxY)
+                    maxY = multipliers[i];
             }
 
             let avg = total / multipliers.length;
@@ -635,13 +719,13 @@
             };
 
             let layout = {
-                showLegend: false,
                 xaxis: {
                     title: 'Time (Time Period = ' + interval.toFixed(2) + ' hrs)',
                     range: [0, 24]
                 },
                 yaxis: {
-                    title: 'Multiplier'
+                    title: 'Multiplier',
+                    range: [(parseFloat(minY) - 0.1), (parseFloat(maxY) + 0.1)]
                 }
             };
 
@@ -1005,6 +1089,13 @@
         $chkCurveEdit = $('#chk-curve-edit');
         $btnCurveOk = $('#btn-curve-ok');
         $btnCurveCancel = $('#btn-curve-cancel');
+        $btnCurveDelete = $('#btn-curve-delete');
+        $curveSelect = $("#curve-select");
+        $inpCurveType = $("#slc-curve-type");
+        $curveDisplay = $("#curve-display");
+        $curveTable = $("#curve-points");
+        $btnAddCurve = $("#btn-add-curve");
+        $inpCurveId = $("#inp-curve-id");
         //  ---------- Pattern
         $modalPattern = $('#modal-pattern');
         $chkPatternEdit = $('#chk-pattern-edit');
@@ -1881,6 +1972,162 @@
         //  ---------- Curve
         $modalCurve.on('shown.bs.modal', function () {
             populateCurveModal();
+            $curveSelect.find('select').change();
+        });
+
+        $btnCurveOk.click(function () {
+            if ($btnAddCurve.hasClass('btn-success')) {
+                let values = []
+                $curveTable.find('input').each(function( index ) {
+                  values.push($(this).val());
+                });
+                model.curves[$curveSelect.find('select').val()]["values"] = values;
+
+                model.curves[$curveSelect.find('select').val()]["type"] = $inpCurveType.val();
+
+                resetCurveState();
+            }
+            else {
+                let curveId = $inpCurveId.val();
+
+                if (!(curveId in model.curves))
+                    model.curves[curveId] = {};
+
+                let values = []
+                $curveTable.find('input').each(function( index ) {
+                  values.push($(this).val());
+                });
+                model.curves[curveId]["values"] = values;
+
+                model.curves[curveId]["type"] = $inpCurveType.val();
+                $curveSelect.find('select').empty();
+                populateCurveModal();
+                $btnAddCurve.click();
+                $curveSelect.find('select').val(curveId);
+                $curveSelect.find('select').change();
+            }
+        });
+
+        $btnCurveDelete.click(function () {
+            delete model.curves[$curveSelect.find('select').val()];
+
+            $curveSelect.find('select').empty();
+            populateCurveModal();
+
+            if(model.curves.length != 0)
+                $curveSelect.find('select').val($curveSelect.find('select option:first').val());
+
+            resetCurveState();
+        });
+
+        $chkCurveEdit.click(function () {
+            if ($chkCurveEdit.is(':checked')) {
+                $btnCurveOk.removeAttr('disabled');
+                $btnCurveDelete.removeAttr('disabled');
+
+                $inpCurveType.attr('disabled', false);
+                $curveTable.find('input').removeAttr('disabled');
+                $('.curve-table-edit').removeClass('hidden');
+
+                $modalCurve.find('input')[0].focus();
+                $modalCurve.find('input')[0].select();
+            }
+            else {
+                $btnCurveOk.attr('disabled', true);
+                $btnCurveDelete.attr('disabled', true);
+
+                $inpCurveType.attr('disabled', true);
+                $curveTable.find('input').attr('disabled', true);
+                $('.curve-table-edit').addClass('hidden');
+            }
+        });
+
+        $curveSelect.find('select').change(function () {
+            if (model.curves[$(this).val()]) {
+                $inpCurveType.val(model.curves[$(this).val()]["type"]);
+
+                try {
+                    dataTableLoadModels.destroy();
+                }
+                catch (e) {
+                    // nothing
+                }
+
+                $curveTable.empty();
+                $curveTable.html('<thead><th>' + curveGraphLabels[model.curves[$(this).val()]["type"]][0] + '</th><th>' +
+                    curveGraphLabels[model.curves[$(this).val()]["type"]][1] + '</th><th></th></thead><tbody></tbody>');
+
+                let hidden = '';
+                if (!$chkCurveEdit.is(':checked'))
+                    hidden = ' hidden';
+                let values = model.curves[$(this).val()]["values"];
+                for (let i = 0; i < values.length; ++i) {
+                    let pointHtml = '<tr><td><input type="number" name="x" class="x" value="' + values[i] +
+                        '" disabled></td>';
+                    ++i;
+                    pointHtml += '<td><input type="number" name="y" class="y" value="' + values[i] +
+                        '" disabled></td>';
+
+                    pointHtml += '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit' + hidden +
+                        '" role="group" data-toggle="tooltip" title="Remove Point"><span class="glyphicon glyphicon-remove">' +
+                        '</span></div></td></tr>';
+
+                    $curveTable.find('tbody').append(pointHtml);
+                }
+
+                dataTableLoadModels = $curveTable.DataTable({
+                    // "scrollY": '500px',
+                    paging: false,
+                    searching: false,
+                    ordering:  false
+                });
+
+                $('#curve-points_info').html('<div id="btn-add-curve-point" class="btn btn-success btn-group btn-xs curve-table-edit hidden" ' +
+                    'role="group" style="margin-left: 13px;" data-toggle="tooltip" title="Add Point">' +
+                    '<span class="glyphicon glyphicon-plus"></span></div>');
+
+                setRemovePointListener();
+
+                $('[data-toggle="tooltip"]').tooltip();
+
+                drawCurve(values);
+            }
+            else
+                $btnAddCurve.click();
+        });
+
+        $btnAddCurve.click(function () {
+            if ($btnAddCurve.hasClass('btn-success')) {
+                if (!$chkCurveEdit.is(':checked'))
+                    $chkCurveEdit.trigger('click');
+
+                $btnAddCurve.removeClass('btn-success').addClass('btn-danger');
+                $btnAddCurve.find('span').removeClass('glyphicon-plus').addClass('glyphicon-remove');
+                $btnAddCurve.prop('title', 'Cancel');
+                $curveSelect.addClass('hidden');
+                $inpCurveId.removeAttr('hidden');
+
+                $curveDisplay.empty();
+                $curveTable.find('tbody').empty();
+            }
+            else {
+                $btnAddCurve.removeClass('btn-danger').addClass('btn-success');
+                $btnAddCurve.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                $btnAddCurve.prop('title', 'New Curve');
+                $curveSelect.removeClass('hidden');
+                $inpCurveId.attr('hidden', true);
+
+                resetCurveState();
+            }
+        });
+
+        $('#btn-add-curve-point').click(function () {
+            let pointHtml = '<tr><td><input type="number" name="x" class="x"></td><td><input type="number" name="y" class="y"></td>' +
+                '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit" role="group" data-toggle="tooltip" ' +
+                'title="Remove Point"><span class="glyphicon glyphicon-remove"></span></div></td></tr>';
+
+            $curveTable.find('tbody').append(pointHtml);
+            setRemovePointListener();
         });
         //  ---------- Pattern
         $modalPattern.on('shown.bs.modal', function () {
@@ -1896,9 +2143,9 @@
             else {
                 let patternId = $inpPatternId.val();
                 model.patterns[patternId] = $inpPatternMults.tagsinput('items');
-                $btnAddPattern.click();
                 $patternSelect.find('select').empty();
                 populatePatternModal();
+                $btnAddPattern.click();
                 $patternSelect.find('select').val(patternId);
                 $patternSelect.find('select').change();
             }
@@ -1906,6 +2153,13 @@
 
         $btnPatternDelete.click(function () {
             delete model.patterns[$patternSelect.find('select').val()];
+
+            $patternSelect.find('select').empty();
+            populatePatternModal();
+
+            if(model.patterns.length != 0)
+                $patternSelect.find('select').val($patternSelect.find('select option:first').val());
+
             resetPatternState();
         });
 
@@ -1954,6 +2208,7 @@
 
                 $btnAddPattern.removeClass('btn-success').addClass('btn-danger');
                 $btnAddPattern.find('span').removeClass('glyphicon-plus').addClass('glyphicon-remove');
+                $btnAddPattern.prop('title', 'Cancel');
                 $patternSelect.addClass('hidden');
                 $inpPatternId.removeAttr('hidden');
 
@@ -1963,6 +2218,7 @@
             else {
                 $btnAddPattern.removeClass('btn-danger').addClass('btn-success');
                 $btnAddPattern.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                $btnAddPattern.prop('title', 'New Pattern');
                 $patternSelect.removeClass('hidden');
                 $inpPatternId.attr('hidden', true);
 
@@ -2396,6 +2652,8 @@
      ************** ONLOAD FUNCTION ****************
      ----------------------------------------------*/
     $(function () {
+        $('#tagsinp-pattern-mults').tagsinput({allowDuplicates: true});
+
         initializeJqueryVariables();
         addInitialEventListeners();
 
