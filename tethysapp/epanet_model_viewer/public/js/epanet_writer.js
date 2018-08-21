@@ -143,7 +143,8 @@ function EPANET_Writer(model) {
     }
 
     for (let key in curves) {
-        curvText += ' ' + key + '\t' + curves[key].join('\t') + '\n';
+        curvText += ';' + curves[key]['type'] + ': \n';
+        curvText += ' ' + key + '\t' + curves[key]['values'].join('\t') + '\n';
     }
 
     for (let key in quality) {
