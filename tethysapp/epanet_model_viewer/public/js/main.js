@@ -33,7 +33,7 @@
     //  VARIABLES
     let curNode = {}, isAddNode = false, nodeModalLeft = 0;
     //  QUERY SELECTORS
-    let $modalNode, $modalNodeLabel, $chkNodeEdit, $btnNodeOk, $btnNodeCancel, $btnNodeDelete, $nodeX, $nodeY, $nodeTabs,
+    let $modalNode, $modalNodeLabel, $btnNodeLeft, $btnNodeRight, $chkNodeEdit, $btnNodeOk, $btnNodeCancel, $btnNodeDelete, $nodeX, $nodeY, $nodeTabs,
         $nodePlot, $nodeStats, $viewNodeResults, $multipleNodeSelect;
     //  CONSTANTS
     let nodeHtml = {
@@ -44,14 +44,14 @@
         Label: "<tr><td><b>Label:</b></td><td><input type='text' id='epaId' readonly></td></tr>"
     };
     //  FUNCTIONS
-    let nodeClick, populateNodeModal;
+    let nodeClick, populateNodeModal, previousNode, nextNode;
 
 
     //  ********** Edge **********
     //  VARIABLES
     let curEdge = {}, edgeSource = null, isAddEdge = false,  edgeModalLeft = 0, edgeVerts = [];
     //  QUERY SELECTORS
-    let $modalEdge, $modalEdgeLabel, $chkEdgeEdit, $btnEdgeOk, $btnEdgeCancel, $btnEdgeDelete, $edgeTabs, $edgePlot,
+    let $modalEdge, $modalEdgeLabel, $btnEdgeLeft, $btnEdgeRight, $chkEdgeEdit, $btnEdgeOk, $btnEdgeCancel, $btnEdgeDelete, $edgeTabs, $edgePlot,
         $edgeStats, $viewEdgeResults;
     //  CONSTANTS
     let edgeHtml = {
@@ -60,7 +60,7 @@
         Valve: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Diameter:</td><td><input type='number' id='diameter' class='inp-properties needed' readonly> *</td></tr><tr><td>Type:</td><td><div class='form-group' style='display: inline-block'><select id='type' class='form-control needed' disabled><option value='PRV'>PRV</option><option value='PSV'>PSV</option><option value='PBV'>PBV</option><option value='FCV'>FCV</option><option value='TCV'>TCV</option><option value='GPV'>GPV</option></select></div> *</td></tr><tr><td>Setting:</td><td><input type='number' id='setting' class='inp-properties needed' readonly> *</td></tr><tr><td>Minor Loss:</td><td><input type='number' id='minorloss' class='inp-properties needed' value='0' readonly> *</td></tr>" + needed
     };
     //  FUNCTIONS
-    let edgeClick, populateEdgeModal;
+    let edgeClick, populateEdgeModal, previousEdge, nextEdge;
 
 
     //  ********** Model Options **********
@@ -506,6 +506,54 @@
             $('#epaId').val(curNode.label);
     };
 
+    previousNode = function() {
+        curNode.color = curNode.epaColor;
+        s.renderers[0].dispatchEvent('outNode', {node: curNode});
+
+        let nodes = s.graph.nodes();
+
+        for (let i = 0; i < nodes.length; ++i) {
+            if (nodes[i].properties.epaId === curNode.properties.epaId) {
+                if (i === 0)
+                    curNode = nodes[nodes.length - 1];
+                else
+                    curNode = nodes[i - 1];
+
+                s.renderers[0].dispatchEvent('overNode', {node: curNode});
+                populateNodeModal();
+                if (ranModel && curNode.epaType !== "Vertex" && curNode.epaType !== "Label")
+                    $('#node-results-view').find('select').change();
+                else if (ranModel)
+                    $edgeTabs.tabs({active: 0});
+                break;
+            }
+        }
+    };
+
+    nextNode = function() {
+        curNode.color = curNode.epaColor;
+        s.renderers[0].dispatchEvent('outNode', {node: curNode});
+
+        let nodes = s.graph.nodes();
+
+        for (let i = 0; i < nodes.length; ++i) {
+            if (nodes[i].properties.epaId === curNode.properties.epaId) {
+                if (i + 1 === nodes.length)
+                    curNode = nodes[0];
+                else
+                    curNode = nodes[i + 1];
+
+                s.renderers[0].dispatchEvent('overNode', {node: curNode});
+                populateNodeModal();
+                if (ranModel && curNode.epaType !== "Vertex" && curNode.epaType !== "Label")
+                    $('#node-results-view').find('select').change();
+                else if (ranModel)
+                    $edgeTabs.tabs({active: 0});
+                break;
+            }
+        }
+    };
+
 
     /*-----------------------------------------------
      ************ Edge FUNCTIONS ************
@@ -581,6 +629,50 @@
 
         for (let key in properties)
             $('#' + key).val(properties[key]);
+    };
+
+    previousEdge = function() {
+        curEdge.hover_color = hoverColors[curEdge.epaType];
+        s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
+
+        let edges = s.graph.edges();
+
+        for (let i = 0; i < edges.length; ++i) {
+            if (edges[i].properties.epaId === curEdge.properties.epaId) {
+                if (i === 0)
+                    curEdge = edges[edges.length - 1];
+                else
+                    curEdge = edges[i - 1];
+
+                s.renderers[0].dispatchEvent('overEdge', {edge: curEdge});
+                populateEdgeModal();
+                if (ranModel)
+                    $('#edge-results-view').find('select').change();
+                break;
+            }
+        }
+    };
+
+    nextEdge = function() {
+        curEdge.hover_color = hoverColors[curEdge.epaType];
+        s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
+
+        let edges = s.graph.edges();
+
+        for (let i = 0; i < edges.length; ++i) {
+            if (edges[i].properties.epaId === curEdge.properties.epaId) {
+                if (i + 1 === edges.length)
+                    curEdge = edges[0];
+                else
+                    curEdge = edges[i + 1];
+
+                s.renderers[0].dispatchEvent('overEdge', {edge: curEdge});
+                populateEdgeModal();
+                if (ranModel)
+                    $('#edge-results-view').find('select').change();
+                break;
+            }
+        }
     };
 
 
@@ -1134,6 +1226,8 @@
         //  ********** Node **********
         $modalNode = $('#modal-node');
         $modalNodeLabel = $('#modal-node-label');
+        $btnNodeLeft = $('#btn-node-left');
+        $btnNodeRight = $('#btn-node-right');
         $chkNodeEdit = $('#chk-node');
         $btnNodeOk = $('#btn-node-ok');
         $btnNodeCancel = $('#btn-node-cancel');
@@ -1150,6 +1244,8 @@
         //  ********** Edge **********
         $modalEdge = $('#modal-edge');
         $modalEdgeLabel = $('#modal-edge-label');
+        $btnEdgeLeft = $('#btn-edge-left');
+        $btnEdgeRight = $('#btn-edge-right');
         $chkEdgeEdit = $('#chk-edge');
         $btnEdgeOk = $('#btn-edge-ok');
         $btnEdgeCancel = $('#btn-edge-cancel');
@@ -1272,82 +1368,18 @@
                     $btnEditDefualt.click();
                 case 37: // left
                     if ($modalNode.is(':visible') && !$chkNodeEdit.is(':checked')) {
-                        curNode.color = curNode.epaColor;
-                        s.renderers[0].dispatchEvent('outNode', {node: curNode});
-
-                        let nodes = s.graph.nodes();
-
-                        for (let i = 0; i < nodes.length; ++i) {
-                            if (nodes[i].properties.epaId === curNode.properties.epaId) {
-                                if (i === 0)
-                                    curNode = nodes[nodes.length - 1];
-                                else
-                                    curNode = nodes[i - 1];
-
-                                s.renderers[0].dispatchEvent('overNode', {node: curNode});
-                                populateNodeModal();
-                                break;
-                            }
-                        }
+                        previousNode();
                     }
                     else if ($modalEdge.is(':visible') && !$chkEdgeEdit.is(':checked')) {
-                        curEdge.hover_color = hoverColors[curEdge.epaType];
-                        s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
-
-                        let edges = s.graph.edges();
-
-                        for (let i = 0; i < edges.length; ++i) {
-                            if (edges[i].properties.epaId === curEdge.properties.epaId) {
-                                if (i === 0)
-                                    curEdge = edges[edges.length - 1];
-                                else
-                                    curEdge = edges[i - 1];
-
-                                s.renderers[0].dispatchEvent('overEdge', {edge: curEdge});
-                                populateEdgeModal();
-                                break;
-                            }
-                        }
+                        previousEdge();
                     }
                     break;
                 case 39: // right
                     if ($modalNode.is(':visible') && !$chkNodeEdit.is(':checked')) {
-                        curNode.color = curNode.epaColor;
-                        s.renderers[0].dispatchEvent('outNode', {node: curNode});
-
-                        let nodes = s.graph.nodes();
-
-                        for (let i = 0; i < nodes.length; ++i) {
-                            if (nodes[i].properties.epaId === curNode.properties.epaId) {
-                                if (i + 1 === nodes.length)
-                                    curNode = nodes[0];
-                                else
-                                    curNode = nodes[i + 1];
-
-                                s.renderers[0].dispatchEvent('overNode', {node: curNode});
-                                populateNodeModal();
-                                break;
-                            }
-                        }
+                        nextNode();
                     }
                     else if ($modalEdge.is(':visible') && !$chkEdgeEdit.is(':checked')) {
-                        curEdge.hover_color = hoverColors[curEdge.epaType];
-                        s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
-
-                        let edges = s.graph.edges();
-
-                        for (let i = 0; i < edges.length; ++i) {
-                            if (edges[i].properties.epaId === curEdge.properties.epaId) {
-                                if (i + 1 === edges.length)
-                                    curEdge = edges[0];
-                                else
-                                    curEdge = edges[i + 1];
-
-                                s.renderers[0].dispatchEvent('overEdge', {edge: curEdge});
-                                populateEdgeModal();
-                                break;
-                            }
-                        }
+                        nextEdge();
                     }
                     break;
 
@@ -1628,6 +1660,10 @@
             }
         });
 
+        $btnNodeLeft.click(previousNode);
+
+        $btnNodeRight.click(nextNode);
+
         $chkNodeEdit.click(function() {
             if ($chkNodeEdit.is(':checked')) {
                 $btnNodeOk.removeAttr('disabled');
@@ -1867,6 +1903,10 @@
             $modalEdge.find('.modal-body-content').empty();
             resetModelState();
         });
+
+        $btnEdgeLeft.click(previousEdge);
+
+        $btnEdgeRight.click(nextEdge);
 
         $chkEdgeEdit.click(function() {
             if ($chkEdgeEdit.is(':checked')) {

@@ -139,7 +139,6 @@ function EPANET_Writer(model) {
     }
 
     for (let key in options) {
-        console.log(key + ' ' + options[key]);
         if(key.substr(4) === "unbalanced" || key.substr(4) === "quality" || key.substr(4) === "hydraulics")
             optText += ' ' + opts[key.substr(4)] + '\t' + options[key][0] + ' ' + options[key][1] + '\n';
         else
