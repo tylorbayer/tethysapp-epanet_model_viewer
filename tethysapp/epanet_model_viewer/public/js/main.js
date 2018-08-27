@@ -22,11 +22,11 @@
     let s = {}, model = {},
         graphColors = {Junction: '#666', Vertex: "#666", Reservoir: '#5F9EA0', Tank: '#8B4513', Label: '#d6d6c2', Pipe: '#ccc',
             Pump: '#D2B48C', Valve: '#7070db' }, hoverColors = {Pipe: '#808080', Pump: '#DAA520', Valve: '#3333cc' },
-        file_text = "", modelResults = {}, ranModel = false;
+        file_text = "", modelResults = {}, ranModel = false, needed = "<tr><td></td><td>(* required fields)</td></tr>";
     //  QUERY SELECTORS
     let $initialModel, $fileDisplayArea, $btnRunModel;
     //  FUNCTIONS
-    let addModelToUI, setStateAfterLastModel, openModel, canvasClick, drawModel, setGraphEventListeners, resetModelState, updateInp;
+    let addModelToUI, setStateAfterLastModel, openModel, readModel, canvasClick, drawModel, setGraphEventListeners, resetModelState, updateInp;
 
 
     //  ********** Node **********
@@ -37,11 +37,11 @@
         $nodePlot, $nodeStats, $viewNodeResults, $multipleNodeSelect;
     //  CONSTANTS
     let nodeHtml = {
-        Junction: "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr><tr><td>Elev:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Demand:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr><tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>",
-        Reservoir: "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr><tr><td>Head:</td><td><input type='text' class='inp-properties' readonly></td></tr><tr><td>Pattern:</td><td><input type='text' class='inp-properties' readonly></td></tr><tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>",
-        Tank: "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' class='inp-properties' readonly></td></tr><tr><td>Elev:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>InitLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>MinLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>MaxLevel:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>MinVol:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>VolCurve:</td><td><input type='text' class='inp-properties' readonly></td></tr><tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>",
-        Vertex: "<tr><td><b>Id:</b></td><td><input type='text' id='node-id' readonly></td></tr>",
-        Label: "<tr><td><b>Label:</b></td><td><input type='text' id='node-id' readonly></td></tr>"
+        Junction: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Elev:</td><td><input type='number' id='elev' class='inp-properties needed' readonly> *</td></tr><tr><td>Demand:</td><td><input type='number' id='demand' class='inp-properties needed' readonly> *</td></tr><tr><td>Pattern:</td><td><div class='form-group' style='display: inline-block'><select id='pattern' class='form-control' disabled><option value=''></option></select></div></td></tr><tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>" + needed,
+        Reservoir: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Head:</td><td><input type='text' id='head' class='inp-properties needed' readonly> *</td></tr><tr><td>Pattern:</td><td><div class='form-group' style='display: inline-block'><select id='pattern' class='form-control' disabled><option value=''></option></select></div></td></tr><tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>" + needed,
+        Tank: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Elev:</td><td><input type='number' id='elevation' class='inp-properties needed' readonly> *</td></tr><tr><td>InitLevel:</td><td><input type='number' id='initlevel' class='inp-properties needed' readonly> *</td></tr><tr><td>MinLevel:</td><td><input type='number' id='minlevel' class='inp-properties needed' readonly> *</td></tr><tr><td>MaxLevel:</td><td><input type='number' id='maxlevel' class='inp-properties needed' readonly> *</td></tr><tr><td>Diameter:</td><td><input type='number' id='diameter' class='inp-properties needed' readonly> *</td></tr><tr><td>MinVol:</td><td><input type='number' id='minvol' class='inp-properties needed' readonly> *</td></tr><tr><td>VolCurve:</td><td><div class='form-group' style='display: inline-block'><select id='volcurve' class='form-control' disabled><option value=''></option></select></div></td></tr><tr><td>Quality:</td><td><input type='number' id='node-quality' class='inp-properties' readonly></td></tr>" + needed,
+        Vertex: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' readonly></td></tr>",
+        Label: "<tr><td><b>Label:</b></td><td><input type='text' id='epaId' readonly></td></tr>"
     };
     //  FUNCTIONS
     let nodeClick, populateNodeModal;
@@ -55,9 +55,9 @@
         $edgeStats, $viewEdgeResults;
     //  CONSTANTS
     let edgeHtml = {
-        Pipe: "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr><tr><td>Length:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Roughness:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Status:</td><td><input type='text' class='inp-properties' readonly><br><p>('Open', 'Closed', or 'CV')</p></td></tr>",
-        Pump: "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr><tr><td>Parameters:</td><td><input type='text' class='inp-properties' readonly><br><input type='text' class='inp-properties' readonly></td></tr>",
-        Valve: "<tr><td><b>Id:</b></td><td><input type='text' id='edge-id' class='inp-properties' readonly></td></tr><tr><td>Diameter:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Type:</td><td><input type='text' class='inp-properties' readonly></td></tr><tr><td>Setting:</td><td><input type='number' class='inp-properties' readonly></td></tr><tr><td>Minor Loss:</td><td><input type='number' class='inp-properties' readonly></td></tr>"
+        Pipe: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Length:</td><td><input type='number' id='length' class='inp-properties needed' readonly> *</td></tr><tr><td>Diameter:</td><td><input type='number' id='diameter' class='inp-properties needed' readonly> *</td></tr><tr><td>Roughness:</td><td><input type='number' id='roughness' class='inp-properties needed' readonly> *</td></tr><tr><td>Minor Loss:</td><td><input type='number' id='minorloss' class='inp-properties needed' value='0' readonly> *</td></tr><tr><td>Status:</td><td><div class='form-group' style='display: inline-block'><select id='status' class='form-control needed' disabled><option value='Open'>Open</option><option value='Closed'>Closed</option><option value='CV'>CV</option></select></div> *</td></tr>" + needed,
+        Pump: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Parameters:</td><td><div class='form-group' style='display: inline-block'><select id='phead' class='form-control needed' disabled><option value='HEAD'>HEAD</option><option value='POWER'>POWER</option></select></div> *<br><input type='text' id='phid' class='inp-properties needed' readonly> *</td></tr><tr><td>Optional<br>Parameters:</td><td><div class='form-group' style='display: inline-block'><select id='opt' class='form-control needed' disabled><option value=''></option><option value='SPEED'>SPEED</option><option value='PATTERN'>PATTERN</option></select></div><br><input type='text' id='optid' class='inp-properties' readonly></td></tr>" + needed,
+        Valve: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Diameter:</td><td><input type='number' id='diameter' class='inp-properties needed' readonly> *</td></tr><tr><td>Type:</td><td><div class='form-group' style='display: inline-block'><select id='type' class='form-control needed' disabled><option value='PRV'>PRV</option><option value='PSV'>PSV</option><option value='PBV'>PBV</option><option value='FCV'>FCV</option><option value='TCV'>TCV</option><option value='GPV'>GPV</option></select></div> *</td></tr><tr><td>Setting:</td><td><input type='number' id='setting' class='inp-properties needed' readonly> *</td></tr><tr><td>Minor Loss:</td><td><input type='number' id='minorloss' class='inp-properties needed' value='0' readonly> *</td></tr>" + needed
     };
     //  FUNCTIONS
     let edgeClick, populateEdgeModal;
@@ -73,6 +73,21 @@
     let $modalTime, $chkTimeEdit, $btnTimeOk, $btnTimeCancel;
     //  FUNCTIONS
     let populateTimeModal;
+    //  ---------- Energy
+    //  QUERY SELECTORS
+    let $modalEnergy, $chkEnergyEdit, $btnEnergyOk, $btnEnergyCancel;
+    //  FUNCTIONS
+    let populateEnergyModal;
+    //  ---------- Reactions
+    //  QUERY SELECTORS
+    let $modalReactions, $chkReactionsEdit, $btnReactionsOk, $btnReactionsCancel;
+    //  FUNCTIONS
+    let populateReactionsModal;
+    //  ---------- Report
+    //  QUERY SELECTORS
+    let $modalReport, $chkReportEdit, $btnReportOk, $btnReportCancel;
+    //  FUNCTIONS
+    let populateReportModal;
     //  ---------- Curve
     //  VARIABLES
     let dataTableLoadModels;
@@ -87,7 +102,7 @@
         HEADLOSS: ['Flow', 'Headloss']
     };
     //  FUNCTIONS
-    let populateCurveModal, resetCurveState, drawCurve, setRemovePointListener;
+    let populateCurveModal, resetCurveState, drawCurve, setAddRemovePointListener;
     //  ---------- Pattern
     //  QUERY SELECTORS
     let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternCancel, $btnPatternDelete, $patternSelect, $inpPatternMults,
@@ -131,7 +146,8 @@
     //  VARIABLES
     let resultsNodes = [], resultsEdges = [];
     //  QUERY SELECTORS
-    let $ddNodes, $nodesPlot, $nodesStats, $ddEdges, $edgesPlot, $edgesStats;
+    let $ddNodes, $chkNodesFullResults, $nodesPlot, $nodesStats, $nodesFullResults, $ddEdges, $chkEdgesFullResults,
+        $edgesPlot, $edgesStats, $edgesFullResults;
     // FUNCTIONS
     let populateNodesResults, populateEdgesResults, resetResultsOverview;
 
@@ -218,6 +234,16 @@
         });
     };
 
+    readModel = function () {
+        let epanetReader = new EPANET_Reader(file_text);
+
+        model = epanetReader.getModel();
+        console.log(model);
+
+        if (model.nodes.length < 2)
+            model.nodes = s.graph.nodes();
+    };
+
     canvasClick = function(e) {
         if(!e.data.captor.isDragging && (isAddNode || edgeSource !== null)) {
             $('#node-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
@@ -289,9 +315,10 @@
             }
             else {
                 curNode.epaType = addType;
-                curNode.values = [];
+                curNode.properties = {};
                 populateNodeModal();
-                $chkNodeEdit.click();
+                if (!$chkNodeEdit.is(':checked'))
+                    $chkNodeEdit.trigger('click');
                 $btnNodeDelete.attr('disabled', true);
             }
         }
@@ -373,7 +400,7 @@
 
                 let selectHtml = "<select id='select-node-edge'>";
                 for (let i in curNodes) {
-                    selectHtml += "<option value='" + i + "'>" + curNodes[i].epaType + " " + curNodes[i].epaId + "</option>";
+                    selectHtml += "<option value='" + i + "'>" + curNodes[i].epaType + " " + curNodes[i].properties.epaId + "</option>";
                 }
                 selectHtml += "</select";
                 $multipleNodeSelect.append(selectHtml);
@@ -405,18 +432,17 @@
                     if (curNode.epaType === "Label" || curNode.epaType === "Vertex")
                         alert("Can't create edges off of Verticies or Labels");
                     else {
-                        if (edgeSource !== null && edgeSource.epaId !== curNode.epaId) {
+                        if (edgeSource !== null && edgeSource.properties.epaId !== curNode.properties.epaId) {
                             $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
 
                             curEdge = {};
                             curNode.color = "#1affff";
 
                             curEdge.epaType = addType;
-                            curEdge.values = [];
-                            curEdge.epaId = "";
+                            curEdge.properties = {};
+                            curEdge.properties.epaId = "";
                             populateEdgeModal();
-                            $chkEdgeEdit.click();
-                            $btnEdgeDelete.attr('disabled', true);
+                            $chkEdgeEdit.trigger('click');
                         }
                         else {
                             edgeSource = curNode;
@@ -436,12 +462,21 @@
         curNode.color = "#1affff";
         s.refresh();
 
-        let values = curNode.values;
+        let properties = curNode.properties;
 
         let html = "<table class='table table-nonfluid'><tbody>" + nodeHtml[curNode.epaType] + "</tbody></table>";
 
         $modalNodeLabel.html(curNode.epaType);
         $modalNode.find('.modal-body-content').html(html);
+
+        for (let key in model.patterns) {
+            $('#pattern').append('<option value="' + key + '">' + key + '</option>');
+        }
+
+        for (let key in model.curves) {
+            if(model.curves[key].type === "VOLUME")
+                $('#volcurve').append('<option value="' + key + '">' + key + '</option>');
+        }
 
         if (ranModel && !isAddNode && curNode.epaType !== "Vertex" && curNode.epaType !== "Label" && typeof nOpen === 'undefined') {
             $('#node-results-tab').removeClass('hidden');
@@ -458,20 +493,17 @@
             $modalNode.modal('show');
 
         if (curNode.epaType !== "Label") {
-            $('#node-id').val(curNode.epaId);
-
             if (curNode.epaType !== "Vertex") {
-                for (let i = 0; i < values.length - 1; ++i) {
-                    $modalNode.find('input')[i + 1].value = curNode.values[i];
-                }
+                for (let key in properties)
+                    $('#' + key).val(properties[key]);
             }
 
-            if (model.quality.hasOwnProperty(curNode.epaId)) {
-                $('#node-quality').val(model.quality[curNode.epaId]);
+            if (model.quality.hasOwnProperty(curNode.properties.epaId)) {
+                $('#node-quality').val(model.quality[curNode.properties.epaId]);
             }
         }
         else
-            $('#node-id').val(curNode.label);
+            $('#epaId').val(curNode.label);
     };
 
 
@@ -490,7 +522,7 @@
 
                 let selectHtml = "<select id='select-node-edge'>";
                 for (let i in curEdges) {
-                    selectHtml += "<option value='" + i + "'>" + curEdges[i].epaType + " " + curEdges[i].epaId + "</option>";
+                    selectHtml += "<option value='" + i + "'>" + curEdges[i].epaType + " " + curEdges[i].properties.epaId + "</option>";
                 }
                 selectHtml += "</select";
                 $multipleNodeSelect.append(selectHtml);
@@ -528,7 +560,7 @@
         curEdge.hover_color = "#1affff";
         s.refresh();
 
-        let values = curEdge.values;
+        let properties = curEdge.properties;
 
         let html = "<table class='table table-nonfluid'><tbody>" + edgeHtml[curEdge.epaType] + "</tbody></table>";
 
@@ -547,11 +579,8 @@
         if (typeof nOpen === 'undefined')
             $modalEdge.modal('show');
 
-        $('#edge-id').val(curEdge.epaId);
-
-        for (let i = 0; i < values.length; ++i) {
-            $modalEdge.find('input')[i + 1].value = curEdge.values[i];
-        }
+        for (let key in properties)
+            $('#' + key).val(properties[key]);
     };
 
 
@@ -559,8 +588,11 @@
      ************ Model Options FUNCTIONS ************
      ----------------------------------------------*/
     populateModelOptions = function () {
+        for (let key in model.patterns) {
+            $('#opt-pattern').append('<option value="' + key + '">' + key + '</option>');
+        }
         for (let key in model.options) {
-            if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
+            if(key === "opt-unbalanced" || key === "opt-quality" || key === "opt-hydraulics") {
                 $('#' + key + 1).val(model.options[key][0]);
                 $('#' + key + 2).val(model.options[key][1]);
             }
@@ -583,6 +615,30 @@
             else {
                 $('#' + key).val(timeOptions[key]);
             }
+        }
+    };
+    //  ---------- Energy
+    populateEnergyModal = function () {
+        let energyOptions = model.energy;
+
+        for (let key in energyOptions) {
+            $('#' + key).val(energyOptions[key]);
+        }
+    };
+    //  ---------- Reactions
+    populateReactionsModal = function () {
+        let reactionsOptions = model.reactions;
+
+        for (let key in reactionsOptions) {
+            $('#' + key).val(reactionsOptions[key]);
+        }
+    };
+    //  ---------- Report
+    populateReportModal = function () {
+        let reportOptions = model.report;
+
+        for (let key in reportOptions) {
+            $('#' + key).val(reportOptions[key]);
         }
     };
     //  ---------- Curve
@@ -649,10 +705,23 @@
         }
     };
 
-    setRemovePointListener = function () {
-      $('.curve-table-edit').click(function (e) {
-          $(this).parents('tr').remove();
-      });
+    setAddRemovePointListener = function () {
+        $('.curve-table-edit').click(function (e) {
+            $(this).parents('tr').remove();
+        });
+
+        $('#btn-add-curve-point').unbind('click').click(function () {
+            if ($curveTable.find('input').filter(function() {return !$(this).val().trim().length;}).length !== 0)
+                alert("All new points must have values.");
+            else {
+                let pointHtml = '<tr><td><input type="number" name="x" class="x"></td><td><input type="number" name="y" class="y"></td>' +
+                    '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit" role="group" data-toggle="tooltip" ' +
+                    'title="Remove Point"><span class="glyphicon glyphicon-remove"></span></div></td></tr>';
+
+                $curveTable.find('tbody').append(pointHtml);
+                setAddRemovePointListener();
+            }
+        });
     };
     //  ---------- Pattern
     populatePatternModal = function () {
@@ -684,8 +753,6 @@
 
             let interval = 24 / multipliers.length;
             let total = 0;
-            let minY = multipliers[0];
-            let maxY = multipliers[0];
 
             for (let i = 0; i < multipliers.length; ++i) {
                 total += parseFloat(multipliers[i]);
@@ -702,11 +769,6 @@
                     trace1.x.push(24);
                     trace1.y.push(multipliers[i]);
                 }
-
-                if (multipliers[i] < minY)
-                    minY = multipliers[i];
-                if (multipliers[i] > maxY)
-                    maxY = multipliers[i];
             }
 
             let avg = total / multipliers.length;
@@ -719,13 +781,19 @@
             };
 
             let layout = {
+                legend: {
+                    x: 0,
+                    y: 1.1,
+                    orientation: "h",
+                    bgcolor: '#66000000'
+                },
                 xaxis: {
                     title: 'Time (Time Period = ' + interval.toFixed(2) + ' hrs)',
                     range: [0, 24]
                 },
                 yaxis: {
                     title: 'Multiplier',
-                    range: [(parseFloat(minY) - 0.1), (parseFloat(maxY) + 0.1)]
+                    range: [(Math.min(trace1.y) - 0.1), (Math.max(trace1.y) + 0.1)]
                 }
             };
 
@@ -885,6 +953,7 @@
         if (resultsNodes.length === 0) {
             $nodesPlot.empty();
             $nodesStats.empty();
+            $nodesFullResults.empty();
         }
         else {
             let resultType = $ddNodes.find('option:selected');
@@ -892,10 +961,20 @@
             let statsValues = [[],[],[],[]];
 
             for (let i in resultsNodes) {
-                let node = s.graph.nodes().find(node => node.epaId === resultsNodes[i]);
+                let node = s.graph.nodes().find(node => node.properties.epaId === resultsNodes[i]);
 
                 try {
-                    let dataset = node.modelResults[resultType.val()];
+                    let modelResults = node.modelResults;
+
+                    // let headerVals = [];
+                    // for (let key in modelResults) {
+                    //     if (headerVals.length !== modelResults.length) {
+                    //         headerVals.push("<b>" + key + "</b>");
+                    //     }
+                    // }
+                    // Work on getting more graphs and tables after basic functionality is all built and working
+
+                    let dataset = modelResults[resultType.val()];
                     let x = [], y = [];
                     for (let i in dataset) {
                         y.push(dataset[i]);
@@ -905,7 +984,7 @@
                     let trace = {
                         x: x,
                         y: y,
-                        name: node.epaType + " " + node.epaId,
+                        name: node.epaType + " " + node.properties.epaId,
                         type: 'scatter'
                     };
 
@@ -916,12 +995,15 @@
                         total += parseInt(y[i]);
                     }
 
-                    statsValues[0].push(node.epaType + " " + node.epaId);
+                    statsValues[0].push(node.epaType + " " + node.properties.epaId);
                     statsValues[1].push(Math.min.apply(null, y).toFixed(2));
                     statsValues[2].push(Math.max.apply(null, y).toFixed(2));
                     statsValues[3].push((total / y.length).toFixed(2));
                 }
-                catch (e) {}
+                catch (e) {
+                    console.log(e);
+                }
+
             }
 
             let layout = {
@@ -961,6 +1043,7 @@
         if (resultsEdges.length === 0) {
             $edgesPlot.empty();
             $edgesStats.empty();
+            $edgesFullResults.empty();
         }
         else {
             let resultType = $ddEdges.find('option:selected');
@@ -968,7 +1051,7 @@
             let statsData = [];
 
             for (let i in resultsEdges) {
-                let edge = s.graph.edges().find(edge => edge.epaId === resultsEdges[i]);
+                let edge = s.graph.edges().find(edge => edge.properties.epaId === resultsEdges[i]);
 
                 try {
                     let dataset = edge.modelResults[resultType.val()];
@@ -981,7 +1064,7 @@
                     let trace = {
                         x: x,
                         y: y,
-                        name: edge.epaType + " " + edge.epaId,
+                        name: edge.epaType + " " + edge.properties.epaId,
                         type: 'scatter'
                     };
 
@@ -989,7 +1072,7 @@
 
                     trace = {
                         x: y,
-                        name: edge.epaType + " " + edge.epaId,
+                        name: edge.epaType + " " + edge.properties.epaId,
                         type: 'box',
                         boxmean: true
                     };
@@ -1027,10 +1110,12 @@
     resetResultsOverview = function () {
         $nodesPlot.empty();
         $nodesStats.empty();
+        $nodesFullResults.empty();
         $ddNodes.find('ul').empty();
         resultsNodes = [];
         $edgesPlot.empty();
         $edgesStats.empty();
+        $edgesFullResults.empty();
         $ddEdges.find('ul').empty();
         resultsEdges = [];
     };
@@ -1084,6 +1169,21 @@
         $chkTimeEdit = $('#chk-time-edit');
         $btnTimeOk = $('#btn-time-ok');
         $btnTimeCancel = $('#btn-time-cancel');
+        //  ---------- Energy
+        $modalEnergy = $('#modal-energy');
+        $chkEnergyEdit = $('#chk-energy-edit');
+        $btnEnergyOk = $('#btn-energy-ok');
+        $btnEnergyCancel = $('#btn-energy-cancel');
+        //  ---------- Reactions
+        $modalReactions = $('#modal-reactions');
+        $chkReactionsEdit = $('#chk-reactions-edit');
+        $btnReactionsOk = $('#btn-reactions-ok');
+        $btnReactionsCancel = $('#btn-reactions-cancel');
+        //  ---------- Report
+        $modalReport = $('#modal-report');
+        $chkReportEdit = $('#chk-report-edit');
+        $btnReportOk = $('#btn-report-ok');
+        $btnReportCancel = $('#btn-report-cancel');
         //  ---------- Curve
         $modalCurve = $('#modal-curve');
         $chkCurveEdit = $('#chk-curve-edit');
@@ -1143,11 +1243,15 @@
 
         //  ********** Results Overview **********
         $ddNodes = $('#nodes-results');
+        $chkNodesFullResults = $('#chk-nodes-full-results');
         $nodesPlot = $('#nodes-plot');
         $nodesStats = $('#nodes-stats');
-        $ddEdges = $('#edges-results')
+        $nodesFullResults = $('#nodes-results-table');
+        $ddEdges = $('#edges-results');
+        $chkEdgesFullResults = $('#chk-edges-full-results');
         $edgesPlot = $('#edges-plot');
         $edgesStats = $('#edges-stats');
+        $edgesFullResults = $('#edges-results-table');
 
 
         //  ********** Other **********
@@ -1174,7 +1278,7 @@
                         let nodes = s.graph.nodes();
 
                         for (let i = 0; i < nodes.length; ++i) {
-                            if (nodes[i].epaId === curNode.epaId) {
+                            if (nodes[i].properties.epaId === curNode.properties.epaId) {
                                 if (i === 0)
                                     curNode = nodes[nodes.length - 1];
                                 else
@@ -1193,7 +1297,7 @@
                         let edges = s.graph.edges();
 
                         for (let i = 0; i < edges.length; ++i) {
-                            if (edges[i].epaId === curEdge.epaId) {
+                            if (edges[i].properties.epaId === curEdge.properties.epaId) {
                                 if (i === 0)
                                     curEdge = edges[edges.length - 1];
                                 else
@@ -1214,7 +1318,7 @@
                         let nodes = s.graph.nodes();
 
                         for (let i = 0; i < nodes.length; ++i) {
-                            if (nodes[i].epaId === curNode.epaId) {
+                            if (nodes[i].properties.epaId === curNode.properties.epaId) {
                                 if (i + 1 === nodes.length)
                                     curNode = nodes[0];
                                 else
@@ -1233,7 +1337,7 @@
                         let edges = s.graph.edges();
 
                         for (let i = 0; i < edges.length; ++i) {
-                            if (edges[i].epaId === curEdge.epaId) {
+                            if (edges[i].properties.epaId === curEdge.properties.epaId) {
                                 if (i + 1 === edges.length)
                                     curEdge = edges[0];
                                 else
@@ -1268,18 +1372,13 @@
 
                 file_text = $fileDisplayArea.innerText;
 
-                let epanetReader = new EPANET_Reader(file_text, "not");
-
-                model = epanetReader.getModel();
-                console.log(model);
+                readModel();
                 populateModelOptions();
 
                 let activeIndex = $viewTabs.tabs("option", "active");
-
                 $viewTabs.tabs({active: 0});
                 drawModel();
                 $viewTabs.tabs({active: activeIndex});
-
 
                 $('.ran-model').addClass('hidden');
 
@@ -1335,6 +1434,8 @@
                                 addLogEntry('warning', message, true);
                             }
                             if (response.hasOwnProperty('results')) {
+                                modelResults = response.results;
+
                                 $btnRunModel.css('background-color', '#915F6D');
                                 $btnRunModel.css('color', 'white');
                                 $btnRunModel.unbind('mouseenter mouseleave');
@@ -1347,16 +1448,18 @@
                                 modelResults = response.results;
                                 console.log(modelResults);
 
-                                animationMaxStep = modelResults['nodes'][1]['EN_DEMAND'].length;
-
                                 for (let i in modelResults['nodes']) {
-                                    s.graph.nodes().find(node => node.epaId === i).modelResults = modelResults['nodes'][i];
+                                    s.graph.nodes().find(node => node.properties.epaId === i).modelResults = modelResults['nodes'][i];
+                                    animationMaxStep = modelResults['nodes'][i]['EN_DEMAND'].length;
                                 }
 
-                                $('#total-timesteps').val(animationMaxStep - 1);
+                                if (animationMaxStep === 1)
+                                    $('#total-timesteps').val(animationMaxStep);
+                                else
+                                    $('#total-timesteps').val(animationMaxStep - 1);
 
                                 for (let i in modelResults['edges']) {
-                                    s.graph.edges().find(edge => edge.epaId === i).modelResults = modelResults['edges'][i];
+                                    s.graph.edges().find(edge => edge.properties.epaId === i).modelResults = modelResults['edges'][i];
                                 }
 
                                 $animationSlider.slider({
@@ -1365,35 +1468,53 @@
                                     max: animationMaxStep - 1,
                                     step: 1, //Assigning the slider step based on the depths that were retrieved in the controller
                                     animate: "fast",
-                                    slide: function( event, ui ) {
+                                    slide: function (event, ui) {
                                         playing = true;
                                         $btnPlayAnimation.click();
-                                        // console.log(event);
                                     }
                                 });
 
                                 let nodesDropdown = $ddNodes.find('.dropdown-menu');
+
+                                nodesDropdown.append('<li><a href="#" id="chk-all-nodes" class="dropdown-item"' +
+                                    '" tabIndex="-1"><input type="checkbox"/>&nbsp;Select All</a></li>');
+
                                 for (let i in s.graph.nodes()) {
                                     let node = s.graph.nodes()[i];
                                     if (node.epaType !== "Vertex" && node.epaType !== "Label")
-                                        nodesDropdown.append('<li><a href="#" class="dropdown-item" data-value="' + node.epaId +
+                                        nodesDropdown.append('<li><a href="#" class="dropdown-item" data-value="' + node.properties.epaId +
                                             '" tabIndex="-1"><input type="checkbox"/>&nbsp;' + node.epaType + ' ' +
-                                            node.epaId + '</a></li>');
+                                            node.properties.epaId + '</a></li>');
                                 }
 
-                                $ddNodes.find('.dropdown-menu a').on('click', function(event) {
+                                $ddNodes.find('.dropdown-menu a').on('click', function (event) {
                                     let $target = $(event.currentTarget);
                                     let val = $target.attr('data-value');
                                     let $inp = $target.find('input');
                                     let idx;
 
-                                    if ((idx = resultsNodes.indexOf(val)) > -1) {
-                                        resultsNodes.splice(idx, 1);
-                                        $inp.prop('checked', false);
+                                    if ($(this).attr('id') === 'chk-all-nodes') {
+                                        if (!$inp.is(':checked')) {
+                                            $inp.prop('checked', true);
+                                        }
+                                        else {
+                                            $inp.prop('checked', false);
+                                        }
+
+                                        $ddNodes.find('.dropdown-menu a').each(function () {
+                                            if ($(this).attr('id') !== 'chk-all-nodes' && $(this).find('input').is(':checked') !== $inp.is(':checked'))
+                                                $(this).click();
+                                        });
                                     }
                                     else {
-                                        resultsNodes.push(val);
-                                        $inp.prop('checked', true);
+                                        if ((idx = resultsNodes.indexOf(val)) > -1) {
+                                            resultsNodes.splice(idx, 1);
+                                            $inp.prop('checked', false);
+                                        }
+                                        else {
+                                            resultsNodes.push(val);
+                                            $inp.prop('checked', true);
+                                        }
                                     }
 
                                     $(event.target).blur();
@@ -1406,27 +1527,50 @@
                                     populateNodesResults();
                                 });
 
+                                $chkNodesFullResults.click(function () {
+                                    populateNodesResults();
+                                });
+
                                 let edgesDropdown = $ddEdges.find('.dropdown-menu');
+
+                                edgesDropdown.append('<li><a href="#" id="chk-all-edges" class="dropdown-item"' +
+                                    '" tabIndex="-1"><input type="checkbox"/>&nbsp;Select All</a></li>');
+
                                 for (let i in s.graph.edges()) {
                                     let edge = s.graph.edges()[i];
-                                    edgesDropdown.append('<li><a href="#" class="dropdown-item" data-value="' + edge.epaId +
+                                    edgesDropdown.append('<li><a href="#" class="dropdown-item" data-value="' + edge.properties.epaId +
                                         '" tabIndex="-1"><input type="checkbox"/>&nbsp;' + edge.epaType + ' ' +
-                                        edge.epaId + '</a></li>');
+                                        edge.properties.epaId + '</a></li>');
                                 }
 
-                                $ddEdges.find('.dropdown-menu a').on('click', function(event) {
+                                $ddEdges.find('.dropdown-menu a').on('click', function (event) {
                                     let $target = $(event.currentTarget);
                                     let val = $target.attr('data-value');
                                     let $inp = $target.find('input');
                                     let idx;
 
-                                    if ((idx = resultsEdges.indexOf(val)) > -1) {
-                                        resultsEdges.splice(idx, 1);
-                                        $inp.prop('checked', false);
+                                    if ($(this).attr('id') === 'chk-all-edges') {
+                                        if (!$inp.is(':checked')) {
+                                            $inp.prop('checked', true);
+                                        }
+                                        else {
+                                            $inp.prop('checked', false);
+                                        }
+
+                                        $ddEdges.find('.dropdown-menu a').each(function () {
+                                            if ($(this).attr('id') !== 'chk-all-nodes' && $(this).find('input').is(':checked') !== $inp.is(':checked'))
+                                                $(this).click();
+                                        });
                                     }
                                     else {
-                                        resultsEdges.push(val);
-                                        $inp.prop('checked', true);
+                                        if ((idx = resultsEdges.indexOf(val)) > -1) {
+                                            resultsEdges.splice(idx, 1);
+                                            $inp.prop('checked', false);
+                                        }
+                                        else {
+                                            resultsEdges.push(val);
+                                            $inp.prop('checked', true);
+                                        }
                                     }
 
                                     $(event.target).blur();
@@ -1436,6 +1580,10 @@
                                 });
 
                                 $ddEdges.find('select').change(function () {
+                                    populateEdgesResults();
+                                });
+
+                                $chkEdgesFullResults.click(function () {
                                     populateEdgesResults();
                                 });
 
@@ -1468,10 +1616,14 @@
 
         $modalNode.on('hidden.bs.modal', function () {
             if (edgeVerts.length === 0) {
+                if ($chkNodeEdit.is(':checked'))
+                    $chkNodeEdit.trigger('click');
+
                 curNode.color = graphColors[curNode.epaType];
                 if (edgeSource)
                     edgeSource.color = graphColors[edgeSource.epaType];
                 s.refresh();
+                $modalNode.find('.modal-body-content').empty();
                 resetModelState();
             }
         });
@@ -1482,6 +1634,7 @@
                 $btnNodeDelete.removeAttr('disabled');
 
                 $modalNode.find('input').attr('readonly', false);
+                $modalNode.find('select').attr('disabled', false);
 
                 $modalNode.find('input')[0].focus();
                 $modalNode.find('input')[0].select();
@@ -1491,14 +1644,15 @@
                 $btnNodeDelete.attr('disabled', true);
 
                 $modalNode.find('input').attr('readonly', true);
+                $modalNode.find('select').attr('disabled', true);
 
                 populateNodeModal(true);
             }
         });
 
         $btnNodeOk.click(function() {
-            if ($('#node-id').val() === "" && curNode.epaType !== "Vertex")
-                alert("Id must have a value");
+            if ($('.needed').filter(function() {return !$(this).val().trim().length;}).length !== 0 && curNode.epaType !== "Vertex")
+                alert("Required fields must have values.");
             else {
                 if (curNode.epaType !== "Label") {
                     let edges = s.graph.edges;
@@ -1506,42 +1660,45 @@
                     for (let i in edges) {
                         if (edges[i].type === "vert") {
                             for (let j in edges[i].vert) {
-                                if (edges[i].vert[j] === curNode.epaId) {
-                                    edges[i].vert[j] = $('#node-id').val();
+                                if (edges[i].vert[j] === curNode.properties.epaId) {
+                                    edges[i].vert[j] = $('#epaId').val();
                                 }
                             }
                         }
                     }
 
                     if (curNode.epaType !== "Vertex") {
-                        curNode.epaId = $('#node-id').val();
-                        curNode.label = curNode.epaType + ' ' + $('#node-id').val();
-                        for (let i = 1; i < $modalNode.find('input').length - 1; ++i) {
-                            curNode.values[i - 1] = $modalNode.find('input')[i].value;
-                        }
+                        curNode.properties.epaId = $('#epaId').val();
+                        curNode.label = curNode.epaType + ' ' + $('#epaId').val();
+
+                        let properties = curNode.properties;
+                        $('#node-properties-view').find('input, select').each(function () {
+                            if ($(this).attr('id') !== 'node-quality')
+                                properties[$(this).attr('id')] = $(this).val();
+                        });
 
                         if ($('#node-quality').val() !== "")
-                            model.quality[curNode.epaId] = $('#node-quality').val();
-                        else if (model.quality.hasOwnProperty(curNode.epaId))
-                            delete model.quality[curNode.epaId];
+                            model.quality[curNode.properties.epaId] = $('#node-quality').val();
+                        else if (model.quality.hasOwnProperty(curNode.properties.epaId))
+                            delete model.quality[curNode.properties.epaId];
                     }
                     else {
-                        curNode.epaId = "vert " + edgeVerts.length;
+                        curNode.properties.epaId = "vert " + edgeVerts.length;
                         curNode.label = "vert " + edgeVerts.length;
                     }
                 }
                 else {
-                    curNode.label = $('#node-id').val();
+                    curNode.label = $('#epaId').val();
                 }
 
                 if ($nodeX.html() !== "") {
                     if (curNode.epaType === "Vertex") {
                         curNode.id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
                         curNode.size = 0.6;
-                        edgeVerts.push(curNode.epaId);
+                        edgeVerts.push(curNode.properties.epaId);
                     }
                     else if (curNode.epaType !== "Label") {
-                        curNode.id = curNode.epaId;
+                        curNode.id = curNode.properties.epaId;
                         curNode.label = curNode.epaType + " " + curNode.id;
                         curNode.size = 2;
                     }
@@ -1571,8 +1728,10 @@
                 }
                 resetModelState();
                 $chkNodeEdit.trigger('click');
+
+                if (!isAddEdge)
+                    updateInp();
             }
-            updateInp();
         });
 
         $btnNodeCancel.click(function() {
@@ -1584,14 +1743,14 @@
 
             if (curNode.epaType === "Vertex") {
                 try {
-                    let edge = s.graph.edges().find(edge => edge.epaId === curNode.id.split(" ")[0]);
+                    let edge = s.graph.edges().find(edge => edge.properties.epaId === curNode.id.split(" ")[0]);
                     let verts = edge.vert;
                     if (verts.length === 1) {
                         delete edge.vert;
                         delete edge.type;
                     }
                     else
-                        verts.splice(verts.indexOf(curNode.epaId), 1);
+                        verts.splice(verts.indexOf(curNode.properties.epaId), 1);
                 }
                 catch (e) {
                     // vert edge is gone already
@@ -1607,7 +1766,7 @@
         $('#node-view-tab').click(function () {
             $modalNode.find('.modal-dialog').css('left', nodeModalLeft);
             $modalNode.find('.modal-dialog').css('width', '315px');
-            $modalNode.find('.modal-dialog').css('height', '440px');
+            $modalNode.find('.modal-dialog').css('height', '550px');
         });
 
         $('#node-results-tab').click(function () {
@@ -1700,8 +1859,12 @@
         });
 
         $modalEdge.on('hidden.bs.modal', function () {
+            if ($chkEdgeEdit.is(':checked'))
+                $chkEdgeEdit.trigger('click');
+
             curEdge.hover_color = hoverColors[curEdge.epaType];
             s.refresh();
+            $modalEdge.find('.modal-body-content').empty();
             resetModelState();
         });
 
@@ -1711,6 +1874,7 @@
                 $btnEdgeDelete.removeAttr('disabled');
 
                 $modalEdge.find('input').attr('readonly', false);
+                $modalEdge.find('select').attr('disabled', false);
 
                 $modalEdge.find('input')[0].focus();
                 $modalEdge.find('input')[0].select();
@@ -1720,25 +1884,27 @@
                 $btnEdgeDelete.attr('disabled', true);
 
                 $modalEdge.find('input').attr('readonly', true);
+                $modalEdge.find('select').attr('disabled', true);
 
                 populateEdgeModal(true);
             }
         });
 
         $btnEdgeOk.click(function() {
-            if ($('#edge-id').val() === "")
-                alert("Id must have a value");
+            if ($('.needed').filter(function() {return !$(this).val().trim().length;}).length !== 0)
+                alert("Required fields must have values.");
             else {
-                curEdge.epaId = $('#edge-id').val();
-                curEdge.label = curEdge.epaType + ' ' + $('#edge-id').val();
+                curEdge.properties.epaId = $('#epaId').val();
+                curEdge.label = curEdge.epaType + ' ' + $('#epaId').val();
 
-                for (let i = 1; i < $modalEdge.find('input').length; ++i) {
-                    curEdge.values[i - 1] = $modalEdge.find('input')[i].value;
-                }
+                let properties = curEdge.properties;
+                $('#edge-properties-view').find('input, select').each(function () {
+                    properties[$(this).attr('id')] = $(this).val();
+                });
 
                 if (isAddEdge && edgeSource !== null) {
-                    curEdge.id = curEdge.epaId;
-                    curEdge.label = curEdge.epaType + " " + curEdge.epaId;
+                    curEdge.id = curEdge.properties.epaId;
+                    curEdge.label = curEdge.epaType + " " + curEdge.properties.epaId;
                     curEdge.color = graphColors[curEdge.epaType];
                     curEdge.hover_color = hoverColors[curEdge.epaType];
                     curEdge.size = 1;
@@ -1749,11 +1915,11 @@
                         curEdge.type = "vert";
 
                         for (let vert in edgeVerts) {
-                            let node = s.graph.nodes().find(node => node.epaId === edgeVerts[vert]);
+                            let node = s.graph.nodes().find(node => node.properties.epaId === edgeVerts[vert]);
                             s.graph.dropNode(node.id);
-                            node.epaId = curEdge.id + " " + edgeVerts[vert].substr(edgeVerts[vert].indexOf('vert'));
-                            node.id = node.epaId;
-                            node.label = node.epaId;
+                            node.properties.epaId = curEdge.id + " " + edgeVerts[vert].substr(edgeVerts[vert].indexOf('vert'));
+                            node.id = node.properties.epaId;
+                            node.label = node.properties.epaId;
                             edgeVerts[vert] = node.id;
 
                             try {
@@ -1786,8 +1952,8 @@
 
                 resetModelState();
                 $chkEdgeEdit.trigger('click');
+                updateInp();
             }
-            updateInp();
         });
 
         $btnEdgeCancel.click(function() {
@@ -1813,7 +1979,7 @@
         $('#edge-view-tab').click(function () {
             $modalEdge.find('.modal-dialog').css('left', edgeModalLeft);
             $modalEdge.find('.modal-dialog').css('width', '315px');
-            $modalEdge.find('.modal-dialog').css('height', '440px');
+            $modalEdge.find('.modal-dialog').css('height', '550px');
         });
 
         $('#edge-results-tab').click(function () {
@@ -1840,7 +2006,7 @@
                 let data = [trace];
 
                 let layout = {
-                    title: $(this).find('option:selected').text() + " for " + curEdge.epaType + " " + curEdge.epaId,
+                    title: $(this).find('option:selected').text() + " for " + curEdge.epaType + " " + curEdge.properties.epaId,
                     xaxis: {
                         title: 'Timestep'
                     },
@@ -1853,7 +2019,7 @@
 
                 trace = {
                     x: y,
-                    name: curEdge.epaType + " " + curEdge.epaId,
+                    name: curEdge.epaType + " " + curEdge.properties.epaId,
                     type: 'box',
                     boxmean: true
                 };
@@ -1903,7 +2069,7 @@
 
         $btnOptionsOk.click(function() {
             for(let key in model.options) {
-                if(key === "unbalanced" || key === "quality" || key === "hydraulics") {
+                if(key.substr(4) === "unbalanced" || key.substr(4) === "quality" || key.substr(4) === "hydraulics") {
                     model.options[key][0] = $('#' + key + 1).val();
                     model.options[key][1] = $('#' + key + 2).val();
                 }
@@ -1934,6 +2100,7 @@
                 $btnTimeOk.removeAttr('disabled');
 
                 $modalTime.find('input').attr('readonly', false);
+                $modalTime.find('select').attr('disabled', false);
 
                 $modalTime.find('input')[0].focus();
                 $modalTime.find('input')[0].select();
@@ -1942,6 +2109,7 @@
                 $btnTimeOk.attr('disabled', true);
 
                 $modalTime.find('input').attr('readonly', true);
+                $modalTime.find('select').attr('disabled', true);
 
                 populateTimeModal();
             }
@@ -1950,6 +2118,10 @@
         $btnTimeOk.click(function () {
             let timeOptions = model.times;
 
+            // $('#node-properties-view').find('input, select').each(function () {
+            //     if ($(this).attr('id') !== 'node-quality')
+            //         properties[$(this).attr('id')] = $(this).val();
+            // });
             for (let key in timeOptions) {
                 if (key === "pattern" || key === "report") {
                     timeOptions[key][0] = $('#' + key + '1').val();
@@ -1969,17 +2141,165 @@
             if ($chkTimeEdit.is(':checked'))
                 $chkTimeEdit.trigger('click')
         });
+        //  ---------- Energy
+        $modalEnergy.on('shown.bs.modal', function () {
+            $modalEnergy.find('input').keyup(function(event) {
+                if (event.keyCode === 13 && $chkEnergyEdit.is(':checked')) {
+                    $btnEnergyOk.click();
+                }
+            });
+
+            populateEnergyModal();
+        });
+
+        $modalEnergy.on('hidden.bs.modal', function () {
+            $modalEnergy.find('input').unbind('keyup');
+        });
+
+        $chkEnergyEdit.click(function() {
+            if ($chkEnergyEdit.is(':checked')) {
+                $btnEnergyOk.removeAttr('disabled');
+
+                $modalEnergy.find('input').attr('readonly', false);
+
+                $modalEnergy.find('input')[0].focus();
+                $modalEnergy.find('input')[0].select();
+            }
+            else {
+                $btnEnergyOk.attr('disabled', true);
+
+                $modalEnergy.find('input').attr('readonly', true);
+
+                populateEnergyModal();
+            }
+        });
+
+        $btnEnergyOk.click(function () {
+            let energyOptions = model.energy;
+
+            for (let key in energyOptions) {
+                energyOptions[key] = $('#' + key).val();
+            }
+
+            $chkEnergyEdit.trigger('click');
+            updateInp();
+        });
+
+        $btnEnergyCancel.click(function () {
+            if ($chkEnergyEdit.is(':checked'))
+                $chkEnergyEdit.trigger('click')
+        });
+        //  ---------- Reactions
+        $modalReactions.on('shown.bs.modal', function () {
+            $modalReactions.find('input').keyup(function(event) {
+                if (event.keyCode === 13 && $chkReactionsEdit.is(':checked')) {
+                    $btnReactionsOk.click();
+                }
+            });
+
+            populateReactionsModal();
+        });
+
+        $modalReactions.on('hidden.bs.modal', function () {
+            $modalReactions.find('input').unbind('keyup');
+        });
+
+        $chkReactionsEdit.click(function() {
+            if ($chkReactionsEdit.is(':checked')) {
+                $btnReactionsOk.removeAttr('disabled');
+
+                $modalReactions.find('input').attr('readonly', false);
+
+                $modalReactions.find('input')[0].focus();
+                $modalReactions.find('input')[0].select();
+            }
+            else {
+                $btnReactionsOk.attr('disabled', true);
+
+                $modalReactions.find('input').attr('readonly', true);
+
+                populateReactionsModal();
+            }
+        });
+
+        $btnReactionsOk.click(function () {
+            let reactionsOptions = model.reactions;
+
+            for (let key in reactionsOptions) {
+                reactionsOptions[key] = $('#' + key).val();
+            }
+
+            $chkReactionsEdit.trigger('click');
+            updateInp();
+        });
+
+        $btnReactionsCancel.click(function () {
+            if ($chkReactionsEdit.is(':checked'))
+                $chkReactionsEdit.trigger('click')
+        });
+        //  ---------- Report
+        $modalReport.on('shown.bs.modal', function () {
+            $modalReport.find('input').keyup(function(event) {
+                if (event.keyCode === 13 && $chkReportEdit.is(':checked')) {
+                    $btnReportOk.click();
+                }
+            });
+
+            populateReportModal();
+        });
+
+        $modalReport.on('hidden.bs.modal', function () {
+            $modalReport.find('input').unbind('keyup');
+        });
+
+        $chkReportEdit.click(function() {
+            if ($chkReportEdit.is(':checked')) {
+                $btnReportOk.removeAttr('disabled');
+
+                $modalReport.find('input').attr('readonly', false);
+                $modalReport.find('select').attr('disabled', false);
+
+                $modalReport.find('input')[0].focus();
+                $modalReport.find('input')[0].select();
+            }
+            else {
+                $btnReportOk.attr('disabled', true);
+
+                $modalReport.find('input').attr('readonly', true);
+                $modalReport.find('select').attr('disabled', false);
+
+                populateReportModal();
+            }
+        });
+
+        $btnReportOk.click(function () {
+            let reportOptions = model.report;
+
+            for (let key in reportOptions) {
+                reportOptions[key] = $('#' + key).val();
+            }
+
+            $chkReportEdit.trigger('click');
+            updateInp();
+        });
+
+        $btnReportCancel.click(function () {
+            if ($chkReportEdit.is(':checked'))
+                $chkReportEdit.trigger('click')
+        });
         //  ---------- Curve
         $modalCurve.on('shown.bs.modal', function () {
-            populateCurveModal();
-            $curveSelect.find('select').change();
+            if (Object.keys(model.curves).length > 0) {
+                populateCurveModal();
+                $curveSelect.find('select').change();
+            }
         });
 
         $btnCurveOk.click(function () {
             if ($btnAddCurve.hasClass('btn-success')) {
                 let values = []
                 $curveTable.find('input').each(function( index ) {
-                  values.push($(this).val());
+                    values.push($(this).val());
                 });
                 model.curves[$curveSelect.find('select').val()]["values"] = values;
 
@@ -1995,7 +2315,7 @@
 
                 let values = []
                 $curveTable.find('input').each(function( index ) {
-                  values.push($(this).val());
+                    values.push($(this).val());
                 });
                 model.curves[curveId]["values"] = values;
 
@@ -2086,7 +2406,7 @@
                     'role="group" style="margin-left: 13px;" data-toggle="tooltip" title="Add Point">' +
                     '<span class="glyphicon glyphicon-plus"></span></div>');
 
-                setRemovePointListener();
+                setAddRemovePointListener();
 
                 $('[data-toggle="tooltip"]').tooltip();
 
@@ -2121,14 +2441,6 @@
             }
         });
 
-        $('#btn-add-curve-point').click(function () {
-            let pointHtml = '<tr><td><input type="number" name="x" class="x"></td><td><input type="number" name="y" class="y"></td>' +
-                '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit" role="group" data-toggle="tooltip" ' +
-                'title="Remove Point"><span class="glyphicon glyphicon-remove"></span></div></td></tr>';
-
-            $curveTable.find('tbody').append(pointHtml);
-            setRemovePointListener();
-        });
         //  ---------- Pattern
         $modalPattern.on('shown.bs.modal', function () {
             populatePatternModal();
@@ -2282,7 +2594,7 @@
                         delayStep++;
                         animate.push(setTimeout(function () {
                             $animationSlider.slider("value", j);
-                            $('#timestep').val(j);
+                            $('#timestep').val(j + 1);
                             if (j === animationMaxStep)
                                 resetAnimation();
                             else {
@@ -2449,36 +2761,42 @@
 
         $editToolbar.find('a').click(function () {
             addType = this.name;
-
-            if ($(this).hasClass('active') && addType !== "Default")
-                $btnEditDefualt.click();
+            if (this.name === 'Full-Extent') {
+                $("#model-container").remove();
+                $("#model-display").append("<div id='model-container'></div>");
+                drawModel();
+            }
             else {
-                $editToolbar.find('a').removeClass('active');
-                $(this).addClass('active');
-
-                if ($chkDragNodes.is(':checked'))
-                    $chkDragNodes.click();
-
-                isAddEdge = false;
-                isAddNode = false;
-                if (edgeSource) {
-                    edgeSource.color = edgeSource.epaColor;
-                    curNode.color = curNode.epaColor;
-                    s.refresh();
-                }
-                edgeSource = null;
-
-                if (addType === "Default") {
-                    $('#model-container').css("cursor", "default");
-                    s.refresh();
-                }
-                else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
-                    isAddNode = true;
-                    $('#model-container').css("cursor", "crosshair");
-                }
+                if ($(this).hasClass('active') && addType !== "Default")
+                    $btnEditDefualt.click();
                 else {
-                    isAddEdge = true;
-                    $('#model-container').css("cursor", "pointer");
+                    $editToolbar.find('a').removeClass('active');
+                    $(this).addClass('active');
+
+                    if ($chkDragNodes.is(':checked'))
+                        $chkDragNodes.click();
+
+                    isAddEdge = false;
+                    isAddNode = false;
+                    if (edgeSource) {
+                        edgeSource.color = edgeSource.epaColor;
+                        curNode.color = curNode.epaColor;
+                        s.refresh();
+                    }
+                    edgeSource = null;
+
+                    if (addType === "Default") {
+                        $('#model-container').css("cursor", "default");
+                        s.refresh();
+                    }
+                    else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
+                        isAddNode = true;
+                        $('#model-container').css("cursor", "crosshair");
+                    }
+                    else {
+                        isAddEdge = true;
+                        $('#model-container').css("cursor", "pointer");
+                    }
                 }
             }
         });
@@ -2695,6 +3013,7 @@
                     immutable: false
                 }
             });
+            readModel();
             setGraphEventListeners();
         }
 
@@ -2723,7 +3042,7 @@
             for (let i = 0; i < verticies.length; ++i) {
                 try {
                     let nodesOnScreen = s.renderers["0"].nodesOnScreen;
-                    let nextVert = nodesOnScreen.find(node => node.epaId === verticies[i]);
+                    let nextVert = nodesOnScreen.find(node => node.properties.epaId === verticies[i]);
 
                     context.lineTo(
                         nextVert[prefix + 'x'],
@@ -2783,7 +3102,7 @@
             for (let i = 0; i < verticies.length; ++i) {
                 try {
                     let nodesOnScreen = s.renderers["0"].nodesOnScreen;
-                    let nextVert = nodesOnScreen.find(node => node.epaId === verticies[i]);
+                    let nextVert = nodesOnScreen.find(node => node.properties.epaId === verticies[i]);
 
                     context.lineTo(
                         nextVert[prefix + 'x'],
