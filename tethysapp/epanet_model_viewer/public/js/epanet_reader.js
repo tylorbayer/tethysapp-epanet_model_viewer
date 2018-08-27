@@ -9,11 +9,8 @@ const intType = {TITLE:"[TITLE]", JUNCTIONS:"[JUNCTIONS]", RESERVOIRS:"[RESERVOI
 
 
 function EPANET_Reader(file_text, caller) {
-    let input;
-    if (caller === "fileInput")
-        input = file_text.split('\r\n');
-    else
-        input = file_text.split('\n');
+    let input = file_text.split('\n');
+
     let curType;
 
     let model ={};
@@ -37,7 +34,6 @@ function EPANET_Reader(file_text, caller) {
     let nodeSpec = {};
 
     let next;
-    let lastVal = '';
     let reaction = 1;
 
     for (let i = 0; i < input.length; ++i) {
@@ -66,32 +62,34 @@ function EPANET_Reader(file_text, caller) {
                 if (input[i].charAt(0) === ';')
                     break;
 
-                let junct = input[i].match(/\S+/g);
-
-                lastVal = junct[3];
-                if (lastVal === ";")
-                    lastVal = "";
+                let junct = input[i].replace(';','').match(/\S+/g);
 
                 nodeSpec[junct[0]] = {
                     epaType: "Junction",
-                    values: [junct[1], junct[2], lastVal],
+                    properties: {
+                        epaId: junct[0],
+                        elev: junct[1] || '',
+                        demand: junct[2] || '',
+                        pattern: junct[3] || ''
+                    },
                     color: '#666',
                     epaColor: '#666'
                 };
                 break;
+
             case intType.RESERVOIRS:
                 if (input[i].charAt(0) === ';')
                     break;
 
-                let res = input[i].match(/\S+/g);
-
-                lastVal = res[2];
-                if (lastVal === ";")
-                    lastVal = "";
+                let res = input[i].replace(';','').match(/\S+/g);
 
                 nodeSpec[res[0]] = {
                     epaType: "Reservoir",
-                    values: [res[1], lastVal],
+                    properties: {
+                        epaId: res[0],
+                        head: res[1] || '',
+                        pattern: res[2] || ''
+                    },
                     color: "#5F9EA0",
                     epaColor: "#5F9EA0"
                 };
@@ -102,15 +100,20 @@ function EPANET_Reader(file_text, caller) {
                 if (input[i].charAt(0) === ';')
                     break;
 
-                let tank = input[i].match(/\S+/g);
-
-                lastVal = tank[7];
-                if (lastVal === ";")
-                    lastVal = "";
+                let tank = input[i].replace(';','').match(/\S+/g);
 
                 nodeSpec[tank[0]] = {
                     epaType: "Tank",
-                    values: [tank[1], tank[2], tank[3], tank[4], tank[5], tank[6], lastVal],
+                    properties: {
+                        epaId: tank[0],
+                        elevation: tank[1] || '',
+                        initlevel: tank[2] || '',
+                        minlevel: tank[3] || '',
+                        maxlevel: tank[4] || '',
+                        diameter: tank[5] || '',
+                        minvol: tank[6] || '',
+                        volcurve: tank[7] || ''
+                    },
                     color: '#8B4513',
                     epaColor: '#8B4513'
                 };
@@ -121,15 +124,21 @@ function EPANET_Reader(file_text, caller) {
                 if (input[i].charAt(0) === ';')
                     break;
 
-                let pipe = input[i].match(/\S+/g);
+                let pipe = input[i].replace(';','').match(/\S+/g);
 
                 if (pipe !== null) {
                     let edge = {
                         id: pipe[0],
-                        epaId: pipe[0],
                         label: 'Pipe ' + pipe[0],
                         epaType: "Pipe",
-                        values: [pipe[3], pipe[4], pipe[5], pipe[6], pipe[7]],
+                        properties: {
+                            epaId: pipe[0],
+                            length: pipe[3] || '',
+                            diameter: pipe[4] || '',
+                            roughness: pipe[5] || '',
+                            minorloss: pipe[6] || '0',
+                            status: pipe[7] || 'Open'
+                        },
                         source: pipe[1],
                         target: pipe[2],
                         size: 1,
@@ -144,15 +153,20 @@ function EPANET_Reader(file_text, caller) {
             case intType.PUMPS:
                 if (input[i].charAt(0) === ';')
                     break;
-                let pump = input[i].match(/\S+/g);
+                let pump = input[i].replace(';','').match(/\S+/g);
 
                 if (pump !== null) {
                     let edge = {
                         id: pump[0],
-                        epaId: pump[0],
                         label: 'Pump ' + pump[0],
                         epaType: "Pump",
-                        values: [pump[3], pump[4]],
+                        properties: {
+                            epaId: pump[0],
+                            phead: pump[3] || '',
+                            phid: pump[4] || '',
+                            opt: pump [5] || '',
+                            optid: pump[6] || ''
+                        },
                         source: pump[1],
                         target: pump[2],
                         size: 1,
@@ -168,15 +182,20 @@ function EPANET_Reader(file_text, caller) {
             case intType.VALVES:
                 if (input[i].charAt(0) === ';')
                     break;
-                let valve = input[i].match(/\S+/g);
+                let valve = input[i].replace(';','').match(/\S+/g);
 
                 if (valve !== null) {
                     let edge = {
                         id: valve[0],
-                        epaId: valve[0],
                         label: 'Valve ' + valve[0],
                         epaType: "Valve",
-                        values: [valve[3], valve[4], valve[5], valve[6]],
+                        properties: {
+                            epaId: valve[0],
+                            diameter: valve[3] || '',
+                            type: valve[4] || '',
+                            setting: valve[5] || '',
+                            minorloss: valve[6] || '0'
+                        },
                         source: valve[1],
                         target: valve[2],
                         size: 1,
@@ -258,7 +277,7 @@ function EPANET_Reader(file_text, caller) {
 
                 if (!(curve[0] in curves)) {
                     curves[curve[0]] = {};
-                    curves[curve[0]]["type"] = nextCurveType.substr(1, nextCurveType.length - 3);
+                    curves[curve[0]]["type"] = nextCurveType.substr(1, nextCurveType.indexOf(':') - 1);
                     curves[curve[0]]["values"] = curve.slice(1);
                 }
                 else
@@ -291,7 +310,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.ENERGY:
                 let en = input[i].match(/\S+/g);
-                energy[en.slice(0,2).join(' ')] = en[2];
+                energy['eng-' + en[1].toLowerCase()] = en[2];
                 break;
 
             case intType.EMITTERS:
@@ -328,7 +347,7 @@ function EPANET_Reader(file_text, caller) {
             case intType.REACTIONS2:
                 let reaction = input[i].match(/\S+/g);
 
-                reactions[reaction.slice(0,2).join(' ')] = reaction[2];
+                reactions['rea-' + reaction[0].substr(0,1).toLowerCase() + reaction[1].toLowerCase()] = reaction[2];
                 break;
 
             case intType.MIXING:
@@ -358,7 +377,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.REPORT:
                 let rep = input[i].match(/\S+/g);
-                report[rep[0]] = rep[rep.length - 1];
+                report['rep-' + rep[0].toLowerCase()] = rep[rep.length - 1];
                 break;
 
             case intType.OPTIONS:
@@ -368,9 +387,9 @@ function EPANET_Reader(file_text, caller) {
                 let option = input[i].match(/\S+/g);
 
                 if (option[0].toLowerCase() === "unbalanced" || option[0].toLowerCase() === "quality" || option[0].toLowerCase() === "hydraulics")
-                    options[option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
+                    options['opt-' + option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
                 else
-                    options[option[0].toLowerCase()] = option[option.length - 1];
+                    options['opt-' + option[0].toLowerCase()] = option[option.length - 1];
                 break;
 
             case intType.COORDINATES:
@@ -382,12 +401,11 @@ function EPANET_Reader(file_text, caller) {
                 if (coord !== null) {
                     let node = {
                         id: coord[0],
-                        epaId: coord[0],
                         label: nodeSpec[coord[0]]["epaType"] + " " + coord[0],
                         x: 1 * coord[1],
                         y: -1 * coord[2],
                         epaType: nodeSpec[coord[0]]["epaType"],
-                        values: nodeSpec[coord[0]]["values"],
+                        properties: nodeSpec[coord[0]]["properties"],
                         size: 2,
                         color: nodeSpec[coord[0]]["color"],
                         epaColor: nodeSpec[coord[0]]["color"],
@@ -413,7 +431,9 @@ function EPANET_Reader(file_text, caller) {
 
                     let node = {
                         id: vert[0] + ' vert ' + edge.vert.length,
-                        epaId: vert[0] + ' vert ' + edge.vert.length,
+                        properties: {
+                            epaId: vert[0] + ' vert ' + edge.vert.length
+                        },
                         label: vert[0] + ' vert ' + edge.vert.length,
                         x: 1 * vert[1],
                         y: -1 * vert[2],
@@ -436,7 +456,9 @@ function EPANET_Reader(file_text, caller) {
                 let id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
                 let node = {
                     id: id,
-                    epaId: id,
+                    properties: {
+                        epaId: id
+                    },
                     epaType: "Label",
                     label: label.slice(2).join(' '),
                     x: 1 * label[0],
@@ -451,9 +473,13 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.BACKDROP:
-                let back = input[i].match(/\S+/g);
-
-                backdrop[back[0]] = back.slice(1);
+                try {
+                    let back = input[i].match(/\S+/g);
+                    backdrop[back[0]] = back.slice(1);
+                }
+                catch (e) {
+                    // no backdrop
+                }
         }
     }
 
@@ -466,6 +492,16 @@ function EPANET_Reader(file_text, caller) {
     model.rules = rules;
     model.energy = energy;
     model.quality = quality;
+    // if (Object.keys(reactions).length === 0)
+    //     reactions = {
+    //     'Order Bulk': 1,
+    //         'Order Tank': 1,
+    //         'Order Wall': 1,
+    //         'Global Bulk': -1,
+    //         'Global Wall': 0,
+    //         'Limiting Potential': 0.0,
+    //         'Roughness Correlation': 0.0
+    //     };
     model.reactions = reactions;
     model.times = times;
     model.report = report;

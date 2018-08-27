@@ -82,6 +82,10 @@
     color: white;
 }
 
+#model-options-view select {
+    width: 145px !important;
+}
+
 /*****************************************************/
 
 /*****************************************************/
@@ -128,7 +132,37 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                CURVE OPTIONS MODAL                 */
+/*                ENERGY OPTIONS MODAL                 */
+
+#modal-energy .modal-dialog {
+    height: 280px;
+    width: 340px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                REACTIONS OPTIONS MODAL                 */
+
+#modal-reactions .modal-dialog {
+    height: 390px;
+    width: 370px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                REPORT OPTIONS MODAL                 */
+
+#modal-report .modal-dialog {
+    height: 280px;
+    width: 340px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                CURVE EDITOR MODAL                 */
 
 #modal-curve .modal-dialog {
     height: 700px;
@@ -138,11 +172,31 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                PATTERN OPTIONS MODAL                 */
+/*                PATTERN EDITOR MODAL                 */
 
 #modal-pattern .modal-dialog {
     height: 700px;
     width: 800px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                CONTROLS EDITOR MODAL                 */
+
+#modal-controls .modal-dialog {
+    height: 300px;
+    width: 300px;
+}
+
+/*****************************************************/
+
+/*****************************************************/
+/*                RULES EDITOR MODAL                 */
+
+#modal-rules .modal-dialog {
+    height: 300px;
+    width: 300px;
 }
 
 /*****************************************************/
@@ -163,7 +217,7 @@ input[type="radio"] {
 #modal-node .modal-dialog, #modal-edge .modal-dialog {
     position: absolute;
     width: 315px;
-    height: 480px;
+    height: 620px;
 }
 
 
@@ -181,6 +235,10 @@ input[type="radio"] {
     background-color: lightgray;
     border: none;
     padding-left: 5px;
+}
+
+#modal-node select, #modal-edge select {
+    width: 145px !important;
 }
 
 /*****************************************************/
@@ -413,7 +471,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .icon-bar a {
     float: left;
-    width: 83px;
+    width: 74px;
     height: 55px;
     padding:10px;
     text-align: center;
@@ -460,4 +518,8 @@ div.inline { float:left; }
     margin-bottom: 10px;
     text-align: left;
     font-size: 12px;
+}
+
+.options-buttons {
+    width: 135px; margin-bottom: 13px;
 }

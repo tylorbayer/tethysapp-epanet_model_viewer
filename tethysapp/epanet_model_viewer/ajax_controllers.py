@@ -6,7 +6,7 @@ from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 from .app import EpanetModelViewer as app
 
-from epanettools.epanettools import EPANetSimulation, Node, Link
+from epanettools.epanettools import EPANetSimulation, Node, Link, Control
 
 import uuid
 
@@ -116,50 +116,58 @@ def run_epanet_model(request):
 
         with open(temp, 'w') as f:
             f.write(model)
-        es = EPANetSimulation(temp)
-        os.remove(temp)
+        try:
+            es = EPANetSimulation(temp)
 
-        # print app.get_user_workspace(request).path
+            # print app.get_user_workspace(request).path
 
-        es.run()
+            es.run()
 
-        nodes = {}
-        node_list = es.network.nodes
+            nodes = {}
+            node_list = es.network.nodes
 
-        for node in node_list:
-            node_vals = {}
-            node_id = node_list[node].id
+            for node in node_list:
+                node_vals = {}
+                node_id = node_list[node].id
 
-            for val_type in Node.value_type:
-                try:
-                    node_vals[val_type] = ["%.2f" % member for member in node_list[node_id].results[Node.value_type[val_type]]]
-                except:
-                    pass
+                for val_type in Node.value_type:
+                    try:
+                        node_vals[val_type] = ["%.2f" % member for member in node_list[node_id].results[Node.value_type[val_type]]]
+                    except:
+                        pass
 
-            nodes[node_id] = node_vals
+                nodes[node_id] = node_vals
 
-        links = {}
-        link_list = es.network.links
+            links = {}
+            link_list = es.network.links
 
-        for link in link_list:
-            link_vals = {}
-            link_id = link_list[link].id
+            for link in link_list:
+                link_vals = {}
+                link_id = link_list[link].id
 
-            for val_type in Link.value_type:
-                try:
-                    link_vals[val_type] = ["%.2f" % member for member in link_list[link_id].results[Link.value_type[val_type]]]
-                except:
-                    pass
+                for val_type in Link.value_type:
+                    try:
+                        link_vals[val_type] = ["%.2f" % member for member in link_list[link_id].results[Link.value_type[val_type]]]
+                    except:
+                        pass
 
-            links[link_id] = link_vals
+                links[link_id] = link_vals
 
-        report = {
-            'nodes': nodes,
-            'edges': links
-        }
+            report = {
+                'nodes': nodes,
+                'edges': links
+            }
 
-        return_obj['results'] = report
-        return_obj['success'] = True
+            return_obj['results'] = report
+            return_obj['success'] = True
+
+        except Exception as e:
+            print e
+            return_obj['Model failed to run: ' + e]
+
+        finally:
+            os.remove(temp)
+
 
     else:
         return_obj['message'] = message_template_wrong_req_method.format(method="POST")

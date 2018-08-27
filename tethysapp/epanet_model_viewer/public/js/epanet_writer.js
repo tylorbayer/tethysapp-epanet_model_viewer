@@ -6,6 +6,13 @@ const opts = {units:'Units\t\t', headloss:'Headloss\t', specific:'Specific Gravi
 const tims = {duration:'Duration\t', hydraulic:'Hydraulic Timestep', quality:'Quality Timestep', pattern:['Pattern Timestep',
         'Pattern Start\t'], report:['Report Timestep', 'Report Start\t'], start:'Start ClockTime', statistic:'Statistic\t'};
 
+const engs = {efficiency:'Global Efficiency', price:'Global Price\t', charge:'Demand Charge\t'};
+
+const reacts = {obulk:'Order Bulk\t', otank:'Order Tank\t', owall:'Order Wall\t', gbulk:'Global Bulk\t', gwall:'Global Wall\t',
+    lpotential:'Limiting Potential', rcorrelation:'Roughness Correlation'};
+
+const reps = {status:'Status\t', summary:'Summary', page:'Page\t'};
+
 
 function EPANET_Writer(model) {
     let file_text = "";
@@ -55,32 +62,36 @@ function EPANET_Writer(model) {
     titleText += model.title.join('\n') + '\n\n';
 
     nodes.forEach(function (node) {
+        let properties = node.properties;
         if (node.epaType === "Junction") {
-            junctText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 3).join('\t\t') + '\t\t\t;\n';
+            junctText = popNodeProps(properties, junctText);
+            junctText += '\t\t\t;\n';
             popNodeCoord(node);
         }
         else if (node.epaType === "Reservoir") {
-            resText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 2).join('\t\t') + '\t\t\t;\n';
+            resText = popNodeProps(properties, resText);
+            resText += '\t\t\t;\n';
             popNodeCoord(node);
         }
         else if (node.epaType === "Tank") {
-            tankText += ' ' + node.epaId + '\t\t\t' + node.values.slice(0, 7).join('\t\t') + '\t\t\t;\n';
+            tankText = popNodeProps(properties, tankText);
+            tankText += '\t\t\t;\n';
             popNodeCoord(node);
         }
         else if (node.epaType === "Label") {
-            labelText += " " +  node.x + '\t\t' + -1 * node.y + '\t\t' + node.label + '\n'
+            labelText += ' ' + node.x + '\t\t' + -1 * node.y + '\t\t' + node.label + '\n'
         }
-        else {
-            vertText += ' ' + node.epaId.split(' ')[0] + '\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+        else if (node.epaType === "Vertex") {
+            vertText += ' ' + node.properties.epaId.split(' ')[0] + '\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
         }
         if (node.tags) {
             for (let i in node.tags) {
-                tagText += " NODE\t\t" + node.epaId + '\t\t' + node.tags[i] + '\n';
+                tagText += " NODE\t\t" + node.properties.epaId + '\t\t' + node.tags[i] + '\n';
             }
         }
         if (node.demands) {
             for (let i in node.demands) {
-                demandText += ' ' + node.epaId + '\t\t' + node.demands[i].join('\t\t') + '\n';
+                demandText += ' ' + node.properties.epaId + '\t\t' + node.demands[i].join('\t\t') + '\n';
             }
         }
     });
@@ -93,22 +104,28 @@ function EPANET_Writer(model) {
     coordText += '\n';
 
     edges.forEach(function (edge) {
-        edge.source = nodes.find(node => edge.source === node.id).epaId;
-        edge.target = nodes.find(node => edge.target === node.id).epaId;
+        edge.source = nodes.find(node => edge.source === node.id).properties.epaId;
+        edge.target = nodes.find(node => edge.target === node.id).properties.epaId;
 
+        let properties = edge.properties;
         if (edge.epaType === "Pipe") {
-            pipeText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join('\t\t') + '\t;\n';
+            pipeText += ' ' + edge.properties.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t';
+            pipeText = popEdgeProps(properties, pipeText);
+            pipeText += '\t;\n';
         }
         else if (edge.epaType === "Pump") {
-            pumpText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values.join(' ') + '\t;\n';
+            pumpText += ' ' + edge.properties.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t';
+            pumpText = popEdgeProps(properties, pumpText);
+            pumpText += '\t;\n';
         }
         else {
-            valvText += ' ' + edge.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t' + edge.values[0] + '\t\t' +
-                edge.values[1] + '\t' + edge.values[2] + '\t\t' + edge.values[3] + '\t\t;\n';
+            valvText += ' ' + edge.properties.epaId + '\t\t\t' + edge.source + '\t\t\t' + edge.target + '\t\t\t'
+            valvText = popEdgeProps(properties, valvText);
+            valvText += '\t\t;\n';
         }
         if (edge.tags) {
             for (let i in edge.tags) {
-                tagText += " LINK\t\t" + edge.epaId + '\t\t' + edge.tags[i] + '\n';
+                tagText += " LINK\t\t" + edge.properties.epaId + '\t\t' + edge.tags[i] + '\n';
             }
         }
     });
@@ -122,10 +139,11 @@ function EPANET_Writer(model) {
     }
 
     for (let key in options) {
-        if(key === "unbalanced" || key === "quality" || key === "hydraulics")
-            optText += ' ' + opts[key] + '\t' + options[key][0] + ' ' + options[key][1] + '\n';
+        console.log(key + ' ' + options[key]);
+        if(key.substr(4) === "unbalanced" || key.substr(4) === "quality" || key.substr(4) === "hydraulics")
+            optText += ' ' + opts[key.substr(4)] + '\t' + options[key][0] + ' ' + options[key][1] + '\n';
         else
-            optText += ' ' + opts[key] + '\t' + options[key] + '\n';
+            optText += ' ' + opts[key.substr(4)] + '\t' + options[key] + '\n';
     }
 
     for (let key in times) {
@@ -139,7 +157,7 @@ function EPANET_Writer(model) {
     }
 
     for (let key in report) {
-        reportText += ' ' + key + '\t\t' + report[key] + '\n';
+        reportText += ' ' + reps[key.substr(4)] + '\t\t' + report[key] + '\n';
     }
 
     for (let key in curves) {
@@ -152,7 +170,7 @@ function EPANET_Writer(model) {
     }
 
     for (let key in reactions) {
-        react2Text += ' ' + key + '\t\t' + reactions[key] + '\n';
+        react2Text += ' ' + reacts[key.substr(4)] + '\t\t' + reactions[key] + '\n';
     }
 
     for (let key in backdrop) {
@@ -160,7 +178,7 @@ function EPANET_Writer(model) {
     }
 
     for (let key in energy) {
-        energyText += ' ' + key + '\t\t' + energy[key] + '\n';
+        energyText += ' ' + engs[key.substr(4)] + '\t\t' + energy[key] + '\n';
     }
 
     qualText += '\n';
@@ -192,6 +210,30 @@ function EPANET_Writer(model) {
     };
 
     function popNodeCoord(node) {
-        coordText += ' ' + node.epaId + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+        coordText += ' ' + node.properties.epaId + '\t\t\t' + node.x + '\t\t' + -1 * node.y + '\n';
+    }
+
+    function popNodeProps(properties, text) {
+        for (let key in properties) {
+            if (key === 'epaId') {
+                text += ' ' + properties[key];
+                text += '\t\t\t';
+            }
+            else {
+                text += ' ' + properties[key];
+                text += '\t\t';
+            }
+        }
+
+        return text;
+    }
+
+    function popEdgeProps(properties, text) {
+        for (let key in properties) {
+            if (key !== 'epaId')
+                text += properties[key] + '\t\t';
+        }
+
+        return text;
     }
 }
