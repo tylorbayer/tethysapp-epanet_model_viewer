@@ -132,7 +132,7 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                ENERGY OPTIONS MODAL                 */
+/*                ENERGY OPTIONS MODAL               */
 
 #modal-energy .modal-dialog {
     height: 280px;
@@ -142,7 +142,7 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                REACTIONS OPTIONS MODAL                 */
+/*              REACTIONS OPTIONS MODAL              */
 
 #modal-reactions .modal-dialog {
     height: 390px;
@@ -152,7 +152,7 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                REPORT OPTIONS MODAL                 */
+/*                REPORT OPTIONS MODAL               */
 
 #modal-report .modal-dialog {
     height: 280px;
@@ -172,7 +172,7 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                PATTERN EDITOR MODAL                 */
+/*                PATTERN EDITOR MODAL               */
 
 #modal-pattern .modal-dialog {
     height: 700px;
@@ -182,7 +182,7 @@ input[type="radio"] {
 /*****************************************************/
 
 /*****************************************************/
-/*                CONTROLS EDITOR MODAL                 */
+/*               CONTROLS EDITOR MODAL               */
 
 #modal-controls .modal-dialog {
     height: 300px;
@@ -522,4 +522,13 @@ div.inline { float:left; }
 
 .options-buttons {
     width: 135px; margin-bottom: 13px;
+}
+
+#query-toolbar {
+    background-color: #a9c0d3;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    display: inline-block;
+    float: left;
 }

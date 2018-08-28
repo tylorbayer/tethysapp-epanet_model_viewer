@@ -135,6 +135,19 @@
     let resetPlay, stopAnimation, resetAnimation, resetNodeAnim, resetEdgeAnim;
 
 
+    //  ********** Query **********
+    //  VARIABLES
+    let queryElements = [];
+    //  QUERY SELECTORS
+    let $btnQueryTools, $btnQuery, $btnClearQuery, $queryToolbar, $queryType, $queryResult, $queryCondintion, $queryValue,
+        $queryCount, $queryTimestep;
+    //  CONSTANTS
+    let queryResults = {
+        nodes: '<option value="EN_HEAD">Head</option><option value="EN_PRESSURE">Pressure</option><option value="EN_DEMAND">Demand</option><option value="EN_QUALITY">Quality</option>',
+        edges: '<option value="EN_FLOW">Flow</option><option value="EN_VELOCITY">Velocity</option><option value="EN_ENERGY">Energy</option><option value="EN_HEADLOSS">Head Loss</option>'
+    };
+
+
     //  ********** Editing **********
     //  VARIABLES
     let addType = "";
@@ -977,14 +990,17 @@
         });
     };
 
-    resetAnimation = function() {
+    resetAnimation = function(resetSlider) {
         playing = true;
         resetPlay();
 
         stopAnimation();
 
-        $animationSlider.slider("value", 0);
-        $('#timestep').val(0);
+        if (resetSlider === true) {
+            $animationSlider.slider("value", 0);
+            $('#timestep').val('');
+            $queryTimestep.val(1);
+        }
 
         for (let node in s.graph.nodes()) {
             s.graph.nodes()[node].color = s.graph.nodes()[node].epaColor;
@@ -1330,6 +1346,19 @@
         $edgeAnimType = $('#edge-anim-type');
 
 
+        //  ********** Query **********
+        $btnQueryTools = $('#btn-query-tools');
+        $btnQuery = $('#btn-query');
+        $btnClearQuery = $('#btn-query-clear');
+        $queryToolbar = $('#query-toolbar');
+        $queryType = $('#inp-query-type');
+        $queryResult = $('#inp-query-result');
+        $queryCondintion = $('#inp-query-condition');
+        $queryValue = $('#inp-query-value');
+        $queryCount = $('#query-count');
+        $queryTimestep = $('#query-timestep');
+
+
         //  ********** Editing **********
         $btnEditTools = $('#btn-edit-tools');
         $editToolbar = $('#edit-toolbar');
@@ -1503,8 +1532,17 @@
                                     slide: function (event, ui) {
                                         playing = true;
                                         $btnPlayAnimation.click();
+                                        $('#timestep').val($animationSlider.slider("value") + 1);
+                                        $queryTimestep.val($animationSlider.slider("value") + 1);
+                                    },
+                                    stop: function (event, ui) {
+                                        playing = true;
+                                        $btnPlayAnimation.click();
+                                        $('#timestep').val($animationSlider.slider("value") + 1);
+                                        $queryTimestep.val($animationSlider.slider("value") + 1);
                                     }
                                 });
+                                $animationSlider.trigger('slidestop');
 
                                 let nodesDropdown = $ddNodes.find('.dropdown-menu');
 
@@ -2635,8 +2673,9 @@
                         animate.push(setTimeout(function () {
                             $animationSlider.slider("value", j);
                             $('#timestep').val(j + 1);
+                            $queryTimestep.val($animationSlider.slider("value") + 1);
                             if (j === animationMaxStep)
-                                resetAnimation();
+                                resetAnimation(true);
                             else {
                                 if ($chkNodes.is(':checked')) {
                                     for (let node in s.graph.nodes()) {
@@ -2675,7 +2714,9 @@
             }
         });
 
-        $btnStopAnimation.click(resetAnimation);
+        $btnStopAnimation.click(function() {
+            resetAnimation(true);
+        });
 
         $chkNodes.click(function () {
             let reStart = playing;
@@ -2780,12 +2821,93 @@
         });
 
 
+        //  ********** Query **********d
+        $btnQueryTools.click(function () {
+            if ($queryToolbar.is(':hidden')) {
+                $queryToolbar.css({left:($('#model-container').children('canvas').offset().left - 146), position:'absolute'});
+                $queryToolbar.removeClass('hidden');
+                $btnQueryTools.css("background-color", "#915F6D");
+                $btnQueryTools.css("color", "white");
+                $queryType.change();
+            }
+            else {
+                $queryToolbar.addClass('hidden');
+                $btnQueryTools.css("background-color", "white");
+                $btnQueryTools.css("color", "#555");
+                $btnClearQuery.click();
+            }
+        });
+
+        $btnQuery.click(function () {
+            $btnClearQuery.click();
+
+            let count = 0;
+            let elements = s.graph[$queryType.val()]();
+            for (let elem in elements) {
+                elem = elements[elem];
+                try {
+                    let value = parseFloat(elem.modelResults[$queryResult.val()][$animationSlider.slider("value")]);
+                    if ($queryCondintion.val() === 'above') {
+                        if (value > $queryValue.val()) {
+                            queryElements.push(elem);
+                            elem.color = '#1affff';
+                            ++count;
+                        }
+                    }
+                    else if ($queryCondintion.val() === 'below') {
+                        if (value < $queryValue.val()) {
+                            queryElements.push(elem);
+                            elem.color = '#1affff';
+                            ++count;
+                        }
+                    }
+                    else {
+                        if (value === $queryValue.val()) {
+                            queryElements.push(elem);
+                            elem.color = '#1affff';
+                            ++count;
+                        }
+                    }
+                }
+                catch (e) {
+                    // nothing
+                }
+            }
+
+            $queryCount.val(count);
+            s.refresh();
+        });
+
+        $btnClearQuery.click(function () {
+            queryElements = [];
+            resetAnimation(false);
+            $queryCount.val('');
+            s.refresh();
+        });
+
+        $queryType.change(function () {
+            $queryResult.empty();
+            $queryResult.append(queryResults[$(this).val()]);
+            $queryTimestep.val($animationSlider.slider("value") + 1);
+            $btnClearQuery.click();
+        });
+
+        $queryResult.change(function () {
+           $btnClearQuery.click();
+        });
+
+        $queryCondintion.change(function () {
+            $btnClearQuery.click();
+        });
+
+
         //  ********** Editing **********
         $btnEditTools.click(function () {
             if ($editToolbar.is(':hidden')) {
                 $editToolbar.removeClass('hidden');
                 $btnEditTools.css("background-color", "#915F6D");
                 $btnEditTools.css("color", "white");
+                $queryType.trigger('click');
             }
             else {
                 $editToolbar.addClass('hidden');

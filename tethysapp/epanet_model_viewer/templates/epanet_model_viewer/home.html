@@ -55,7 +55,8 @@
   <div id="model-view">
     <div style="position:absolute; right:0; margin-right: 23px">
       <button id="btn-edit-tools" class="btn btn-default" style="width: 125px;">Network Tools</button>
-      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px">Animation Tools</button>
+      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px;">Animation Tools</button>
+      <button id="btn-query-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px; width: 125px;">Query Tools</button>
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
@@ -93,6 +94,50 @@
             <span class="slider round"></span>
           </label>
         </div>
+      </div>
+      <div id="query-toolbar" class="hidden">
+        <h4>Query</h4>
+        <div class="form-group">
+          <select id="inp-query-type" class="form-control" style="width: 110px !important;">
+            <option value="nodes">Node</option>
+            <option value="edges">Edge</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <select id="inp-query-result" class="form-control" style="width: 110px !important;"></select>
+        </div>
+        <div class="form-group">
+          <select id="inp-query-condition" class="form-control" style="width: 110px !important;">
+            <option value="above">Above</option>
+            <option value="below">Below</option>
+            <option value="equals">Equals</option>
+          </select>
+        </div>
+        <input id="inp-query-value" type="number" style="width: 110px !important;">
+        <br><br>
+        <button type="button" id="btn-query-clear" class="btn btn-default">Clear</button>
+        <button type="button" id="btn-query" class="btn btn-primary">OK</button>
+        <br>
+        <table class="table table-nonfluid" style="margin-bottom: 0px;">
+          <tbody>
+          <tr>
+            <td>
+              <h6 style="display: inline-block; margin-bottom: 0;">Count:</h6>
+            </td>
+            <td>
+              <input id="query-count" type="number" style="font-size: medium; margin-top: 7px; border: none; width: 80px !important; background-color: transparent;" readonly>
+            </td>
+          <tr/>
+          <tr>
+            <td>
+              <h6 style="display: inline-block; margin-bottom: 0; font-size: small;">Time-step:</h6>
+            </td>
+            <td>
+              <input id="query-timestep" type="number" style="font-size: small; margin-top: 7px; border: none; width: 80px !important; background-color: transparent;" readonly>
+            </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
       <div id="model-container"></div>
     </div>
@@ -150,8 +195,8 @@
       <div id="animate-tools">
         <div id="btn-play" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-play"></span></div>
         <div id="btn-stop" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-stop"></span></div>
-        <div id="btn-decrease" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-backward"></span></div>
-        <div id="btn-increase" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-forward"></span></div>
+        <div id="btn-decrease" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-backward" data-toggle="tooltip" data-placement="right" title="Decrease fps"></span></div>
+        <div id="btn-increase" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-forward" data-toggle="tooltip" data-placement="right" title="Increase fps"></span></div>
         <div id="slider"></div>
         <div>
           <label id="speed-label" for="speed">Animation Speed(fps):</label>
@@ -159,7 +204,7 @@
         </div>
         <div>
           <label for="timestep">Time-step:</label>
-          <input type="text" id="timestep" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;" value="0">
+          <input type="text" id="timestep" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
           <label for="total-timesteps">of </label>
           <input type="text" id="total-timesteps" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
         </div>
@@ -1028,8 +1073,26 @@
     <!--End modal content-->
   </div>
 </div>
-<!--End modal-->
-{% endblock %}
 
-{% block app_actions %}
-{% endblock %}
+<!-- Query Modal -->
+<div id="modal-query" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Query</h4>
+      </div>
+      <div class="modal-body">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default">Clear Query</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      <!--End modal content-->
+    </div>
+  </div>
+  <!--End modal-->
+  {% endblock %}
+
+  {% block app_actions %}
+  {% endblock %}
