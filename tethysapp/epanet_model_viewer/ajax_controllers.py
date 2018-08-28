@@ -120,8 +120,8 @@ def run_epanet_model(request):
             es = EPANetSimulation(temp)
 
             # print app.get_user_workspace(request).path
-
             es.run()
+            es.runq()
 
             nodes = {}
             node_list = es.network.nodes
@@ -163,7 +163,7 @@ def run_epanet_model(request):
 
         except Exception as e:
             print e
-            return_obj['Model failed to run: ' + e]
+            return_obj[e]
 
         finally:
             os.remove(temp)
