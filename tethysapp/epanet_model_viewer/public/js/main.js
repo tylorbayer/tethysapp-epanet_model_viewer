@@ -19,14 +19,15 @@
 
         //  ********** Model/Graph **********
         //  VARIABLES
-    let s = {}, model = {},
+    let s = {}, model = {}, locate,
         graphColors = {Junction: '#666', Vertex: "#666", Reservoir: '#5F9EA0', Tank: '#8B4513', Label: '#d6d6c2', Pipe: '#ccc',
             Pump: '#D2B48C', Valve: '#7070db' }, hoverColors = {Pipe: '#808080', Pump: '#DAA520', Valve: '#3333cc' },
         file_text = "", modelResults = {}, ranModel = false, needed = "<tr><td></td><td>(* required fields)</td></tr>";
     //  QUERY SELECTORS
     let $initialModel, $fileDisplayArea, $btnRunModel;
     //  FUNCTIONS
-    let addModelToUI, setStateAfterLastModel, openModel, readModel, canvasClick, drawModel, setGraphEventListeners, resetModelState, updateInp;
+    let addModelToUI, setStateAfterLastModel, openModel, readModel, canvasClick, drawModel, setGraphEventListeners,
+        resetModelState, updateInp, populateNodeList, populateEdgeList;
 
 
     //  ********** Node **********
@@ -102,13 +103,29 @@
         HEADLOSS: ['Flow', 'Headloss']
     };
     //  FUNCTIONS
-    let populateCurveModal, resetCurveState, drawCurve, setAddRemovePointListener;
+    let populateCurvesModal, resetCurveState, drawCurve, setAddRemovePointListener;
     //  ---------- Pattern
     //  QUERY SELECTORS
     let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternCancel, $btnPatternDelete, $patternSelect, $inpPatternMults,
         $patternDisplay, $btnAddPattern, $inpPatternId;
     //  FUNCTIONS
     let populatePatternModal, resetPatternState, drawPattern;
+    //  ---------- Controls
+    //  QUERY SELECTORS
+    let $modalControls, $chkControlsEdit, $btnControlsOk, $btnControlsCancel, $controlsDisplay, $btnAddControl, $controlType, $addControlView;
+    //  CONSTANTS
+    let controlsHtml = {
+            'IF NODE': '<h6 style="display: inline-block;">LINK </h6><div class="animate form-group" style="display: inline-block"><select id="controls-links" class="form-control"></select></div><div id="controls-status" style="display: inline-block;"></div><h6 style="display: inline-block;"> IF NODE </h6><div class="form-group" style="display: inline-block"><select id="controls-nodes" class="form-control"></select></div><div class="form-group" style="display: inline-block"><select id="controls-condition" class="form-control"><option value="above">Above</option><option value="below">Below</option><option value="equals">Equals</option></select></div><input id="controls-value" type="number" style="display: inline-block;">',
+            'AT TIME': '<h6 style="display: inline-block;">LINK </h6><div class="animate form-group" style="display: inline-block"><select id="controls-links" class="form-control"></select></div><div id="controls-status" style="display: inline-block;"></div><h6 style="display: inline-block;"> AT TIME </h6><input id="controls-value" type="text" style="display: inline-block;">',
+            'AT CLOCKTIME': '<h6 style="display: inline-block;">LINK </h6><div class="animate form-group" style="display: inline-block"><select id="controls-links" class="form-control"></select></div><div id="controls-status" style="display: inline-block;"></div><h6 style="display: inline-block;"> AT CLOCKTIME </h6><input id="controls-value" type="text" style="display: inline-block;"><div class="form-group" style="display: inline-block"><select id="controls-clocktime" class="form-control"><option value="AM">AM</option><option value="PM">PM</option></select></div>',
+        },
+        statusHtml = {
+            Pipe: '<div class="animate form-group" style="display: inline-block"><select class="form-control"><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="CV">CV</option></select></div>',
+            Pump: '<input type="number" style="display: inline-block;">',
+            Valve: '<input type="number" style="display: inline-block;">'
+        };
+    //  FUNCTIONS
+    let populateControlsModal, setAddRemoveControlListener;
 
 
     //  ********** Upload **********
@@ -359,6 +376,23 @@
             }
         });
 
+        let conf = {
+            animation: {
+                node: {
+                    duration: 800
+                },
+                edge: {
+                    duration: 800
+                },
+                center: {
+                    duration: 300
+                }
+            },
+            //focusOut: true,
+            zoomDef: 1
+        };
+        locate = sigma.plugins.locate(s, conf);
+
         s.cameras[0].goTo({ratio: 1.2});
 
         setGraphEventListeners();
@@ -395,6 +429,30 @@
         let epanetWriter = new EPANET_Writer(model);
 
         $fileDisplayArea.innerText = epanetWriter.getFile();
+    };
+
+    populateNodeList = function ($selectEl) {
+        $selectEl.empty();
+
+        s.graph.nodes().forEach(function(n) {
+            if (n.epaType !== "Vertex" && n.epaType !== "Label") {
+                let optionElt = document.createElement("option");
+                optionElt.text = n.epaType + ' ' + n.id;
+                optionElt.value = n.id;
+                $selectEl.append(optionElt);
+            }
+        });
+    };
+
+    populateEdgeList = function ($selectEl) {
+        $selectEl.empty();
+
+        s.graph.edges().forEach(function(n) {
+            let optionElt = document.createElement("option");
+            optionElt.text = n.epaType + ' ' + n.id;
+            optionElt.value = n.id;
+            $selectEl.append(optionElt);
+        });
     };
 
 
@@ -618,7 +676,7 @@
     };
 
     populateEdgeModal = function (nOpen) {
-        curEdge.hover_color = "#1affff";
+        curEdge.color = "#1affff";
         s.refresh();
 
         let properties = curEdge.properties;
@@ -645,7 +703,7 @@
     };
 
     previousEdge = function() {
-        curEdge.hover_color = hoverColors[curEdge.epaType];
+        curEdge.color = curEdge.epaColor;
         s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
 
         let edges = s.graph.edges();
@@ -667,7 +725,7 @@
     };
 
     nextEdge = function() {
-        curEdge.hover_color = hoverColors[curEdge.epaType];
+        curEdge.color = curEdge.epaColor;
         s.renderers[0].dispatchEvent('outEdge', {edge: curEdge});
 
         let edges = s.graph.edges();
@@ -747,7 +805,7 @@
         }
     };
     //  ---------- Curve
-    populateCurveModal = function () {
+    populateCurvesModal = function () {
         $curveSelect.find('select').empty();
 
         for (let key in model.curves) {
@@ -911,6 +969,42 @@
             $patternDisplay.empty();
             $btnAddPattern.click();
         }
+    };
+    //  ---------- Controls
+    populateControlsModal = function () {
+        $controlsDisplay.empty();
+
+        let hidden = '';
+        if (!$chkControlsEdit.is(':checked'))
+            hidden = ' hidden';
+
+        for (let key in model.controls)
+            $controlsDisplay.append('<tr><td><h6>' + model.controls[key] + '</h6></td><td><div class="btn btn-danger ' +
+                'btn-group btn-xs control-remove' + hidden + '" style="margin-top: 10px;" role="group" data-toggle="tooltip" ' +
+                'title="Remove Control"><span class="glyphicon glyphicon-remove"></span></div></td></tr>');
+
+        $('[data-toggle="tooltip"]').tooltip();
+
+        setAddRemoveControlListener();
+    };
+
+    setAddRemoveControlListener = function () {
+        $('.control-remove').click(function (e) {
+            $(this).parents('tr').remove();
+        });
+
+        // $('#btn-add-curve-point').unbind('click').click(function () {
+        //     if ($curveTable.find('input').filter(function() {return !$(this).val().trim().length;}).length !== 0)
+        //         alert("All new points must have values.");
+        //     else {
+        //         let pointHtml = '<tr><td><input type="number" name="x" class="x"></td><td><input type="number" name="y" class="y"></td>' +
+        //             '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit" role="group" data-toggle="tooltip" ' +
+        //             'title="Remove Point"><span class="glyphicon glyphicon-remove"></span></div></td></tr>';
+        //
+        //         $curveTable.find('tbody').append(pointHtml);
+        //         setAddRemovePointListener();
+        //     }
+        // });
     };
 
 
@@ -1319,6 +1413,15 @@
         $patternDisplay = $('#pattern-display');
         $btnAddPattern = $('#btn-add-pattern');
         $inpPatternId = $('#inp-pattern-id');
+        //  ---------- Controls
+        $modalControls = $('#modal-controls');
+        $chkControlsEdit = $('#chk-controls-edit');
+        $btnControlsOk = $('#btn-controls-ok');
+        $btnControlsCancel = $('#btn-controls-cancel');
+        $controlsDisplay = $('#controls-container');
+        $btnAddControl = $('#btn-add-control');
+        $controlType = $('#controls-type');
+        $addControlView = $('#add-control');
 
 
         //  ********** Upload **********
@@ -1454,6 +1557,40 @@
                 $btnRunModel.trigger('mouseout');
 
                 ranModel = false;
+
+                let searchnodelistElt = $('#search-nodelist');
+                s.graph.nodes().forEach(function(n) {
+                    var optionElt = document.createElement("option");
+
+                    if (n.epaType === "Label") {
+                        optionElt.text = n.epaType + ': ' + n.label;
+                        optionElt.value = n.id;
+                    }
+                    else if (n.epaType === "Vertex") {
+                        optionElt.text = n.id;
+                    }
+                    else {
+                        optionElt.text = n.epaType + ' ' + n.id;
+                        optionElt.value = n.id;
+                    }
+                    searchnodelistElt.append(optionElt);
+                });
+
+                $('#search-nodelist').change(function(e) {
+                    locateNode(e);
+                });
+
+                let searchedgelistElt = $('#search-edgelist');
+                s.graph.edges().forEach(function(n) {
+                    var optionElt = document.createElement("option");
+                    optionElt.text = n.epaType + ' ' + n.id;
+                    optionElt.value = n.id;
+                    searchedgelistElt.append(optionElt);
+                });
+
+                $('#search-edgelist').change(function(e) {
+                    locateEdge(e);
+                });
             }
         });
 
@@ -1936,7 +2073,7 @@
             if ($chkEdgeEdit.is(':checked'))
                 $chkEdgeEdit.trigger('click');
 
-            curEdge.hover_color = hoverColors[curEdge.epaType];
+            curEdge.color = curEdge.epaColor;
             s.refresh();
             $modalEdge.find('.modal-body-content').empty();
             resetModelState();
@@ -1984,7 +2121,6 @@
                     curEdge.id = curEdge.properties.epaId;
                     curEdge.label = curEdge.epaType + " " + curEdge.properties.epaId;
                     curEdge.color = graphColors[curEdge.epaType];
-                    curEdge.hover_color = hoverColors[curEdge.epaType];
                     curEdge.size = 1;
                     curEdge.source = edgeSource.id;
                     curEdge.target = curNode.id;
@@ -2368,7 +2504,7 @@
         //  ---------- Curve
         $modalCurve.on('shown.bs.modal', function () {
             if (Object.keys(model.curves).length > 0) {
-                populateCurveModal();
+                populateCurvesModal();
                 $curveSelect.find('select').change();
             }
         });
@@ -2399,7 +2535,7 @@
 
                 model.curves[curveId]["type"] = $inpCurveType.val();
                 $curveSelect.find('select').empty();
-                populateCurveModal();
+                populateCurvesModal();
                 $btnAddCurve.click();
                 $curveSelect.find('select').val(curveId);
                 $curveSelect.find('select').change();
@@ -2410,7 +2546,7 @@
             delete model.curves[$curveSelect.find('select').val()];
 
             $curveSelect.find('select').empty();
-            populateCurveModal();
+            populateCurvesModal();
 
             if(model.curves.length != 0)
                 $curveSelect.find('select').val($curveSelect.find('select option:first').val());
@@ -2460,10 +2596,11 @@
                     hidden = ' hidden';
                 let values = model.curves[$(this).val()]["values"];
                 for (let i = 0; i < values.length; ++i) {
-                    let pointHtml = '<tr><td><input type="number" name="x" class="x" value="' + values[i] +
+
+                    let pointHtml = '<tr><td><input type="number" name="x" class="x" value="' + parseFloat(values[i]) +
                         '" disabled></td>';
                     ++i;
-                    pointHtml += '<td><input type="number" name="y" class="y" value="' + values[i] +
+                    pointHtml += '<td><input type="number" name="y" class="y" value="' + parseFloat(values[i]) +
                         '" disabled></td>';
 
                     pointHtml += '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit' + hidden +
@@ -2613,6 +2750,84 @@
                 $inpPatternId.attr('hidden', true);
 
                 resetPatternState();
+            }
+        });
+        //  ---------- Controls
+        $modalControls.on('shown.bs.modal', function () {
+            populateControlsModal();
+        });
+
+        $btnControlsOk.click(function () {
+            if ($btnAddControl.hasClass('btn-danger')) {
+                let newControl = [];
+                $('#add-control').find('input, select, h6').each(function () {
+                   if ($(this).val() === '')
+                       newControl.push($(this).text());
+                    else
+                        newControl.push($(this).val());
+                });
+                $controlsDisplay.append('<h6>' + newControl.join(' ') + '</h6>');
+                $btnAddControl.click();
+            }
+
+            model.controls = [];
+            $controlsDisplay.find('h6').each(function (index) {
+                model.controls.push($(this).text());
+            });
+            
+            if ($chkControlsEdit.is(':checked'))
+                    $chkControlsEdit.trigger('click');
+
+            populateControlsModal();
+            updateInp();
+        });
+
+        $chkControlsEdit.click(function () {
+            if ($chkControlsEdit.is(':checked')) {
+                $btnControlsOk.removeAttr('disabled');
+
+                $('.control-remove').removeClass('hidden');
+            }
+            else {
+                $btnControlsOk.attr('disabled', true);
+
+                $('.control-remove').addClass('hidden');
+            }
+        });
+
+        $btnAddControl.click(function () {
+            if ($btnAddControl.hasClass('btn-success')) {
+                if (!$chkControlsEdit.is(':checked'))
+                    $chkControlsEdit.trigger('click');
+
+                $btnAddControl.removeClass('btn-success').addClass('btn-danger');
+                $btnAddControl.find('span').removeClass('glyphicon-plus').addClass('glyphicon-remove');
+                $btnAddControl.prop('title', 'Cancel');
+
+                $controlType.attr('disabled', true);
+                $addControlView.html(controlsHtml[$controlType.val()]);
+
+                $('#controls-links').change(function() {
+                    let edge = s.graph.edges().find(edge => edge.properties.epaId === $(this).val());
+
+                    $('#controls-status').html(statusHtml[edge.epaType]);
+                });
+                populateEdgeList($('#controls-links'));
+                $('#controls-links').change();
+
+                if ($controlType.val() === "IF NODE") {
+                    populateNodeList($('#controls-nodes'));
+                }
+            }
+            else {
+                $chkControlsEdit.trigger('click');
+
+                $btnAddControl.removeClass('btn-danger').addClass('btn-success');
+                $btnAddControl.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                $btnAddControl.prop('title', 'New Pattern');
+
+                $controlType.attr('disabled', false);
+                $addControlView.empty();
             }
         });
 
@@ -2893,7 +3108,7 @@
         });
 
         $queryResult.change(function () {
-           $btnClearQuery.click();
+            $btnClearQuery.click();
         });
 
         $queryCondintion.change(function () {
@@ -2928,7 +3143,7 @@
                 $("#model-display").append("<div id='model-container'></div>");
                 drawModel();
             }
-            else {
+            else if (this.name !== 'Search') {
                 if ($(this).hasClass('active') && addType !== "Default")
                     $btnEditDefualt.click();
                 else {
@@ -3279,6 +3494,27 @@
             context.stroke();
         };
     });
+
+
+    function locateNode (e) {
+        var nid = e.target[e.target.selectedIndex].value;
+        if (nid == '') {
+            locate.center(1);
+        }
+        else {
+            locate.nodes(nid);
+        }
+    };
+
+    function locateEdge (e) {
+        var nid = e.target[e.target.selectedIndex].value;
+        if (nid == '') {
+            locate.center(1);
+        }
+        else {
+            locate.edges(nid);
+        }
+    };
 
 
     /*-----------------------------------------------
