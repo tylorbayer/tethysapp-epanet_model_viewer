@@ -203,14 +203,26 @@ input[type="radio"] {
     width: 60px;
 }
 
+#modal-controls tr {
+    border-bottom: 1px solid #cccccc;
+}
+
 /*****************************************************/
 
 /*****************************************************/
 /*                RULES EDITOR MODAL                 */
 
 #modal-rules .modal-dialog {
-    height: 300px;
-    width: 300px;
+    height: 600px;
+    width: 500px;
+}
+
+#modal-rules tr {
+    border-bottom: 1px solid #cccccc;
+}
+
+#modal-rules p {
+    margin: 0 0 3px;
 }
 
 /*****************************************************/

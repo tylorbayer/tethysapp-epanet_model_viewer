@@ -23,6 +23,7 @@ function EPANET_Reader(file_text, caller) {
     let nextCurveType = "";
     let controls = [];
     let rules = {};
+    let curRule = '';
     let energy = {};
     let quality = {};
     let reactions = {};
@@ -33,7 +34,6 @@ function EPANET_Reader(file_text, caller) {
 
     let nodeSpec = {};
 
-    let next;
     let reaction = 1;
 
     for (let i = 0; i < input.length; ++i) {
@@ -293,20 +293,14 @@ function EPANET_Reader(file_text, caller) {
                 break;
 
             case intType.RULES:
-                let rule = input[i];
-                rules[rule] = [];
-                ++i;
-
-                next = false;
-                while(!next) {
-                    if (input[i] === '')
-                        next = true;
-                    else {
-                        let statement = input[i];
-                        rules[rule].push(statement);
-                        ++i;
-                    }
+                let rule = input[i].match(/\S+/g);
+                if (rule[0] === "RULE") {
+                    curRule = rule[1];
+                    rules[curRule] = [];
                 }
+                else
+                    rules[curRule].push(input[i]);
+
                 break;
 
             case intType.ENERGY:
