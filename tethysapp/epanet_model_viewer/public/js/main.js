@@ -19,7 +19,7 @@
 
         //  ********** Model/Graph **********
         //  VARIABLES
-    let s = {}, model = {}, locate,
+    let s = {}, model = {}, locate, highlight = '#1affff',
         graphColors = {Junction: '#666', Vertex: "#666", Reservoir: '#5F9EA0', Tank: '#8B4513', Label: '#d6d6c2', Pipe: '#ccc',
             Pump: '#D2B48C', Valve: '#7070db' }, hoverColors = {Pipe: '#808080', Pump: '#DAA520', Valve: '#3333cc' },
         file_text = "", modelResults = {}, ranModel = false, needed = "<tr><td></td><td>(* required fields)</td></tr>";
@@ -126,6 +126,11 @@
         };
     //  FUNCTIONS
     let populateControlsModal, setAddRemoveControlListener;
+    //  ---------- Rules
+    //  QUERY SELECTORS
+    let $modalRules, $chkRulesEdit, $btnRulesOk, $btnRulesCancel, $rulesDisplay, $btnAddRule;
+    //  FUNCTIONS
+    let populateRulesModal, setAddRemoveRuleListener;
 
 
     //  ********** Upload **********
@@ -507,7 +512,7 @@
                             $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
 
                             curEdge = {};
-                            curNode.color = "#1affff";
+                            curNode.color = highlight;
 
                             curEdge.epaType = addType;
                             curEdge.properties = {};
@@ -517,7 +522,7 @@
                         }
                         else {
                             edgeSource = curNode;
-                            edgeSource.color = "#1affff";
+                            edgeSource.color = highlight;
                         }
                     }
                 }
@@ -530,7 +535,7 @@
     };
 
     populateNodeModal = function (nOpen) {
-        curNode.color = "#1affff";
+        curNode.color = highlight;
         s.refresh();
 
         let properties = curNode.properties;
@@ -676,7 +681,7 @@
     };
 
     populateEdgeModal = function (nOpen) {
-        curEdge.color = "#1affff";
+        curEdge.color = highlight;
         s.refresh();
 
         let properties = curEdge.properties;
@@ -992,19 +997,38 @@
         $('.control-remove').click(function (e) {
             $(this).parents('tr').remove();
         });
+    };
+    //  ---------- Rules
+    populateRulesModal = function () {
+        $rulesDisplay.empty();
 
-        // $('#btn-add-curve-point').unbind('click').click(function () {
-        //     if ($curveTable.find('input').filter(function() {return !$(this).val().trim().length;}).length !== 0)
-        //         alert("All new points must have values.");
-        //     else {
-        //         let pointHtml = '<tr><td><input type="number" name="x" class="x"></td><td><input type="number" name="y" class="y"></td>' +
-        //             '<td><div class="btn btn-danger btn-group btn-xs curve-table-edit" role="group" data-toggle="tooltip" ' +
-        //             'title="Remove Point"><span class="glyphicon glyphicon-remove"></span></div></td></tr>';
-        //
-        //         $curveTable.find('tbody').append(pointHtml);
-        //         setAddRemovePointListener();
-        //     }
-        // });
+        let hidden = '';
+        if (!$chkRulesEdit.is(':checked'))
+            hidden = ' hidden';
+
+        for (let key in model.rules) {
+            let rule = model.rules[key];
+            let ruleHtml = '<tr><td><div class="rules"><h6>Rule ' + key + '</h6>';
+            for (let i in rule) {
+                ruleHtml += '<p>' + rule[i] + '</p>';
+            }
+
+            ruleHtml += '</div></td><td style="vertical-align: middle;"><div class="btn btn-danger btn-group btn-xs rule-remove' +
+                hidden + '" style="margin-top: 10px;" role="group" data-toggle="tooltip" title="Remove Rule">' +
+                '<span class="glyphicon glyphicon-remove"></span></div></td></tr>';
+
+            $rulesDisplay.append(ruleHtml);
+        }
+
+        $('[data-toggle="tooltip"]').tooltip();
+
+        setAddRemoveRuleListener();
+    };
+
+    setAddRemoveRuleListener = function () {
+        $('.rule-remove').click(function (e) {
+            $(this).parents('tr').remove();
+        });
     };
 
 
@@ -1422,6 +1446,13 @@
         $btnAddControl = $('#btn-add-control');
         $controlType = $('#controls-type');
         $addControlView = $('#add-control');
+        //  ---------- Rules
+        $modalRules = $('#modal-rules');
+        $chkRulesEdit = $('#chk-rules-edit');
+        $btnRulesOk = $('#btn-rules-ok');
+        $btnRulesCancel = $('#btn-rules-cancel');
+        $rulesDisplay = $('#rules-container');
+        $btnAddRule = $('#btn-add-rule');
 
 
         //  ********** Upload **********
@@ -1560,7 +1591,7 @@
 
                 let searchnodelistElt = $('#search-nodelist');
                 s.graph.nodes().forEach(function(n) {
-                    var optionElt = document.createElement("option");
+                    let optionElt = document.createElement("option");
 
                     if (n.epaType === "Label") {
                         optionElt.text = n.epaType + ': ' + n.label;
@@ -1578,11 +1609,12 @@
 
                 $('#search-nodelist').change(function(e) {
                     locateNode(e);
+                    $('#search-type').html('node');
                 });
 
                 let searchedgelistElt = $('#search-edgelist');
                 s.graph.edges().forEach(function(n) {
-                    var optionElt = document.createElement("option");
+                    let optionElt = document.createElement("option");
                     optionElt.text = n.epaType + ' ' + n.id;
                     optionElt.value = n.id;
                     searchedgelistElt.append(optionElt);
@@ -1590,6 +1622,7 @@
 
                 $('#search-edgelist').change(function(e) {
                     locateEdge(e);
+                    $('#search-type').html('edge');
                 });
             }
         });
@@ -1803,6 +1836,15 @@
                     }
                 }
             });
+        });
+
+        $('#modal-search').on('hidden.bs.modal', function () {
+            if ($('#search-type').html() === "node")
+                populateNodeModal();
+            else if ($('#search-type').html() === "edge")
+                populateEdgeModal();
+
+            $('#search-type').html('');
         });
 
 
@@ -2792,6 +2834,12 @@
                 $btnControlsOk.attr('disabled', true);
 
                 $('.control-remove').addClass('hidden');
+
+                if ($btnAddControl.hasClass('btn-danger')) {
+                    $btnAddControl.removeClass('btn-danger').addClass('btn-success');
+                    $btnAddControl.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                    $btnAddControl.prop('title', 'New Control');
+                }
             }
         });
 
@@ -2824,10 +2872,82 @@
 
                 $btnAddControl.removeClass('btn-danger').addClass('btn-success');
                 $btnAddControl.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
-                $btnAddControl.prop('title', 'New Pattern');
+                $btnAddControl.prop('title', 'New Control');
 
                 $controlType.attr('disabled', false);
                 $addControlView.empty();
+            }
+        });
+        //  ---------- Rules
+        $modalRules.on('shown.bs.modal', function () {
+            populateRulesModal();
+        });
+
+        $btnRulesOk.click(function () {
+            if ($btnAddControl.hasClass('btn-danger')) {
+                let newRule = [];
+                $addRuleView.find('input, select, h6').each(function () {
+                   if ($(this).val() === '')
+                       newRule.push($(this).text());
+                    else
+                        newRule.push($(this).val());
+                });
+                $rulesDisplay.append('<h6>' + newControl.join(' ') + '</h6>');
+                $btnAddRule.click();
+            }
+
+            model.rules = {};
+            $('.rules').each(function (index) {
+                let ruleId = $(this).find('h6').text().substr(5);
+                model.rules[ruleId] = [];
+                let rule = model.rules[ruleId];
+
+                $(this).find('p').each(function (index) {
+                    rule.push($(this).text());
+                });
+            });
+
+            if ($chkRulesEdit.is(':checked'))
+                    $chkRulesEdit.trigger('click');
+
+            populateRulesModal();
+            updateInp();
+        });
+
+        $chkRulesEdit.click(function () {
+            if ($chkRulesEdit.is(':checked')) {
+                $btnRulesOk.removeAttr('disabled');
+
+                $('.rule-remove').removeClass('hidden');
+            }
+            else {
+                $btnRulesOk.attr('disabled', true);
+
+                $('.rule-remove').addClass('hidden');
+
+                if ($btnAddRule.hasClass('btn-danger')) {
+                    $btnAddRule.removeClass('btn-danger').addClass('btn-success');
+                    $btnAddRule.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                    $btnAddRule.prop('title', 'New Rule');
+                }
+            }
+        });
+
+        $btnAddRule.click(function () {
+            if ($btnAddRule.hasClass('btn-success')) {
+                if (!$chkRulesEdit.is(':checked'))
+                    $chkRulesEdit.trigger('click');
+
+                $btnAddRule.removeClass('btn-success').addClass('btn-danger');
+                $btnAddRule.find('span').removeClass('glyphicon-plus').addClass('glyphicon-remove');
+                $btnAddRule.prop('title', 'Cancel');
+            }
+            else {
+                $chkRulesEdit.trigger('click');
+
+                $btnAddRule.removeClass('btn-danger').addClass('btn-success');
+                $btnAddRule.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
+                $btnAddRule.prop('title', 'New Control');
             }
         });
 
@@ -3065,21 +3185,21 @@
                     if ($queryCondintion.val() === 'above') {
                         if (value > $queryValue.val()) {
                             queryElements.push(elem);
-                            elem.color = '#1affff';
+                            elem.color = highlight;
                             ++count;
                         }
                     }
                     else if ($queryCondintion.val() === 'below') {
                         if (value < $queryValue.val()) {
                             queryElements.push(elem);
-                            elem.color = '#1affff';
+                            elem.color = highlight;
                             ++count;
                         }
                     }
                     else {
                         if (value === $queryValue.val()) {
                             queryElements.push(elem);
-                            elem.color = '#1affff';
+                            elem.color = highlight;
                             ++count;
                         }
                     }
@@ -3497,7 +3617,10 @@
 
 
     function locateNode (e) {
-        var nid = e.target[e.target.selectedIndex].value;
+        let nid = e.target[e.target.selectedIndex].value;
+        curNode = s.graph.nodes().find(node => node.properties.epaId === nid);
+        curNode.color = highlight;
+
         if (nid == '') {
             locate.center(1);
         }
@@ -3507,7 +3630,10 @@
     };
 
     function locateEdge (e) {
-        var nid = e.target[e.target.selectedIndex].value;
+        let nid = e.target[e.target.selectedIndex].value;
+        curEdge = s.graph.edges().find(edge => edge.properties.epaId === nid);
+        curEdge.color = highlight;
+
         if (nid == '') {
             locate.center(1);
         }

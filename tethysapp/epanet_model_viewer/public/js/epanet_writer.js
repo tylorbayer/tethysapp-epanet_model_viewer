@@ -59,6 +59,7 @@ function EPANET_Writer(model) {
     let backdrop = model.backdrop;
     let energy = model.energy;
     let controls = model.controls;
+    let rules = model.rules;
 
     titleText += model.title.join('\n') + '\n\n';
 
@@ -135,12 +136,14 @@ function EPANET_Writer(model) {
     pumpText += '\n';
     valvText += '\n';
 
-    for (let key in patterns) {
+    for (let key in patterns)
         patternText += ' ' + key + '\t' +  patterns[key].join('\t') + '\n';
-    }
 
     for (let i in controls)
         controlText += ' ' + controls[i] + '\n';
+
+    for (let key in rules)
+        ruleText += 'RULE ' + key + '\n' +  rules[key].join('\n') + '\n\n';
 
     for (let key in options) {
         if(key.substr(4) === "unbalanced" || key.substr(4) === "quality" || key.substr(4) === "hydraulics")

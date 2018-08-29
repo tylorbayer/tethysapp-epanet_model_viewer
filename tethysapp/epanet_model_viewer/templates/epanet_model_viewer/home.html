@@ -512,6 +512,7 @@
           <h3>Go to Edge</h3>
           <select id="search-edgelist" class="form-control" style="width: 130px !important;"></select>
         </div>
+        <div id="search-type" hidden></div>
       </div>
     </div>
     <!--End modal content-->
@@ -896,7 +897,7 @@
         </div>
         <div id="add-control"></div>
         <h4 style="border-bottom: 1px solid #cccccc;">Controls</h4>
-        <table class="table table-nonfluid"><tbody id="controls-container"></tbody></table>
+        <table class="table table-nonfluid" style="width: 100% !important;"><tbody id="controls-container"></tbody></table>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
@@ -917,16 +918,16 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h5 class="modal-title" id="rules-modal-label">Energy Options</h5>
+        <h5 class="modal-title" id="rules-modal-label">Rules Editor</h5>
       </div>
       <div class="modal-body">
-        <table class="table table-nonfluid">
-          <tbody>
-          <tr>
-            <td>COMING SOON!</td>
-          </tr>
-          </tbody>
-        </table>
+        <p>Adding rule not built in yet... coming soon.</p>
+        <input id="inp-rules" class="model-options" type='text'>
+        <div id="btn-add-rule" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Control">
+          <span class="glyphicon glyphicon-plus"></span>
+        </div>
+        <h4 style="border-bottom: 1px solid #cccccc;">Rules</h4>
+        <table class="table table-nonfluid" style="width: 100% !important;"><tbody id="rules-container"></tbody></table>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
