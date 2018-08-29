@@ -287,7 +287,8 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.CONTROLS:
                 if (input[i].charAt(0) === ';')
-                    ++i;
+                    break;
+
                 controls.push(input[i]);
                 break;
 

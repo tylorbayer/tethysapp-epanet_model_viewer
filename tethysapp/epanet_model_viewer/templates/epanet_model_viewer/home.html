@@ -48,8 +48,8 @@
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
     <div id="model-tools-container" style="float: right; height: 0px;">
-      <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 135px;">Run Model</button>
-      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 135px;">Save Model</button>
+      <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 130px;">Run Model</button>
+      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 130px;">Save Model</button>
     </div>
   </ul>
   <div id="model-view">
@@ -87,9 +87,13 @@
         <a data-toggle="tooltip" data-placement="top" title="Full-Extent" name="Full-Extent">
           <span class="glyphicon glyphicon-fullscreen" style="color:#ffffff; font-size: 1.3em; margin-top:3px"></span>
         </a>
-        <div style="float: right;">
+        <a data-toggle="modal" data-target="#modal-search" data-toggle="tooltip" data-placement="top" title="Search for node/edge" name="Search">
+          <span class="glyphicon glyphicon-search" style="color:#ffffff; font-size: 1.3em; margin-top:3px"></span>
+        </a>
+        <div style="float: right; margin-top: 5px;">
           <span style="color: white;">Drag Nodes:</span>
-          <label class="switch" style="top: 10px; margin-left: 0px;">
+          <br>
+          <label class="switch" style="margin-left: 40px; margin-bottom: 0px;">
             <input id="chk-drag" type="checkbox">
             <span class="slider round"></span>
           </label>
@@ -491,6 +495,29 @@
 
 {# Use the after_app_content block for modals #}
 {% block after_app_content %}
+<!-- Search Modal -->
+<div id="modal-search" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Search</h4>
+      </div>
+      <div class="modal-body" style="bottom: 0 !important;">
+        <div>
+          <h3>Go to Node</h3>
+          <select id="search-nodelist" class="form-control" style="width: 130px !important;"></select>
+        </div>
+        <div>
+          <h3>Go to Edge</h3>
+          <select id="search-edgelist" class="form-control" style="width: 130px !important;"></select>
+        </div>
+      </div>
+    </div>
+    <!--End modal content-->
+  </div>
+</div>
+
 <!-- Upload/Save Model Modal -->
 <div id="modal-upload" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog" id="upload-dialog">
@@ -698,7 +725,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h5 class="modal-title" id="report-modal-label">Energy Options</h5>
+        <h5 class="modal-title" id="report-modal-label">Report Options</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
@@ -706,23 +733,23 @@
           <tr>
             <td><b>Status:</b></td>
             <td>
-              <div class="animate form-group" style="display: inline-block">
-                <div class="animate form-group" style="display: inline-block">
-                  <select id="rep-status" class="form-control" style="margin-bottom: 10px;" disabled>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
-                </div>
+              <div class="form-group" style="display: inline-block; width: 166px !important;">
+                <select id="rep-status" class="form-control" disabled>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
               </div>
             </td>
           </tr>
           <tr>
             <td><b>Summary:</b></td>
             <td>
-              <select id="rep-summary" class="form-control" style="margin-bottom: 10px;" disabled>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              <div class="form-group" style="display: inline-block; width: 166px !important;">
+                <select id="rep-summary" class="form-control" disabled>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
             </td>
           </tr>
           <tr>
@@ -853,16 +880,23 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h5 class="modal-title" id="controls-modal-label">Energy Options</h5>
+        <h5 class="modal-title" id="controls-modal-label">Controls Options</h5>
       </div>
       <div class="modal-body">
-        <table class="table table-nonfluid">
-          <tbody>
-          <tr>
-            <td>COMING SOON!</td>
-          </tr>
-          </tbody>
-        </table>
+        <h6 style="display: inline-block">Control Type: </h6>
+        <div class="animate form-group" style="display: inline-block">
+          <select id="controls-type" class="form-control">
+            <option value="IF NODE">NODE</option>
+            <option value="AT TIME">TIME</option>
+            <option value="AT CLOCKTIME">CLOCKTIME</option>
+          </select>
+        </div>
+        <div id="btn-add-control" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Control">
+          <span class="glyphicon glyphicon-plus"></span>
+        </div>
+        <div id="add-control"></div>
+        <h4 style="border-bottom: 1px solid #cccccc;">Controls</h4>
+        <table class="table table-nonfluid"><tbody id="controls-container"></tbody></table>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
@@ -1020,7 +1054,6 @@
   </div>
 </div>
 
-
 <!-- Help Modal -->
 <div class="modal fade" id="help-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
   <div class="modal-dialog" role="document">
@@ -1073,26 +1106,7 @@
     <!--End modal content-->
   </div>
 </div>
+{% endblock %}
 
-<!-- Query Modal -->
-<div id="modal-query" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Query</h4>
-      </div>
-      <div class="modal-body">
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default">Clear Query</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-      <!--End modal content-->
-    </div>
-  </div>
-  <!--End modal-->
-  {% endblock %}
-
-  {% block app_actions %}
-  {% endblock %}
+{% block app_actions %}
+{% endblock %}

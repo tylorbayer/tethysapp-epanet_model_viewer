@@ -58,6 +58,7 @@ function EPANET_Writer(model) {
     let reactions = model.reactions;
     let backdrop = model.backdrop;
     let energy = model.energy;
+    let controls = model.controls;
 
     titleText += model.title.join('\n') + '\n\n';
 
@@ -138,6 +139,9 @@ function EPANET_Writer(model) {
         patternText += ' ' + key + '\t' +  patterns[key].join('\t') + '\n';
     }
 
+    for (let i in controls)
+        controlText += ' ' + controls[i] + '\n';
+
     for (let key in options) {
         if(key.substr(4) === "unbalanced" || key.substr(4) === "quality" || key.substr(4) === "hydraulics")
             optText += ' ' + opts[key.substr(4)] + '\t' + options[key][0] + ' ' + options[key][1] + '\n';
@@ -161,7 +165,11 @@ function EPANET_Writer(model) {
 
     for (let key in curves) {
         curvText += ';' + curves[key]['type'] + ': \n';
-        curvText += ' ' + key + '\t' + curves[key]['values'].join('\t') + '\n';
+        let values = curves[key]['values'];
+        for (let i = 0; i < values.length; ++i) {
+            curvText += ' ' + key + '\t' + values[i] + '\t' + values[i + 1] + '\n';
+            ++i;
+        }
     }
 
     for (let key in quality) {
