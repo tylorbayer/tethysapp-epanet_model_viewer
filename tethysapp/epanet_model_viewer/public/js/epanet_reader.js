@@ -52,6 +52,8 @@ function EPANET_Reader(file_text, caller) {
 
         if (input[i] === "")
             continue;
+        if (input[i].match(/\S+/g) === null)
+            continue;
 
         switch(curType) {
             case intType.TITLE:
@@ -294,6 +296,7 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.RULES:
                 let rule = input[i].match(/\S+/g);
+                console.log(rule);
                 if (rule[0] === "RULE") {
                     curRule = rule[1];
                     rules[curRule] = [];
@@ -382,7 +385,10 @@ function EPANET_Reader(file_text, caller) {
                 let option = input[i].match(/\S+/g);
 
                 if (option[0].toLowerCase() === "unbalanced" || option[0].toLowerCase() === "quality" || option[0].toLowerCase() === "hydraulics")
-                    options['opt-' + option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
+                    if (option.length < 3)
+                        options['opt-' + option[0].toLowerCase()] = [option[option.length - 1]];
+                    else
+                        options['opt-' + option[0].toLowerCase()] = [option[option.length - 2], option[option.length - 1]];
                 else
                     options['opt-' + option[0].toLowerCase()] = option[option.length - 1];
                 break;

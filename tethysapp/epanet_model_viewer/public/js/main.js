@@ -24,7 +24,7 @@
             Pump: '#D2B48C', Valve: '#7070db' }, hoverColors = {Pipe: '#808080', Pump: '#DAA520', Valve: '#3333cc' },
         file_text = "", modelResults = {}, ranModel = false, needed = "<tr><td></td><td>(* required fields)</td></tr>";
     //  QUERY SELECTORS
-    let $initialModel, $fileDisplayArea, $btnRunModel;
+    let $initialModel, $fileDisplayArea, $btnRunModel, $chkAutoudate;
     //  FUNCTIONS
     let addModelToUI, setStateAfterLastModel, openModel, readModel, canvasClick, drawModel, setGraphEventListeners,
         resetModelState, updateInp, populateNodeList, populateEdgeList;
@@ -57,7 +57,7 @@
     //  CONSTANTS
     let edgeHtml = {
         Pipe: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Length:</td><td><input type='number' id='length' class='inp-properties needed' readonly> *</td></tr><tr><td>Diameter:</td><td><input type='number' id='diameter' class='inp-properties needed' readonly> *</td></tr><tr><td>Roughness:</td><td><input type='number' id='roughness' class='inp-properties needed' readonly> *</td></tr><tr><td>Minor Loss:</td><td><input type='number' id='minorloss' class='inp-properties needed' value='0' readonly> *</td></tr><tr><td>Status:</td><td><div class='form-group' style='display: inline-block'><select id='status' class='form-control needed' disabled><option value='Open'>Open</option><option value='Closed'>Closed</option><option value='CV'>CV</option></select></div> *</td></tr>" + needed,
-        Pump: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Parameters:</td><td><div class='form-group' style='display: inline-block'><select id='phead' class='form-control needed' disabled><option value='HEAD'>HEAD</option><option value='POWER'>POWER</option></select></div> *<br><input type='text' id='phid' class='inp-properties needed' readonly> *</td></tr><tr><td>Optional<br>Parameters:</td><td><div class='form-group' style='display: inline-block'><select id='opt' class='form-control needed' disabled><option value=''></option><option value='SPEED'>SPEED</option><option value='PATTERN'>PATTERN</option></select></div><br><input type='text' id='optid' class='inp-properties' readonly></td></tr>" + needed,
+        Pump: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Parameters:</td><td><div class='form-group' style='display: inline-block'><select id='phead' class='form-control needed' disabled><option value='HEAD'>HEAD</option><option value='POWER'>POWER</option></select></div> *<br><input type='text' id='phid' class='inp-properties needed' readonly> *</td></tr><tr><td>Optional<br>Parameters:</td><td><div class='form-group' style='display: inline-block'><select id='opt' class='form-control' disabled><option value=''></option><option value='SPEED'>SPEED</option><option value='PATTERN'>PATTERN</option></select></div><br><input type='text' id='optid' class='inp-properties' readonly></td></tr>" + needed,
         Valve: "<tr><td><b>Id:</b></td><td><input type='text' id='epaId' class='inp-properties needed' readonly> *</td></tr><tr><td>Diameter:</td><td><input type='number' id='diameter' class='inp-properties needed' readonly> *</td></tr><tr><td>Type:</td><td><div class='form-group' style='display: inline-block'><select id='type' class='form-control needed' disabled><option value='PRV'>PRV</option><option value='PSV'>PSV</option><option value='PBV'>PBV</option><option value='FCV'>FCV</option><option value='TCV'>TCV</option><option value='GPV'>GPV</option></select></div> *</td></tr><tr><td>Setting:</td><td><input type='number' id='setting' class='inp-properties needed' readonly> *</td></tr><tr><td>Minor Loss:</td><td><input type='number' id='minorloss' class='inp-properties needed' value='0' readonly> *</td></tr>" + needed
     };
     //  FUNCTIONS
@@ -66,34 +66,34 @@
 
     //  ********** Model Options **********
     //  QUERY SELECTORS
-    let $modelOptions, $chkOptionsEdit, $btnOptionsOk;
+    let $modelOptions, $chkOptionsEdit, $btnOptionsOk, $btnOptionsCancel;
     //  FUNCTIONS
     let populateModelOptions;
     //  ---------- Time
     //  QUERY SELECTORS
-    let $modalTime, $chkTimeEdit, $btnTimeOk, $btnTimeCancel;
+    let $modalTime, $chkTimeEdit, $btnTimeOk;
     //  FUNCTIONS
     let populateTimeModal;
     //  ---------- Energy
     //  QUERY SELECTORS
-    let $modalEnergy, $chkEnergyEdit, $btnEnergyOk, $btnEnergyCancel;
+    let $modalEnergy, $chkEnergyEdit, $btnEnergyOk;
     //  FUNCTIONS
     let populateEnergyModal;
     //  ---------- Reactions
     //  QUERY SELECTORS
-    let $modalReactions, $chkReactionsEdit, $btnReactionsOk, $btnReactionsCancel;
+    let $modalReactions, $chkReactionsEdit, $btnReactionsOk;
     //  FUNCTIONS
     let populateReactionsModal;
     //  ---------- Report
     //  QUERY SELECTORS
-    let $modalReport, $chkReportEdit, $btnReportOk, $btnReportCancel;
+    let $modalReport, $chkReportEdit, $btnReportOk;
     //  FUNCTIONS
     let populateReportModal;
     //  ---------- Curve
     //  VARIABLES
     let dataTableLoadModels;
     //  QUERY SELECTORS
-    let $modalCurve, $chkCurveEdit, $btnCurveOk, $btnCurveCancel, $btnCurveDelete, $curveSelect, $inpCurveType,
+    let $modalCurve, $chkCurveEdit, $btnCurveOk, $btnCurveDelete, $curveSelect, $inpCurveType,
         $curveDisplay, $curveTable, $btnAddCurve, $inpCurveId;
     //  CONSTANTS
     let curveGraphLabels = {
@@ -106,13 +106,13 @@
     let populateCurvesModal, resetCurveState, drawCurve, setAddRemovePointListener;
     //  ---------- Pattern
     //  QUERY SELECTORS
-    let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternCancel, $btnPatternDelete, $patternSelect, $inpPatternMults,
+    let $modalPattern, $chkPatternEdit, $btnPatternOk, $btnPatternDelete, $patternSelect, $inpPatternMults,
         $patternDisplay, $btnAddPattern, $inpPatternId;
     //  FUNCTIONS
     let populatePatternModal, resetPatternState, drawPattern;
     //  ---------- Controls
     //  QUERY SELECTORS
-    let $modalControls, $chkControlsEdit, $btnControlsOk, $btnControlsCancel, $controlsDisplay, $btnAddControl, $controlType, $addControlView;
+    let $modalControls, $chkControlsEdit, $btnControlsOk, $controlsDisplay, $btnAddControl, $controlType, $addControlView;
     //  CONSTANTS
     let controlsHtml = {
             'IF NODE': '<h6 style="display: inline-block;">LINK </h6><div class="animate form-group" style="display: inline-block"><select id="controls-links" class="form-control"></select></div><div id="controls-status" style="display: inline-block;"></div><h6 style="display: inline-block;"> IF NODE </h6><div class="form-group" style="display: inline-block"><select id="controls-nodes" class="form-control"></select></div><div class="form-group" style="display: inline-block"><select id="controls-condition" class="form-control"><option value="above">Above</option><option value="below">Below</option><option value="equals">Equals</option></select></div><input id="controls-value" type="number" style="display: inline-block;">',
@@ -128,7 +128,14 @@
     let populateControlsModal, setAddRemoveControlListener;
     //  ---------- Rules
     //  QUERY SELECTORS
-    let $modalRules, $chkRulesEdit, $btnRulesOk, $btnRulesCancel, $rulesDisplay, $btnAddRule;
+    let $modalRules, $chkRulesEdit, $btnRulesOk, $rulesDisplay, $btnAddRule;
+    //  CONSTANTS
+    let ruleAttrs = {
+        NODE: ["DEMAND", "HEAD", "PRESSURE"],
+        TANK: ["LEVEL", "FILLTIME", "DRAINTIME"],
+        LINK: ["FLOW", "STATUS", "SETTING"],
+        SYSTEM: ["DEMAND", "TIME", "CLOCKTIME"]
+    }
     //  FUNCTIONS
     let populateRulesModal, setAddRemoveRuleListener;
 
@@ -343,6 +350,7 @@
             $nodeX.html(newX);
             $nodeY.html(newY);
 
+            curNode.properties = {};
             if (edgeSource !== null) {
                 curNode.epaType = "Vertex";
                 populateNodeModal(true);
@@ -350,7 +358,6 @@
             }
             else {
                 curNode.epaType = addType;
-                curNode.properties = {};
                 populateNodeModal();
                 if (!$chkNodeEdit.is(':checked'))
                     $chkNodeEdit.trigger('click');
@@ -360,6 +367,14 @@
     };
 
     drawModel = function() {
+        let maxNSize = 6, maxESize = 4, nPowRat = 0.2, ePowRat = 0.1;
+        if (parseInt(model.nodes.length) > 1000) {
+            maxNSize = 2;
+            maxESize = 2;
+            nPowRat = 0.2;
+            ePowRat = 0.2;
+        }
+
         s = new sigma({
             graph: model,
             renderer: {
@@ -368,16 +383,17 @@
             },
             settings: {
                 minNodeSize: 0,
-                maxNodeSize: 6.5,
+                maxNodeSize: maxNSize,
                 minEdgeSize: 0.5,
-                maxEdgeSize: 4,
+                maxEdgeSize: maxESize,
                 enableEdgeHovering: true,
                 edgeHoverSizeRatio: 1.5,
-                nodesPowRatio: 0.3,
-                edgesPowRatio: 0.2,
+                nodesPowRatio: nPowRat,
+                edgesPowRatio: ePowRat,
                 immutable: false,
                 drawEdgeLabels: false, // change to true to display edge labels
                 // add showLabel: true to each node to display label always
+                zoomMin: 0.001
             }
         });
 
@@ -425,15 +441,25 @@
         $nodeStats.empty();
         $edgePlot.empty();
         $edgeStats.empty();
+
+        for (let i in s.graph.nodes())
+            s.graph.nodes()[i].color = s.graph.nodes()[i].epaColor;
+
+        for (let i in s.graph.edges())
+            s.graph.edges()[i].color = s.graph.edges()[i].epaColor;
     };
 
     updateInp = function () {
-        model.nodes = s.graph.nodes();
-        model.edges = s.graph.edges();
+        if ($chkAutoudate.is(':checked')) {
+            $("#loading-animation-update").removeAttr('hidden');
+            model.nodes = s.graph.nodes();
+            model.edges = s.graph.edges();
 
-        let epanetWriter = new EPANET_Writer(model);
+            let epanetWriter = new EPANET_Writer(model);
 
-        $fileDisplayArea.innerText = epanetWriter.getFile();
+            $fileDisplayArea.innerText = epanetWriter.getFile();
+            $("#loading-animation-update").attr('hidden', true);
+        }
     };
 
     populateNodeList = function ($selectEl) {
@@ -569,10 +595,8 @@
             $modalNode.modal('show');
 
         if (curNode.epaType !== "Label") {
-            if (curNode.epaType !== "Vertex") {
-                for (let key in properties)
-                    $('#' + key).val(properties[key]);
-            }
+            for (let key in properties)
+                $('#' + key).val(properties[key]);
 
             if (model.quality.hasOwnProperty(curNode.properties.epaId)) {
                 $('#node-quality').val(model.quality[curNode.properties.epaId]);
@@ -767,6 +791,9 @@
             else
                 $('#' + key).val(model.options[key]);
         }
+
+        $('#node-count').html(s.graph.nodes().length);
+        $('#edge-count').html(s.graph.edges().length);
     };
     //  ---------- Time
     populateTimeModal = function () {
@@ -1355,6 +1382,7 @@
         $initialModel = $('#initial-model');
         $fileDisplayArea = $("#file-display-area")[0];
         $btnRunModel = $('#btn-run-model');
+        $chkAutoudate = $('#chk-auto-update');
 
 
         //  ********** Node **********
@@ -1394,31 +1422,27 @@
         $modelOptions = $('#model-options-view');
         $chkOptionsEdit = $('#chk-options');
         $btnOptionsOk = $('#btn-options-ok');
+        $btnOptionsCancel = $('#btn-options-cancel');
         //  ---------- Time
         $modalTime = $('#modal-time');
         $chkTimeEdit = $('#chk-time-edit');
         $btnTimeOk = $('#btn-time-ok');
-        $btnTimeCancel = $('#btn-time-cancel');
         //  ---------- Energy
         $modalEnergy = $('#modal-energy');
         $chkEnergyEdit = $('#chk-energy-edit');
         $btnEnergyOk = $('#btn-energy-ok');
-        $btnEnergyCancel = $('#btn-energy-cancel');
         //  ---------- Reactions
         $modalReactions = $('#modal-reactions');
         $chkReactionsEdit = $('#chk-reactions-edit');
         $btnReactionsOk = $('#btn-reactions-ok');
-        $btnReactionsCancel = $('#btn-reactions-cancel');
         //  ---------- Report
         $modalReport = $('#modal-report');
         $chkReportEdit = $('#chk-report-edit');
         $btnReportOk = $('#btn-report-ok');
-        $btnReportCancel = $('#btn-report-cancel');
         //  ---------- Curve
         $modalCurve = $('#modal-curve');
         $chkCurveEdit = $('#chk-curve-edit');
         $btnCurveOk = $('#btn-curve-ok');
-        $btnCurveCancel = $('#btn-curve-cancel');
         $btnCurveDelete = $('#btn-curve-delete');
         $curveSelect = $("#curve-select");
         $inpCurveType = $("#slc-curve-type");
@@ -1430,7 +1454,6 @@
         $modalPattern = $('#modal-pattern');
         $chkPatternEdit = $('#chk-pattern-edit');
         $btnPatternOk = $('#btn-pattern-ok');
-        $btnPatternCancel = $('#btn-pattern-cancel');
         $btnPatternDelete = $('#btn-pattern-delete');
         $patternSelect = $('#pattern-select');
         $inpPatternMults = $('#tagsinp-pattern-mults');
@@ -1441,7 +1464,6 @@
         $modalControls = $('#modal-controls');
         $chkControlsEdit = $('#chk-controls-edit');
         $btnControlsOk = $('#btn-controls-ok');
-        $btnControlsCancel = $('#btn-controls-cancel');
         $controlsDisplay = $('#controls-container');
         $btnAddControl = $('#btn-add-control');
         $controlType = $('#controls-type');
@@ -1450,7 +1472,6 @@
         $modalRules = $('#modal-rules');
         $chkRulesEdit = $('#chk-rules-edit');
         $btnRulesOk = $('#btn-rules-ok');
-        $btnRulesCancel = $('#btn-rules-cancel');
         $rulesDisplay = $('#rules-container');
         $btnAddRule = $('#btn-add-rule');
 
@@ -1568,11 +1589,11 @@
                 file_text = $fileDisplayArea.innerText;
 
                 readModel();
-                populateModelOptions();
 
                 let activeIndex = $viewTabs.tabs("option", "active");
                 $viewTabs.tabs({active: 0});
                 drawModel();
+                populateModelOptions();
                 $viewTabs.tabs({active: activeIndex});
 
                 $('.ran-model').addClass('hidden');
@@ -1590,6 +1611,7 @@
                 ranModel = false;
 
                 let searchnodelistElt = $('#search-nodelist');
+                searchnodelistElt.empty();
                 s.graph.nodes().forEach(function(n) {
                     let optionElt = document.createElement("option");
 
@@ -1607,12 +1629,13 @@
                     searchnodelistElt.append(optionElt);
                 });
 
-                $('#search-nodelist').change(function(e) {
+                searchnodelistElt.change(function(e) {
                     locateNode(e);
                     $('#search-type').html('node');
                 });
 
                 let searchedgelistElt = $('#search-edgelist');
+                searchedgelistElt.empty();
                 s.graph.edges().forEach(function(n) {
                     let optionElt = document.createElement("option");
                     optionElt.text = n.epaType + ' ' + n.id;
@@ -1620,19 +1643,24 @@
                     searchedgelistElt.append(optionElt);
                 });
 
-                $('#search-edgelist').change(function(e) {
+                searchedgelistElt.change(function(e) {
                     locateEdge(e);
                     $('#search-type').html('edge');
                 });
+
+                if (s.graph.nodes().length > 1000)
+                    $chkAutoudate.attr('checked', false);
             }
         });
 
         $btnRunModel.click(function() {
-            let data = {'model': file_text};
+            let data = {'model': file_text, 'quality': model.options['opt-quality'][0]};
 
             resetResultsOverview();
 
             $('#loading-animation-run').removeAttr('hidden');
+            if (parseInt($('#node-count').text()) > 1000)
+                alert("Due to large model size this may take some time.");
 
             $.ajax({
                 type: 'POST',
@@ -1689,9 +1717,9 @@
                                 else
                                     $('#total-timesteps').val(animationMaxStep - 1);
 
-                                for (let i in modelResults['edges']) {
-                                    s.graph.edges().find(edge => edge.properties.epaId === i).modelResults = modelResults['edges'][i];
-                                }
+                                // for (let i in modelResults['edges']) {
+                                //     s.graph.edges().find(edge => edge.properties.epaId === i).modelResults = modelResults['edges'][i];
+                                // }
 
                                 $animationSlider.slider({
                                     value: 0,
@@ -1838,6 +1866,11 @@
             });
         });
 
+        $chkAutoudate.click(function () {
+            if ($chkAutoudate.is(':checked'))
+                updateInp();
+        });
+
         $('#modal-search').on('hidden.bs.modal', function () {
             if ($('#search-type').html() === "node")
                 populateNodeModal();
@@ -1868,12 +1901,9 @@
                 if ($chkNodeEdit.is(':checked'))
                     $chkNodeEdit.trigger('click');
 
-                curNode.color = graphColors[curNode.epaType];
-                if (edgeSource)
-                    edgeSource.color = graphColors[edgeSource.epaType];
-                s.refresh();
                 $modalNode.find('.modal-body-content').empty();
                 resetModelState();
+                s.refresh();
             }
         });
 
@@ -1936,6 +1966,7 @@
                             delete model.quality[curNode.properties.epaId];
                     }
                     else {
+                        curNode.id = "vert " + edgeVerts.length;
                         curNode.properties.epaId = "vert " + edgeVerts.length;
                         curNode.label = "vert " + edgeVerts.length;
                     }
@@ -2115,10 +2146,9 @@
             if ($chkEdgeEdit.is(':checked'))
                 $chkEdgeEdit.trigger('click');
 
-            curEdge.color = curEdge.epaColor;
-            s.refresh();
             $modalEdge.find('.modal-body-content').empty();
             resetModelState();
+            s.refresh();
         });
 
         $btnEdgeLeft.click(previousEdge);
@@ -2336,6 +2366,11 @@
             $chkOptionsEdit.trigger('click');
             updateInp();
         });
+
+        $btnOptionsCancel.click(function () {
+            if ($chkOptionsEdit.is(':checked'))
+                $chkOptionsEdit.trigger('click')
+        });
         //  ---------- Time
         $modalTime.on('shown.bs.modal', function () {
             $modalTime.find('input').keyup(function(event) {
@@ -2349,6 +2384,8 @@
 
         $modalTime.on('hidden.bs.modal', function () {
             $modalTime.find('input').unbind('keyup');
+            if ($chkTimeEdit.is(':checked'))
+                $chkTimeEdit.trigger('click')
         });
 
         $chkTimeEdit.click(function() {
@@ -2373,11 +2410,6 @@
 
         $btnTimeOk.click(function () {
             let timeOptions = model.times;
-
-            // $('#node-properties-view').find('input, select').each(function () {
-            //     if ($(this).attr('id') !== 'node-quality')
-            //         properties[$(this).attr('id')] = $(this).val();
-            // });
             for (let key in timeOptions) {
                 if (key === "pattern" || key === "report") {
                     timeOptions[key][0] = $('#' + key + '1').val();
@@ -2392,11 +2424,6 @@
             $chkTimeEdit.trigger('click');
             updateInp();
         });
-
-        $btnTimeCancel.click(function () {
-            if ($chkTimeEdit.is(':checked'))
-                $chkTimeEdit.trigger('click')
-        });
         //  ---------- Energy
         $modalEnergy.on('shown.bs.modal', function () {
             $modalEnergy.find('input').keyup(function(event) {
@@ -2410,6 +2437,8 @@
 
         $modalEnergy.on('hidden.bs.modal', function () {
             $modalEnergy.find('input').unbind('keyup');
+            if ($chkEnergyEdit.is(':checked'))
+                $chkEnergyEdit.trigger('click')
         });
 
         $chkEnergyEdit.click(function() {
@@ -2440,11 +2469,6 @@
             $chkEnergyEdit.trigger('click');
             updateInp();
         });
-
-        $btnEnergyCancel.click(function () {
-            if ($chkEnergyEdit.is(':checked'))
-                $chkEnergyEdit.trigger('click')
-        });
         //  ---------- Reactions
         $modalReactions.on('shown.bs.modal', function () {
             $modalReactions.find('input').keyup(function(event) {
@@ -2458,6 +2482,8 @@
 
         $modalReactions.on('hidden.bs.modal', function () {
             $modalReactions.find('input').unbind('keyup');
+            if ($chkReactionsEdit.is(':checked'))
+                $chkReactionsEdit.trigger('click')
         });
 
         $chkReactionsEdit.click(function() {
@@ -2488,11 +2514,6 @@
             $chkReactionsEdit.trigger('click');
             updateInp();
         });
-
-        $btnReactionsCancel.click(function () {
-            if ($chkReactionsEdit.is(':checked'))
-                $chkReactionsEdit.trigger('click')
-        });
         //  ---------- Report
         $modalReport.on('shown.bs.modal', function () {
             $modalReport.find('input').keyup(function(event) {
@@ -2506,6 +2527,8 @@
 
         $modalReport.on('hidden.bs.modal', function () {
             $modalReport.find('input').unbind('keyup');
+            if ($chkReportEdit.is(':checked'))
+                $chkReportEdit.trigger('click')
         });
 
         $chkReportEdit.click(function() {
@@ -2538,17 +2561,19 @@
             $chkReportEdit.trigger('click');
             updateInp();
         });
-
-        $btnReportCancel.click(function () {
-            if ($chkReportEdit.is(':checked'))
-                $chkReportEdit.trigger('click')
-        });
         //  ---------- Curve
         $modalCurve.on('shown.bs.modal', function () {
             if (Object.keys(model.curves).length > 0) {
                 populateCurvesModal();
                 $curveSelect.find('select').change();
             }
+        });
+
+        $modalCurve.on('hidden.bs.modal', function () {
+            if ($btnAddCurve.hasClass('btn-danger'))
+                $btnAddCurve.click();
+            else if ($chkCurveEdit.is(':checked'))
+                $chkCurveEdit.trigger('click')
         });
 
         $btnCurveOk.click(function () {
@@ -2615,6 +2640,9 @@
                 $inpCurveType.attr('disabled', true);
                 $curveTable.find('input').attr('disabled', true);
                 $('.curve-table-edit').addClass('hidden');
+
+                if ($btnAddCurve.hasClass('btn-danger'))
+                    $btnAddCurve.click();
             }
         });
 
@@ -2704,6 +2732,13 @@
             $patternSelect.find('select').change();
         });
 
+        $modalPattern.on('hidden.bs.modal', function () {
+            if ($btnAddPattern.hasClass('btn-danger'))
+                $btnAddPattern.click();
+            else if ($chkPatternEdit.is(':checked'))
+                $chkPatternEdit.trigger('click')
+        });
+
         $btnPatternOk.click(function () {
             if ($btnAddPattern.hasClass('btn-success')) {
                 model.patterns[$patternSelect.find('select').val()] = $inpPatternMults.tagsinput('items');
@@ -2747,6 +2782,9 @@
                 $btnPatternDelete.attr('disabled', true);
 
                 $inpPatternMults.attr('disabled', true);
+
+                if ($btnAddPattern.hasClass('btn-danger'))
+                    $btnAddPattern.click();
             }
         });
 
@@ -2799,12 +2837,19 @@
             populateControlsModal();
         });
 
+        $modalControls.on('hidden.bs.modal', function () {
+            if ($btnAddControl.hasClass('btn-danger'))
+                $btnAddControl.click();
+            else if ($chkControlsEdit.is(':checked'))
+                $chkControlsEdit.trigger('click')
+        });
+
         $btnControlsOk.click(function () {
             if ($btnAddControl.hasClass('btn-danger')) {
                 let newControl = [];
                 $('#add-control').find('input, select, h6').each(function () {
-                   if ($(this).val() === '')
-                       newControl.push($(this).text());
+                    if ($(this).val() === '')
+                        newControl.push($(this).text());
                     else
                         newControl.push($(this).val());
                 });
@@ -2816,9 +2861,9 @@
             $controlsDisplay.find('h6').each(function (index) {
                 model.controls.push($(this).text());
             });
-            
+
             if ($chkControlsEdit.is(':checked'))
-                    $chkControlsEdit.trigger('click');
+                $chkControlsEdit.trigger('click');
 
             populateControlsModal();
             updateInp();
@@ -2835,11 +2880,8 @@
 
                 $('.control-remove').addClass('hidden');
 
-                if ($btnAddControl.hasClass('btn-danger')) {
-                    $btnAddControl.removeClass('btn-danger').addClass('btn-success');
-                    $btnAddControl.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
-                    $btnAddControl.prop('title', 'New Control');
-                }
+                if ($btnAddControl.hasClass('btn-danger'))
+                    $btnAddControl.click();
             }
         });
 
@@ -2883,12 +2925,17 @@
             populateRulesModal();
         });
 
+        $modalRules.on('hidden.bs.modal', function () {
+            if ($chkRulesEdit.is(':checked'))
+                $chkRulesEdit.trigger('click')
+        });
+
         $btnRulesOk.click(function () {
             if ($btnAddControl.hasClass('btn-danger')) {
                 let newRule = [];
                 $addRuleView.find('input, select, h6').each(function () {
-                   if ($(this).val() === '')
-                       newRule.push($(this).text());
+                    if ($(this).val() === '')
+                        newRule.push($(this).text());
                     else
                         newRule.push($(this).val());
                 });
@@ -2908,7 +2955,7 @@
             });
 
             if ($chkRulesEdit.is(':checked'))
-                    $chkRulesEdit.trigger('click');
+                $chkRulesEdit.trigger('click');
 
             populateRulesModal();
             updateInp();
@@ -3617,6 +3664,8 @@
 
 
     function locateNode (e) {
+        if (curNode && curNode.color === highlight)
+            curNode.color = curNode.epaColor;
         let nid = e.target[e.target.selectedIndex].value;
         curNode = s.graph.nodes().find(node => node.properties.epaId === nid);
         curNode.color = highlight;
@@ -3630,6 +3679,8 @@
     };
 
     function locateEdge (e) {
+        if (curEdge && curEdge.color === highlight)
+            curEdge.color = curEdge.epaColor;
         let nid = e.target[e.target.selectedIndex].value;
         curEdge = s.graph.edges().find(edge => edge.properties.epaId === nid);
         curEdge.color = highlight;

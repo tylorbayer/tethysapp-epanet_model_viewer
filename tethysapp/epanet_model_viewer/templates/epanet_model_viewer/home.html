@@ -27,6 +27,11 @@
     <br>
     <p><b>Running EPANET model...</b><br>Note: You can continue to use the app while running.</p>
   </div>
+  <div id="loading-animation-update" hidden>
+    <img src="/static/epanet_model_repository/images/loading-animation.gif">
+    <br>
+    <p><b>Updateing .inp file...</b></p>
+  </div>
   {% if modelID %}
   <div id="initial-model" hidden>{{ modelID }}</div>
   {% else %}
@@ -48,6 +53,12 @@
     <li><a href="#file-view">EPANET File View</a></li>
     <li><a href="#metadata-view">Metadata</a></li>
     <div id="model-tools-container" style="float: right; height: 0px;">
+      <span style="color: #565656;">Auto-update:</span>
+      <label class="switch" style="margin: 0; top: 6px;">
+        <input id="chk-auto-update" type="checkbox" checked>
+        <span class="slider round"></span>
+      </label>
+      <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Updating the .inp file may take some time for larger models. Turn auto-udapte off if you run into issues. Turning it back on will update all of your changes to the .inp file immediately."></span>
       <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 130px;">Run Model</button>
       <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 130px;">Save Model</button>
     </div>
@@ -432,9 +443,10 @@
             <input id="chk-options" type="checkbox">
             <span class="slider round"></span>
           </label>
+          <button type="button" id="btn-options-cancel" class="btn btn-default">Cancel</button>
           <button type="button" id="btn-options-ok" class="btn btn-primary" disabled>OK</button>
         </div>
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
           <table class="table table-nonfluid">
             <tbody>
             <tr>
@@ -480,6 +492,22 @@
             </tbody>
           </table>
         </div>
+        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
+          <table class="table table-nonfluid">
+            <tbody>
+            <tr>
+              <td>
+                <h6 style="display: inline-block">Node Count: </h6><h6 id="node-count"></h6>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h6 style="display: inline-block">Edge Count: </h6><h6 id="edge-count"></h6>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -509,7 +537,7 @@
           <select id="search-nodelist" class="form-control" style="width: 130px !important;"></select>
         </div>
         <div>
-          <h3>Go to Edge</h3>
+          <h3>Go to Link</h3>
           <select id="search-edgelist" class="form-control" style="width: 130px !important;"></select>
         </div>
         <div id="search-type" hidden></div>

@@ -72,9 +72,9 @@
        * These indexes refer from node to nodes. Each key is an id, and each
        * value is the array of the ids of related nodes.
        */
-      inNeighborsIndex: new sigma.utils.map(),
-      outNeighborsIndex: new sigma.utils.map(),
-      allNeighborsIndex: new sigma.utils.map()
+      // inNeighborsIndex: new sigma.utils.map(),
+      // outNeighborsIndex: new sigma.utils.map(),
+      // allNeighborsIndex: new sigma.utils.map()
     };
 
     // Execute bindings:
@@ -414,9 +414,9 @@
       validNode.id = id;
 
     // Add empty containers for edges indexes:
-    this.inNeighborsIndex.set(id, new sigma.utils.map());
-    this.outNeighborsIndex.set(id, new sigma.utils.map());
-    this.allNeighborsIndex.set(id, new sigma.utils.map());
+    // this.inNeighborsIndex.set(id, new sigma.utils.map());
+    // this.outNeighborsIndex.set(id, new sigma.utils.map());
+    // this.allNeighborsIndex.set(id, new sigma.utils.map());
 
     // Add the node to indexes:
     this.nodesArray.push(validNode);
@@ -506,31 +506,31 @@
     this.edgesArray.push(validEdge);
     this.edgesIndex.set(validEdge.id, validEdge);
 
-    if (!this.inNeighborsIndex.get(validEdge.target).get(validEdge.source))
-      this.inNeighborsIndex.get(validEdge.target).set(validEdge.source,
-        new sigma.utils.map());
-    this.inNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
-      validEdge);
-
-    if (!this.outNeighborsIndex.get(validEdge.source).get(validEdge.target))
-      this.outNeighborsIndex.get(validEdge.source).set(validEdge.target,
-        new sigma.utils.map());
-    this.outNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
-      validEdge);
-
-    if (!this.allNeighborsIndex.get(validEdge.source).get(validEdge.target))
-      this.allNeighborsIndex.get(validEdge.source).set(validEdge.target,
-        new sigma.utils.map());
-    this.allNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
-      validEdge);
-
-    if (validEdge.target !== validEdge.source) {
-      if (!this.allNeighborsIndex.get(validEdge.target).get(validEdge.source))
-        this.allNeighborsIndex.get(validEdge.target).set(validEdge.source,
-          new sigma.utils.map());
-      this.allNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
-        validEdge);
-    }
+    // if (!this.inNeighborsIndex.get(validEdge.target).get(validEdge.source))
+    //   this.inNeighborsIndex.get(validEdge.target).set(validEdge.source,
+    //     new sigma.utils.map());
+    // this.inNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
+    //   validEdge);
+    //
+    // if (!this.outNeighborsIndex.get(validEdge.source).get(validEdge.target))
+    //   this.outNeighborsIndex.get(validEdge.source).set(validEdge.target,
+    //     new sigma.utils.map());
+    // this.outNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
+    //   validEdge);
+    //
+    // if (!this.allNeighborsIndex.get(validEdge.source).get(validEdge.target))
+    //   this.allNeighborsIndex.get(validEdge.source).set(validEdge.target,
+    //     new sigma.utils.map());
+    // this.allNeighborsIndex.get(validEdge.source).get(validEdge.target).set(validEdge.id,
+    //   validEdge);
+    //
+    // if (validEdge.target !== validEdge.source) {
+    //   if (!this.allNeighborsIndex.get(validEdge.target).get(validEdge.source))
+    //     this.allNeighborsIndex.get(validEdge.target).set(validEdge.source,
+    //       new sigma.utils.map());
+    //   this.allNeighborsIndex.get(validEdge.target).get(validEdge.source).set(validEdge.id,
+    //     validEdge);
+    // }
 
     return this;
   });
@@ -568,16 +568,16 @@
         this.dropEdge(this.edgesArray[i].id);
 
     // Remove related edge indexes:
-    this.inNeighborsIndex.delete(id);
-    this.outNeighborsIndex.delete(id);
-    this.allNeighborsIndex.delete(id);
+    // this.inNeighborsIndex.delete(id);
+    // this.outNeighborsIndex.delete(id);
+    // this.allNeighborsIndex.delete(id);
 
-    var self = this;
-    this.nodesIndex.forEach(function(n, k) {
-      self.inNeighborsIndex.get(k).delete(id);
-      self.outNeighborsIndex.get(k).delete(id);
-      self.allNeighborsIndex.get(k).delete(id);
-    });
+    // var self = this;
+    // this.nodesIndex.forEach(function(n, k) {
+    //   self.inNeighborsIndex.get(k).delete(id);
+    //   self.outNeighborsIndex.get(k).delete(id);
+    //   self.allNeighborsIndex.get(k).delete(id);
+    // });
 
     return this;
   });
@@ -609,23 +609,23 @@
         break;
       }
 
-    this.inNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
-    if (this.inNeighborsIndex.get(edge.target).get(edge.source).size == 0)
-      this.inNeighborsIndex.get(edge.target).delete(edge.source);
-
-    this.outNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
-    if (this.outNeighborsIndex.get(edge.source).get(edge.target).size == 0)
-      this.outNeighborsIndex.get(edge.source).delete(edge.target);
-
-    this.allNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
-    if (this.allNeighborsIndex.get(edge.source).get(edge.target).size == 0)
-      this.allNeighborsIndex.get(edge.source).delete(edge.target);
-
-    if (edge.target !== edge.source) {
-      this.allNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
-      if (this.allNeighborsIndex.get(edge.target).get(edge.source).size == 0)
-        this.allNeighborsIndex.get(edge.target).delete(edge.source);
-    }
+    // this.inNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
+    // if (this.inNeighborsIndex.get(edge.target).get(edge.source).size == 0)
+    //   this.inNeighborsIndex.get(edge.target).delete(edge.source);
+    //
+    // this.outNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
+    // if (this.outNeighborsIndex.get(edge.source).get(edge.target).size == 0)
+    //   this.outNeighborsIndex.get(edge.source).delete(edge.target);
+    //
+    // this.allNeighborsIndex.get(edge.source).get(edge.target).delete(edge.id);
+    // if (this.allNeighborsIndex.get(edge.source).get(edge.target).size == 0)
+    //   this.allNeighborsIndex.get(edge.source).delete(edge.target);
+    //
+    // if (edge.target !== edge.source) {
+    //   this.allNeighborsIndex.get(edge.target).get(edge.source).delete(edge.id);
+    //   if (this.allNeighborsIndex.get(edge.target).get(edge.source).size == 0)
+    //     this.allNeighborsIndex.get(edge.target).delete(edge.source);
+    // }
 
     return this;
   });
@@ -644,9 +644,9 @@
     // Delete indexes:
     delete this.nodesIndex;
     delete this.edgesIndex;
-    delete this.inNeighborsIndex;
-    delete this.outNeighborsIndex;
-    delete this.allNeighborsIndex;
+    // delete this.inNeighborsIndex;
+    // delete this.outNeighborsIndex;
+    // delete this.allNeighborsIndex;
   });
 
   /**
@@ -665,9 +665,9 @@
     this.nodesIndex.clear();
     this.edgesIndex.clear();
     this.nodesIndex.clear();
-    this.inNeighborsIndex.clear();
-    this.outNeighborsIndex.clear();
-    this.allNeighborsIndex.clear();
+    // this.inNeighborsIndex.clear();
+    // this.outNeighborsIndex.clear();
+    // this.allNeighborsIndex.clear();
 
     return this;
   });
@@ -771,10 +771,10 @@
    */
   graph.addMethod('degree', function(v, which) {
     // Check which degree is required:
-    which = {
-      'in': this.inNeighborsIndex,
-      'out': this.outNeighborsIndex
-    }[which || ''] || this.allNeighborsIndex;
+    // which = {
+    //   'in': this.inNeighborsIndex,
+    //   'out': this.outNeighborsIndex
+    // }[which || ''] || this.allNeighborsIndex;
 
     // Return the related node:
     if (typeof v === 'string' || typeof v === 'number')
