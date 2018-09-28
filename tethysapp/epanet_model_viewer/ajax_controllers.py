@@ -12,8 +12,6 @@ from epanettools.epanettools import EPANetSimulation, Node, Link, Control
 
 import uuid, time
 
-from numba import jit, prange
-
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
 
@@ -134,11 +132,11 @@ def run_epanet_model(request):
             print("--- %s seconds ---" % (time.time() - start_time))
             start_time = time.time()
 
-            # if quality != "NONE":
-            #     print("runq")
-            #     es.runq()
-            #     print("--- %s seconds ---" % (time.time() - start_time))
-            #     start_time = time.time()
+            if quality != "NONE":
+                print("runq")
+                es.runq()
+                print("--- %s seconds ---" % (time.time() - start_time))
+                start_time = time.time()
 
             n = es.network.nodes
             nodes = {}
@@ -165,27 +163,44 @@ def run_epanet_model(request):
             else:
                 getNodeResults(n, range(1, len(n)), nodes)
 
-            # l = es.network.links
-            # print("getLinkRes")
-            # if len(l) > 100:
-            #     print("link thread")
-            # else:
-            #     links = getLinkResults(l)
-            # print("--- %s seconds ---" % (time.time() - start_time))
-            # start_time = time.time()
-            #
-            # print("Setting return obj")
+            l = es.network.links
+            links = {}
+            link_threads = []
+            link_range = 500
+            if len(l) > link_range:
+                process = Process(target=getLinkResults, args=(l, range(1, link_range), links))
+                process.start()
+                link_threads.append(process)
+
+                while link_range < len(l):
+                    if len(l) - link_range - 500 < 0:
+                        r = range(link_range, len(l) - link_range)
+                    else:
+                        r = range(link_range, link_range + 500)
+
+                    process = Process(target=getLinkResults, args=(l, r, links))
+                    process.start()
+                    link_threads.append(process)
+
+                    link_range += 500
+
+            else:
+                getLinkResults(l, range(1, len(l)), links)
 
             if len(node_threads) > 0:
                 for thread in node_threads:
+                    thread.join()
+                for thread in link_threads:
                     thread.join()
 
             print("--- %s seconds ---" % (time.time() - start_time))
             start_time = time.time()
 
+            print("Setting return obj")
+
             return_obj['results'] = {
                 'nodes': nodes,
-                # 'edges': links
+                'edges': links
             }
             print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -197,7 +212,6 @@ def run_epanet_model(request):
 
         finally:
             os.remove(temp)
-
 
     else:
         return_obj['message'] = message_template_wrong_req_method.format(method="POST")
@@ -222,13 +236,15 @@ def getNodeResults(node_list, node_range, nodes):
 
 
 def getLinkResults(link_list, link_range, links):
-    for link in link_list:
-        link_id = link_list[link].id
+    with mutex:
+        print("Link thread")
+        for link in link_range:
+            link_id = link_list[link].id
 
-        links[link_id] = {}
-        links[link_id]["EN_FLOW"] = link_list[link_id].results[8]
-        links[link_id]["EN_VELOCITY"] = link_list[link_id].results[9]
-        links[link_id]["EN_ENERGY"] = link_list[link_id].results[13]
-        links[link_id]["EN_HEADLOSS"] = link_list[link_id].results[10]
+            links[link_id] = {}
+            links[link_id]["EN_FLOW"] = link_list[link_id].results[8]
+            links[link_id]["EN_VELOCITY"] = link_list[link_id].results[9]
+            links[link_id]["EN_ENERGY"] = link_list[link_id].results[13]
+            links[link_id]["EN_HEADLOSS"] = link_list[link_id].results[10]
 
-    return links
+        return
