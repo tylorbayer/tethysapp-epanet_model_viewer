@@ -1717,9 +1717,9 @@
                                 else
                                     $('#total-timesteps').val(animationMaxStep - 1);
 
-                                // for (let i in modelResults['edges']) {
-                                //     s.graph.edges().find(edge => edge.properties.epaId === i).modelResults = modelResults['edges'][i];
-                                // }
+                                for (let i in modelResults['edges']) {
+                                    s.graph.edges().find(edge => edge.properties.epaId === i).modelResults = modelResults['edges'][i];
+                                }
 
                                 $animationSlider.slider({
                                     value: 0,
