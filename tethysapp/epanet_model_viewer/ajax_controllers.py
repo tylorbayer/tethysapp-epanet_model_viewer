@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 
-import os, tempfile, pprint
+import os, tempfile
+
+from multiprocessing import Process, Lock
 
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
@@ -8,10 +10,14 @@ from .app import EpanetModelViewer as app
 
 from epanettools.epanettools import EPANetSimulation, Node, Link, Control
 
-import uuid
+import uuid, time
+
+from numba import jit, prange
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
+
+mutex = Lock()
 
 
 def get_epanet_model(request):
@@ -101,7 +107,7 @@ def upload_epanet_model(request):
 
 
 def run_epanet_model(request):
-    pp = pprint.PrettyPrinter()
+    start_time = time.time()
 
     return_obj = {
         'success': False,
@@ -111,54 +117,78 @@ def run_epanet_model(request):
 
     if request.is_ajax() and request.method == 'POST':
         model = request.POST['model']
+        quality = request.POST['quality']
 
         temp = 'tmp_' + str(uuid.uuid4()) + '.inp'
 
         with open(temp, 'w') as f:
             f.write(model)
         try:
+            print("Initializing es")
             es = EPANetSimulation(temp)
+            print("--- %s seconds ---" % (time.time() - start_time))
+            start_time = time.time()
 
-            # print app.get_user_workspace(request).path
+            print("run")
             es.run()
-            es.runq()
+            print("--- %s seconds ---" % (time.time() - start_time))
+            start_time = time.time()
 
+            # if quality != "NONE":
+            #     print("runq")
+            #     es.runq()
+            #     print("--- %s seconds ---" % (time.time() - start_time))
+            #     start_time = time.time()
+
+            n = es.network.nodes
             nodes = {}
-            node_list = es.network.nodes
+            node_threads = []
+            node_range = 500
+            print("getNodeRes")
+            if len(n) > node_range:
+                process = Process(target=getNodeResults, args=(n, range(1, node_range), nodes))
+                process.start()
+                node_threads.append(process)
 
-            for node in node_list:
-                node_vals = {}
-                node_id = node_list[node].id
+                while node_range < len(n):
+                    if len(n) - node_range - 500 < 0:
+                        r = range(node_range, len(n) - node_range)
+                    else:
+                        r = range(node_range, node_range + 500)
 
-                for val_type in Node.value_type:
-                    try:
-                        node_vals[val_type] = ["%.2f" % member for member in node_list[node_id].results[Node.value_type[val_type]]]
-                    except:
-                        pass
+                    process = Process(target=getNodeResults, args=(n, r, nodes))
+                    process.start()
+                    node_threads.append(process)
 
-                nodes[node_id] = node_vals
+                    node_range += 500
 
-            links = {}
-            link_list = es.network.links
+            else:
+                getNodeResults(n, range(1, len(n)), nodes)
 
-            for link in link_list:
-                link_vals = {}
-                link_id = link_list[link].id
+            # l = es.network.links
+            # print("getLinkRes")
+            # if len(l) > 100:
+            #     print("link thread")
+            # else:
+            #     links = getLinkResults(l)
+            # print("--- %s seconds ---" % (time.time() - start_time))
+            # start_time = time.time()
+            #
+            # print("Setting return obj")
 
-                for val_type in Link.value_type:
-                    try:
-                        link_vals[val_type] = ["%.2f" % member for member in link_list[link_id].results[Link.value_type[val_type]]]
-                    except:
-                        pass
+            if len(node_threads) > 0:
+                for thread in node_threads:
+                    thread.join()
 
-                links[link_id] = link_vals
+            print("--- %s seconds ---" % (time.time() - start_time))
+            start_time = time.time()
 
-            report = {
+            return_obj['results'] = {
                 'nodes': nodes,
-                'edges': links
+                # 'edges': links
             }
+            print("--- %s seconds ---" % (time.time() - start_time))
 
-            return_obj['results'] = report
             return_obj['success'] = True
 
         except Exception as e:
@@ -172,4 +202,33 @@ def run_epanet_model(request):
     else:
         return_obj['message'] = message_template_wrong_req_method.format(method="POST")
 
+    print("Returning obj")
     return JsonResponse(return_obj)
+
+
+def getNodeResults(node_list, node_range, nodes):
+    with mutex:
+        print("Node thread")
+        for node in node_range:
+            node_id = node_list[node].id
+
+            nodes[node_id] = {}
+            nodes[node_id]["EN_QUALITY"] = node_list[node_id].results[12]
+            nodes[node_id]["EN_PRESSURE"] = node_list[node_id].results[11]
+            nodes[node_id]["EN_HEAD"] = node_list[node_id].results[10]
+            nodes[node_id]["EN_DEMAND"] = node_list[node_id].results[9]
+
+        return
+
+
+def getLinkResults(link_list, link_range, links):
+    for link in link_list:
+        link_id = link_list[link].id
+
+        links[link_id] = {}
+        links[link_id]["EN_FLOW"] = link_list[link_id].results[8]
+        links[link_id]["EN_VELOCITY"] = link_list[link_id].results[9]
+        links[link_id]["EN_ENERGY"] = link_list[link_id].results[13]
+        links[link_id]["EN_HEADLOSS"] = link_list[link_id].results[10]
+
+    return links
