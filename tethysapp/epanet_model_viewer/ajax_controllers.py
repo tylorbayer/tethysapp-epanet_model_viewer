@@ -6,7 +6,6 @@ from multiprocessing import Process, Lock
 
 from hs_restclient import HydroShare
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
-from .app import EpanetModelViewer as app
 
 from epanettools.epanettools import EPANetSimulation, Node, Link, Control
 
@@ -161,7 +160,7 @@ def run_epanet_model(request):
                     node_range += 500
 
             else:
-                getNodeResults(n, range(1, len(n)), nodes)
+                getNodeResults(n, range(0, len(n)), nodes)
 
             l = es.network.links
             links = {}
@@ -185,7 +184,7 @@ def run_epanet_model(request):
                     link_range += 500
 
             else:
-                getLinkResults(l, range(1, len(l)), links)
+                getLinkResults(l, range(0, len(l)), links)
 
             if len(node_threads) > 0:
                 for thread in node_threads:
@@ -224,7 +223,7 @@ def getNodeResults(node_list, node_range, nodes):
     with mutex:
         print("Node thread")
         for node in node_range:
-            node_id = node_list[node].id
+            node_id = node_list[node + 1].id
 
             nodes[node_id] = {}
             nodes[node_id]["EN_QUALITY"] = node_list[node_id].results[12]
@@ -239,7 +238,7 @@ def getLinkResults(link_list, link_range, links):
     with mutex:
         print("Link thread")
         for link in link_range:
-            link_id = link_list[link].id
+            link_id = link_list[link + 1].id
 
             links[link_id] = {}
             links[link_id]["EN_FLOW"] = link_list[link_id].results[8]
