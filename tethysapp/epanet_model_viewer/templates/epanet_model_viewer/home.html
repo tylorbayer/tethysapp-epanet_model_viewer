@@ -95,20 +95,15 @@
         <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="Default" name="Default">
           <img src="/static/epanet_model_viewer/images/cursor.png" style="width: 30px; height: 30px; margin-left: 5px;">
         </a>
+        <a data-toggle="tooltip" data-placement="top" title="Drag Nodes" name="Drag">
+          <span class="glyphicon glyphicon-move" style="color:#ffffff; font-size: 1.5em; margin-top:1.5px"></span>
+        </a>
         <a data-toggle="tooltip" data-placement="top" title="Full-Extent" name="Full-Extent">
           <span class="glyphicon glyphicon-fullscreen" style="color:#ffffff; font-size: 1.3em; margin-top:3px"></span>
         </a>
         <a data-toggle="modal" data-target="#modal-search" data-toggle="tooltip" data-placement="top" title="Search for node/edge" name="Search">
           <span class="glyphicon glyphicon-search" style="color:#ffffff; font-size: 1.3em; margin-top:3px"></span>
         </a>
-        <div style="float: right; margin-top: 5px;">
-          <span style="color: white;">Drag Nodes:</span>
-          <br>
-          <label class="switch" style="margin-left: 40px; margin-bottom: 0px;">
-            <input id="chk-drag" type="checkbox">
-            <span class="slider round"></span>
-          </label>
-        </div>
       </div>
       <div id="query-toolbar" class="hidden">
         <h4>Query</h4>
@@ -949,11 +944,14 @@
         <h5 class="modal-title" id="rules-modal-label">Rules Editor</h5>
       </div>
       <div class="modal-body">
-        <p>Adding rule not built in yet... coming soon.</p>
-        <input id="inp-rules" class="model-options" type='text'>
+        <b class="rule-add hidden">Id:</b>
+        <input type='text' id='inp-rule-id' class='model-options' hidden>
         <div id="btn-add-rule" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Control">
           <span class="glyphicon glyphicon-plus"></span>
         </div>
+        <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="This editor doesn't ensure correct syntax. Please refer to the EPANET User's manual for instructions on how to format rules. Entering incorrect rules will result in run errors."></span>
+        <br><br>
+        <textarea id="inp-rule-body" cols="58" rows="5" hidden></textarea>
         <h4 style="border-bottom: 1px solid #cccccc;">Rules</h4>
         <table class="table table-nonfluid" style="width: 100% !important;"><tbody id="rules-container"></tbody></table>
       </div>

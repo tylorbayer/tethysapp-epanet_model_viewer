@@ -22,9 +22,10 @@
     let s = {}, model = {}, locate, highlight = '#1affff',
         graphColors = {Junction: '#666', Vertex: "#666", Reservoir: '#5F9EA0', Tank: '#8B4513', Label: '#d6d6c2', Pipe: '#ccc',
             Pump: '#D2B48C', Valve: '#7070db' }, hoverColors = {Pipe: '#808080', Pump: '#DAA520', Valve: '#3333cc' },
-        file_text = "", modelResults = {}, ranModel = false, needed = "<tr><td></td><td>(* required fields)</td></tr>";
+        file_text = "", modelResults = {}, ranModel = false, needed = "<tr><td></td><td>(* required fields)</td></tr>",
+        firstRun = true;
     //  QUERY SELECTORS
-    let $initialModel, $fileDisplayArea, $btnRunModel, $chkAutoudate;
+    let $initialModel, $fileDisplayArea, $btnRunModel, $chkAutoUpdate;
     //  FUNCTIONS
     let addModelToUI, setStateAfterLastModel, openModel, readModel, canvasClick, drawModel, setGraphEventListeners,
         resetModelState, updateInp, populateNodeList, populateEdgeList;
@@ -128,14 +129,14 @@
     let populateControlsModal, setAddRemoveControlListener;
     //  ---------- Rules
     //  QUERY SELECTORS
-    let $modalRules, $chkRulesEdit, $btnRulesOk, $rulesDisplay, $btnAddRule;
+    let $modalRules, $chkRulesEdit, $btnRulesOk, $rulesDisplay, $btnAddRule, $inpRuleId, $inpRuleBody;
     //  CONSTANTS
-    let ruleAttrs = {
-        NODE: ["DEMAND", "HEAD", "PRESSURE"],
-        TANK: ["LEVEL", "FILLTIME", "DRAINTIME"],
-        LINK: ["FLOW", "STATUS", "SETTING"],
-        SYSTEM: ["DEMAND", "TIME", "CLOCKTIME"]
-    }
+    // let ruleAttrs = {
+    //     NODE: ["DEMAND", "HEAD", "PRESSURE"],
+    //     TANK: ["LEVEL", "FILLTIME", "DRAINTIME"],
+    //     LINK: ["FLOW", "STATUS", "SETTING"],
+    //     SYSTEM: ["DEMAND", "TIME", "CLOCKTIME"]
+    // };
     //  FUNCTIONS
     let populateRulesModal, setAddRemoveRuleListener;
 
@@ -181,7 +182,7 @@
     //  VARIABLES
     let addType = "";
     //  QUERY SELECTORS
-    let $btnEditTools, $editToolbar, $chkDragNodes, $btnEditDefualt;
+    let $btnEditTools, $editToolbar, $btnEditDefualt;
 
 
     //  ********** Results Overview **********
@@ -277,6 +278,7 @@
     };
 
     readModel = function () {
+        console.log("read model");
         let epanetReader = new EPANET_Reader(file_text);
 
         model = epanetReader.getModel();
@@ -367,6 +369,8 @@
     };
 
     drawModel = function() {
+        console.log("draw model");
+
         let maxNSize = 6, maxESize = 4, nPowRat = 0.2, ePowRat = 0.1;
         if (parseInt(model.nodes.length) > 1000) {
             maxNSize = 2;
@@ -393,7 +397,6 @@
                 immutable: false,
                 drawEdgeLabels: false, // change to true to display edge labels
                 // add showLabel: true to each node to display label always
-                zoomMin: 0.001
             }
         });
 
@@ -450,15 +453,17 @@
     };
 
     updateInp = function () {
-        if ($chkAutoudate.is(':checked')) {
+        if ($chkAutoUpdate.is(':checked')) {
+            console.log("Update");
+
             $("#loading-animation-update").removeAttr('hidden');
-            model.nodes = s.graph.nodes();
-            model.edges = s.graph.edges();
 
-            let epanetWriter = new EPANET_Writer(model);
+            // setTimeout(function() {
+                model.nodes = s.graph.nodes();
+                model.edges = s.graph.edges();
 
-            $fileDisplayArea.innerText = epanetWriter.getFile();
-            $("#loading-animation-update").attr('hidden', true);
+                getEPANETObject(model);
+            // }, 8000);
         }
     };
 
@@ -484,6 +489,13 @@
             optionElt.value = n.id;
             $selectEl.append(optionElt);
         });
+    };
+
+    let getEPANETObject = async function(model) {
+        console.log("asynv write");
+        let epanetWriter = new EPANET_Writer(model);
+
+         $fileDisplayArea.innerText = epanetWriter.getFile();
     };
 
 
@@ -532,7 +544,7 @@
 
                 if (isAddEdge) {
                     if (curNode.epaType === "Label" || curNode.epaType === "Vertex")
-                        alert("Can't create edges off of Verticies or Labels");
+                        alert("Can't create edges off of Vertices or Labels");
                     else {
                         if (edgeSource !== null && edgeSource.properties.epaId !== curNode.properties.epaId) {
                             $('#edge-dialog').css({top: e.data.captor.clientY - 10, left: e.data.captor.clientX * 2 - 1600});
@@ -1382,7 +1394,7 @@
         $initialModel = $('#initial-model');
         $fileDisplayArea = $("#file-display-area")[0];
         $btnRunModel = $('#btn-run-model');
-        $chkAutoudate = $('#chk-auto-update');
+        $chkAutoUpdate = $('#chk-auto-update');
 
 
         //  ********** Node **********
@@ -1474,6 +1486,8 @@
         $btnRulesOk = $('#btn-rules-ok');
         $rulesDisplay = $('#rules-container');
         $btnAddRule = $('#btn-add-rule');
+        $inpRuleId = $('#inp-rule-id')
+        $inpRuleBody = $('#inp-rule-body');
 
 
         //  ********** Upload **********
@@ -1517,7 +1531,6 @@
         //  ********** Editing **********
         $btnEditTools = $('#btn-edit-tools');
         $editToolbar = $('#edit-toolbar');
-        $chkDragNodes = $('#chk-drag');
         $btnEditDefualt = $('#btn-default-edit');
 
 
@@ -1580,6 +1593,8 @@
 
         $('#file-display-area').bind("DOMSubtreeModified",function(){
             if ($fileDisplayArea.innerText !== "") {
+                console.log("Display area");
+                $("#loading-animation-update").attr('hidden', true);
                 $('#view-tabs').removeClass('hidden');
                 $('#loading-model').addClass('hidden');
 
@@ -1610,8 +1625,8 @@
 
                 ranModel = false;
 
-                let searchnodelistElt = $('#search-nodelist');
-                searchnodelistElt.empty();
+                let searchNodeListElt = $('#search-nodelist');
+                searchNodeListElt.empty();
                 s.graph.nodes().forEach(function(n) {
                     let optionElt = document.createElement("option");
 
@@ -1626,10 +1641,10 @@
                         optionElt.text = n.epaType + ' ' + n.id;
                         optionElt.value = n.id;
                     }
-                    searchnodelistElt.append(optionElt);
+                    searchNodeListElt.append(optionElt);
                 });
 
-                searchnodelistElt.change(function(e) {
+                searchNodeListElt.change(function(e) {
                     locateNode(e);
                     $('#search-type').html('node');
                 });
@@ -1648,8 +1663,23 @@
                     $('#search-type').html('edge');
                 });
 
-                if (s.graph.nodes().length > 1000)
-                    $chkAutoudate.attr('checked', false);
+                if (s.graph.nodes().length > 2000) {
+                    alert("This application is not yet able to process models with over 2000 nodes/links. You will not " +
+                        "be able to run models of this size at this time. Editing is still possible but auto-update is defaulted " +
+                        "to off. If you would like to update the changes you have made to the .inp file uncheck the " +
+                        "auto-update slider and they will be made.");
+
+                    $btnRunModel.attr('disabled', true);
+
+                    if (firstRun == true)
+                        $chkAutoUpdate.attr('checked', false);
+                }
+                else {
+                    $btnRunModel.removeAttr('disabled');
+                    $chkAutoUpdate.attr('checked', true);
+                }
+
+                firstRun = false;
             }
         });
 
@@ -1866,9 +1896,10 @@
             });
         });
 
-        $chkAutoudate.click(function () {
-            if ($chkAutoudate.is(':checked'))
+        $chkAutoUpdate.click(function () {
+            if ($chkAutoUpdate.is(':checked')) {
                 updateInp();
+            }
         });
 
         $('#modal-search').on('hidden.bs.modal', function () {
@@ -1993,6 +2024,7 @@
                     }
 
                     curNode.color = graphColors[curNode.epaType];
+                    curNode.epaColor = curNode.color;
                     curNode.x = $nodeX.html();
                     curNode.y = $nodeY.html();
 
@@ -2931,16 +2963,11 @@
         });
 
         $btnRulesOk.click(function () {
-            if ($btnAddControl.hasClass('btn-danger')) {
-                let newRule = [];
-                $addRuleView.find('input, select, h6').each(function () {
-                    if ($(this).val() === '')
-                        newRule.push($(this).text());
-                    else
-                        newRule.push($(this).val());
-                });
-                $rulesDisplay.append('<h6>' + newControl.join(' ') + '</h6>');
-                $btnAddRule.click();
+            if ($btnAddRule.hasClass('btn-danger') && $inpRuleId.val() !== "" && $inpRuleBody.val() !== "") {
+                console.log("add rule");
+                console.log($inpRuleBody.val().split(/\r?\n/));
+                model.rules[$inpRuleId.val()] = $inpRuleBody.val().split(/\r?\n/);
+                populateRulesModal();
             }
 
             model.rules = {};
@@ -2973,9 +3000,7 @@
                 $('.rule-remove').addClass('hidden');
 
                 if ($btnAddRule.hasClass('btn-danger')) {
-                    $btnAddRule.removeClass('btn-danger').addClass('btn-success');
-                    $btnAddRule.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
-                    $btnAddRule.prop('title', 'New Rule');
+                    $btnAddRule.click();
                 }
             }
         });
@@ -2988,13 +3013,23 @@
                 $btnAddRule.removeClass('btn-success').addClass('btn-danger');
                 $btnAddRule.find('span').removeClass('glyphicon-plus').addClass('glyphicon-remove');
                 $btnAddRule.prop('title', 'Cancel');
+
+                $inpRuleId.removeAttr('hidden');
+                $inpRuleBody.removeAttr('hidden');
+                $('.rule-add').removeClass('hidden');
             }
             else {
                 $chkRulesEdit.trigger('click');
 
                 $btnAddRule.removeClass('btn-danger').addClass('btn-success');
                 $btnAddRule.find('span').removeClass('glyphicon-remove').addClass('glyphicon-plus');
-                $btnAddRule.prop('title', 'New Control');
+                $btnAddRule.prop('title', 'New Rule');
+
+                $inpRuleId.attr('hidden', true);
+                $inpRuleBody.attr('hidden', true);
+                $inpRuleId.val('');
+                $inpRuleBody.val('');
+                $('.rule-add').addClass('hidden');
             }
         });
 
@@ -3317,8 +3352,7 @@
                     $editToolbar.find('a').removeClass('active');
                     $(this).addClass('active');
 
-                    if ($chkDragNodes.is(':checked'))
-                        $chkDragNodes.click();
+                    sigma.plugins.killDragNodes(s);
 
                     isAddEdge = false;
                     isAddNode = false;
@@ -3333,6 +3367,28 @@
                         $('#model-container').css("cursor", "default");
                         s.refresh();
                     }
+                    else if (addType === "Drag") {
+                        let dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+                        dragListener.bind('startdrag', function(e) {
+                            s.settings.autoRescale = false;
+                            $('#model-container').css("cursor", "-webkit-grabbing");
+                        });
+                        dragListener.bind('drag', function(e) {
+                            s.unbind('clickNodes');
+                        });
+                        dragListener.bind('dragend', function(e) {
+                            $('#model-container').css("cursor", "-webkit-grab");
+
+                            setTimeout(function(){
+                                s.bind('clickNodes', function(e) {
+                                    nodeClick(e);
+                                });
+                            },250);
+                        });
+
+                        $('#model-container').css("cursor", "-webkit-grab");
+                    }
                     else if (addType === "Junction" || addType === "Reservoir" || addType === "Tank" || addType === "Label") {
                         isAddNode = true;
                         $('#model-container').css("cursor", "crosshair");
@@ -3342,39 +3398,6 @@
                         $('#model-container').css("cursor", "pointer");
                     }
                 }
-            }
-        });
-
-        $chkDragNodes.click(function() {
-            if ($chkDragNodes.is(':checked')) {
-                $editToolbar.find('a').removeClass('active');
-                isAddEdge = false;
-                isAddNode = false;
-                let dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
-
-                dragListener.bind('startdrag', function(e) {
-                    $('#model-container').css("cursor", "-webkit-grabbing");
-                });
-                dragListener.bind('drag', function(e) {
-                    s.unbind('clickNodes');
-                });
-                dragListener.bind('dragend', function(e) {
-                    $('#model-container').css("cursor", "-webkit-grab");
-
-                    setTimeout(function(){
-                        s.bind('clickNodes', function(e) {
-                            nodeClick(e);
-                        });
-                    },250);
-                });
-
-                $('#model-container').css("cursor", "-webkit-grab");
-            }
-            else {
-                $btnEditDefualt.click();
-                sigma.plugins.killDragNodes(s);
-
-                $('#model-container').css("cursor", "default");
             }
         });
 
@@ -3523,6 +3546,10 @@
             openModel($initialModel.html());
         }
         else {
+            $chkAutoUpdate.attr('checked', false);
+            alert("For optimization in creating a new model, auto-update is turned off. Once the initial model has been created" +
+                " check the auto-update toggle to update the .inp file. Once this is done the model can then be run.");
+
             $btnEditTools.click();
             s = new sigma({
                 graph: {
@@ -3531,13 +3558,15 @@
                             id: 'rando1',
                             size: 0,
                             x: 0,
-                            y: 0
+                            y: 0,
+                            hidden: true
                         },
                         {
                             id: 'rando2',
                             size: 0,
-                            x: 100,
-                            y: 100
+                            x: 1000,
+                            y: 1000,
+                            hidden: true
                         }
                     ]
                 },
@@ -3554,7 +3583,7 @@
                     edgeHoverSizeRatio: 1.5,
                     nodesPowRatio: 0.3,
                     edgesPowRatio: 0.2,
-                    immutable: false
+                    immutable: false,
                 }
             });
             readModel();

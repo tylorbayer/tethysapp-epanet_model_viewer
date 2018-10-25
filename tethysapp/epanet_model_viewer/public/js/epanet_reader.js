@@ -296,7 +296,6 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.RULES:
                 let rule = input[i].match(/\S+/g);
-                console.log(rule);
                 if (rule[0] === "RULE") {
                     curRule = rule[1];
                     rules[curRule] = [];
