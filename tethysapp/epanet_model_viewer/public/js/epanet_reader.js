@@ -37,6 +37,12 @@ function EPANET_Reader(file_text, caller) {
     let reaction = 1;
 
     for (let i = 0; i < input.length; ++i) {
+        input[i] = input[i].replace('\r','');
+        if (input[i] === "")
+            continue;
+        if (input[i].match(/\S+/g) === null)
+            continue;
+
         if (input[i] === "[REACTIONS]") {
             input[i] += reaction;
             ++reaction;
@@ -49,11 +55,6 @@ function EPANET_Reader(file_text, caller) {
                 break;
             }
         }
-
-        if (input[i] === "")
-            continue;
-        if (input[i].match(/\S+/g) === null)
-            continue;
 
         switch(curType) {
             case intType.TITLE:
@@ -214,18 +215,20 @@ function EPANET_Reader(file_text, caller) {
                     break;
                 let tag = input[i].match(/\S+/g);
 
-                if (tag[0] === "NODE") {
-                    if (!nodeSpec[tag[1]].tags) {
-                        nodeSpec[tag[1]]["tags"] = [];
+                if (tag !== null) {
+                    if (tag[0] === "NODE") {
+                        if (!nodeSpec[tag[1]].tags) {
+                            nodeSpec[tag[1]]["tags"] = [];
+                        }
+                        nodeSpec[tag[1]]["tags"].push(tag[2]);
                     }
-                    nodeSpec[tag[1]]["tags"].push(tag[2]);
-                }
-                else {
-                    let edge = edges.find(edge => edge.id === tag[1]);
-                    if (!edge.tags) {
-                        edge["tags"] = [];
+                    else {
+                        let edge = edges.find(edge => edge.id === tag[1]);
+                        if (!edge.tags) {
+                            edge["tags"] = [];
+                        }
+                        edge["tags"].push(tag[2]);
                     }
-                    edge["tags"].push(tag[2]);
                 }
 
                 break;
@@ -296,12 +299,15 @@ function EPANET_Reader(file_text, caller) {
 
             case intType.RULES:
                 let rule = input[i].match(/\S+/g);
-                if (rule[0] === "RULE") {
-                    curRule = rule[1];
-                    rules[curRule] = [];
+
+                if (rule !== null) {
+                    if (rule[0] === "RULE") {
+                        curRule = rule[1];
+                        rules[curRule] = [];
+                    }
+                    else
+                        rules[curRule].push(input[i]);
                 }
-                else
-                    rules[curRule].push(input[i]);
 
                 break;
 

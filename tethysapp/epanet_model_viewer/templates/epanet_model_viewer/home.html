@@ -60,14 +60,23 @@
       </label>
       <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Updating the .inp file may take some time for larger models. Turn auto-udapte off if you run into issues. Turning it back on will update all of your changes to the .inp file immediately."></span>
       <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 130px;">Run Model</button>
-      <button class="btn btn-default model-btn" data-toggle="modal" data-target="#modal-upload" style="margin-right: 15px; width: 130px;">Save Model</button>
+      <div id="grp-btn" class="btn-group dropdown" style="margin-right: 16px;">
+        <button id="btn-open-model" class="btn btn-default btn-update dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 127px;">
+          Save Model  <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="btn-open-model">
+          <li><a id="btn-open-model-viewer" class="dropdown-item" style="width: 172px;">Update Model File</a></li>
+          <li data-toggle="modal" data-target="#modal-upload"><a id="btn-open-city-water" class="dropdown-item">Save New Model File</a></li>
+        </ul>
+        <div id="load-anim"></div>
+      </div>
     </div>
   </ul>
   <div id="model-view">
     <div style="position:absolute; right:0; margin-right: 23px">
       <button id="btn-edit-tools" class="btn btn-default" style="width: 125px;">Network Tools</button>
-      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px;">Animation Tools</button>
-      <button id="btn-query-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px; width: 125px;">Query Tools</button>
+      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px;" hidden>Animation Tools</button>
+      <button id="btn-query-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px; width: 125px;" hidden>Query Tools</button>
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
@@ -92,7 +101,7 @@
         <a data-toggle="tooltip" data-placement="top" title="Label" name="Label">
           <img src="/static/epanet_model_viewer/images/label.png" class="tool-icon">
         </a>
-        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="Default" name="Default">
+        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="Select" name="Default">
           <img src="/static/epanet_model_viewer/images/cursor.png" style="width: 30px; height: 30px; margin-left: 5px;">
         </a>
         <a data-toggle="tooltip" data-placement="top" title="Drag Nodes" name="Drag">

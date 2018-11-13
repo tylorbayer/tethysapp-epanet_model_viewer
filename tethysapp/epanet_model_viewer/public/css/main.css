@@ -497,7 +497,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .icon-bar a {
     float: left;
-    width: 71px;
+    width: 72.7px;
     height: 55px;
     padding:10px;
     text-align: center;
@@ -558,4 +558,9 @@ div.inline { float:left; }
     padding-bottom: 10px;
     display: inline-block;
     float: left;
+}
+
+.btn-group {
+    float: right;
+    cursor:pointer;
 }

@@ -267,6 +267,7 @@
                             addLogEntry('warning', message);
                         }
                         if (response.hasOwnProperty('results')) {
+                            file_text = response.results;
                             addModelToUI(response.results);
                             addMetadataToUI(response.metadata);
                             populateTimeModal();
@@ -278,14 +279,13 @@
     };
 
     readModel = function () {
-        console.log("read model");
         let epanetReader = new EPANET_Reader(file_text);
 
         model = epanetReader.getModel();
         console.log(model);
 
-        if (model.nodes.length < 2)
-            model.nodes = s.graph.nodes();
+        // if (model.nodes.length < 2)
+        //     model.nodes = s.graph.nodes();
     };
 
     canvasClick = function(e) {
@@ -369,14 +369,17 @@
     };
 
     drawModel = function() {
-        console.log("draw model");
-
         let maxNSize = 6, maxESize = 4, nPowRat = 0.2, ePowRat = 0.1;
         if (parseInt(model.nodes.length) > 1000) {
             maxNSize = 2;
             maxESize = 2;
             nPowRat = 0.2;
             ePowRat = 0.2;
+        };
+
+        if (!$chkAutoUpdate.is(':checked')) {
+            model.nodes = s.graph.nodes();
+            model.edges = s.graph.edges();
         }
 
         s = new sigma({
@@ -454,7 +457,6 @@
 
     updateInp = function () {
         if ($chkAutoUpdate.is(':checked')) {
-            console.log("Update");
 
             $("#loading-animation-update").removeAttr('hidden');
 
@@ -492,10 +494,10 @@
     };
 
     let getEPANETObject = async function(model) {
-        console.log("asynv write");
         let epanetWriter = new EPANET_Writer(model);
 
          $fileDisplayArea.innerText = epanetWriter.getFile();
+         file_text = epanetWriter.getFile();
     };
 
 
@@ -553,8 +555,7 @@
                             curNode.color = highlight;
 
                             curEdge.epaType = addType;
-                            curEdge.properties = {};
-                            curEdge.properties.epaId = "";
+                            curEdge.properties = {epaId: ''};
                             populateEdgeModal();
                             $chkEdgeEdit.trigger('click');
                         }
@@ -1593,7 +1594,6 @@
 
         $('#file-display-area').bind("DOMSubtreeModified",function(){
             if ($fileDisplayArea.innerText !== "") {
-                console.log("Display area");
                 $("#loading-animation-update").attr('hidden', true);
                 $('#view-tabs').removeClass('hidden');
                 $('#loading-model').addClass('hidden');
@@ -1601,7 +1601,7 @@
                 $("#model-container").remove();
                 $("#model-display").append("<div id='model-container'></div>");
 
-                file_text = $fileDisplayArea.innerText;
+                // file_text = $fileDisplayArea.innerText;
 
                 readModel();
 
@@ -1735,7 +1735,6 @@
                                 });
                                 $('.ran-model').removeClass('hidden');
                                 modelResults = response.results;
-                                console.log(modelResults);
 
                                 for (let i in modelResults['nodes']) {
                                     s.graph.nodes().find(node => node.properties.epaId === i).modelResults = modelResults['nodes'][i];
@@ -2225,6 +2224,7 @@
                     curEdge.id = curEdge.properties.epaId;
                     curEdge.label = curEdge.epaType + " " + curEdge.properties.epaId;
                     curEdge.color = graphColors[curEdge.epaType];
+                    curEdge.epaColor = graphColors[curEdge.epaType];
                     curEdge.size = 1;
                     curEdge.source = edgeSource.id;
                     curEdge.target = curNode.id;
@@ -2253,8 +2253,11 @@
                     }
 
                     try {
+                        curEdge.color = graphColors[curEdge.epaType];
                         s.graph.addEdge(curEdge);
+                        curEdge.color = graphColors[curEdge.epaType];
                         $modalEdge.modal('hide');
+                        curEdge.color = graphColors[curEdge.epaType];
                         edgeVerts = [];
                     }
                     catch (e) {
@@ -2964,7 +2967,6 @@
 
         $btnRulesOk.click(function () {
             if ($btnAddRule.hasClass('btn-danger') && $inpRuleId.val() !== "" && $inpRuleBody.val() !== "") {
-                console.log("add rule");
                 console.log($inpRuleBody.val().split(/\r?\n/));
                 model.rules[$inpRuleId.val()] = $inpRuleBody.val().split(/\r?\n/);
                 populateRulesModal();
@@ -3410,6 +3412,7 @@
 
             reader.onload = function() {
                 $fileDisplayArea.innerText = reader.result;
+                file_text = reader.result;
             };
 
             reader.readAsText(file);
@@ -3559,14 +3562,16 @@
                             size: 0,
                             x: 0,
                             y: 0,
-                            hidden: true
+                            hidden: true,
+                            properties: {epaId: ''}
                         },
                         {
                             id: 'rando2',
                             size: 0,
                             x: 1000,
                             y: 1000,
-                            hidden: true
+                            hidden: true,
+                            properties: {epaId: ''}
                         }
                     ]
                 },
