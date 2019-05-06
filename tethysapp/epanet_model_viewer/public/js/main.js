@@ -375,7 +375,7 @@
             maxESize = 2;
             nPowRat = 0.2;
             ePowRat = 0.2;
-        };
+        }
 
         if (!$chkAutoUpdate.is(':checked')) {
             model.nodes = s.graph.nodes();
@@ -460,12 +460,11 @@
 
             $("#loading-animation-update").removeAttr('hidden');
 
-            // setTimeout(function() {
-                model.nodes = s.graph.nodes();
-                model.edges = s.graph.edges();
+            console.log(model);
+            model.nodes = s.graph.nodes();
+            model.edges = s.graph.edges();
 
-                getEPANETObject(model);
-            // }, 8000);
+            getEPANETObject(model);
         }
     };
 
@@ -493,11 +492,11 @@
         });
     };
 
-    let getEPANETObject = async function(model) {
+    let getEPANETObject = function(model) {
         let epanetWriter = new EPANET_Writer(model);
 
-         $fileDisplayArea.innerText = epanetWriter.getFile();
-         file_text = epanetWriter.getFile();
+        file_text = epanetWriter.getFile();
+        $fileDisplayArea.innerText = epanetWriter.getFile();
     };
 
 
@@ -1186,8 +1185,14 @@
         $nodeLegend.find('.domain-med').html(Math.round((Math.max(...nodeData) + Math.min(...nodeData))/2));
         $nodeLegend.find('.domain-max').html(Math.ceil(Math.max(...nodeData)));
 
-        nodeAnimColor = chroma.scale($nodeAnimColor.val())
-            .domain([Math.max(...nodeData), Math.min(...nodeData)]);
+        if($nodeAnimColor.val() == 'YlGnBu' || $nodeAnimColor.val() == 'OrRd') {
+            nodeAnimColor = chroma.scale($nodeAnimColor.val())
+            .domain([Math.min(...nodeData), Math.max(...nodeData)]);
+        }
+        else {
+            nodeAnimColor = chroma.scale($nodeAnimColor.val())
+                .domain([Math.max(...nodeData), Math.min(...nodeData)]);
+        }
 
     };
 
@@ -1207,8 +1212,14 @@
         $edgeLegend.find('.domain-med').html(Math.round((Math.max(...edgeData) + Math.min(...edgeData))/2));
         $edgeLegend.find('.domain-max').html(Math.ceil(Math.max(...edgeData)));
 
-        edgeAnimColor = chroma.scale($edgeAnimColor.val())
-            .domain([Math.max(...edgeData), Math.min(...edgeData)]);
+        if($edgeAnimColor.val() === 'YlGnBu' || $edgeAnimColor.val() === 'OrRd') {
+            edgeAnimColor = chroma.scale($edgeAnimColor.val())
+            .domain([Math.min(...edgeData), Math.max(...edgeData)]);
+        }
+        else {
+            edgeAnimColor = chroma.scale($edgeAnimColor.val())
+                .domain([Math.max(...edgeData), Math.min(...edgeData)]);
+        }
     };
 
 
@@ -1601,8 +1612,6 @@
                 $("#model-container").remove();
                 $("#model-display").append("<div id='model-container'></div>");
 
-                // file_text = $fileDisplayArea.innerText;
-
                 readModel();
 
                 let activeIndex = $viewTabs.tabs("option", "active");
@@ -1970,11 +1979,13 @@
                 if (curNode.epaType !== "Label") {
                     let edges = s.graph.edges;
 
-                    for (let i in edges) {
-                        if (edges[i].type === "vert") {
-                            for (let j in edges[i].vert) {
-                                if (edges[i].vert[j] === curNode.properties.epaId) {
-                                    edges[i].vert[j] = $('#epaId').val();
+                    if (curNode.epaType === "Vertex") {
+                        for (let i in edges) {
+                            if (edges[i].type === "vert") {
+                                for (let j in edges[i].vert) {
+                                    if (edges[i].vert[j] === curNode.properties.epaId) {
+                                        edges[i].vert[j] = $('#epaId').val();
+                                    }
                                 }
                             }
                         }
