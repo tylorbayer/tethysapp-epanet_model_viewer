@@ -3422,8 +3422,8 @@
             let reader = new FileReader();
 
             reader.onload = function() {
-                $fileDisplayArea.innerText = reader.result;
                 file_text = reader.result;
+                $fileDisplayArea.innerText = reader.result;
             };
 
             reader.readAsText(file);
