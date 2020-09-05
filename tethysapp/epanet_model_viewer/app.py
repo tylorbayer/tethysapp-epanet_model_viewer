@@ -12,7 +12,7 @@ class EpanetModelViewer(TethysAppBase):
     package = 'epanet_model_viewer'
     root_url = 'epanet-model-viewer'
     color = '#915F6D'
-    description = 'Place a brief description of your app here.'
+    description = ''
     tags = ''
     enable_feedback = False
     feedback_emails = []

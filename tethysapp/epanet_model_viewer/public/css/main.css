@@ -362,7 +362,7 @@ input:checked + .slider:before {
 dl {
     position: relative;
     margin:0 auto;
-    width: 599px;
+    width: 609px;
     background: #fff;
     border: 1px solid #00000036;
     padding: 5px 15px;

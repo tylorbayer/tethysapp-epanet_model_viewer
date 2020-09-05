@@ -45,7 +45,7 @@ def get_epanet_model(request):
 
                 model = ""
                 for line in hs.getResourceFile(model_id, model_name):
-                    model += line
+                    model += line.decode('utf-8')
 
                 return_obj['results'] = model
                 return_obj['success'] = True
@@ -206,7 +206,7 @@ def run_epanet_model(request):
             return_obj['success'] = True
 
         except Exception as e:
-            print e
+            print(e)
             return_obj[e]
 
         finally:

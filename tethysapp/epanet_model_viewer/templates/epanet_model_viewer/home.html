@@ -1,6 +1,10 @@
 {% extends "epanet_model_viewer/base.html" %}
 {% load tethys_gizmos %}
 
+{% block app_navigation_override %}{% endblock %}
+
+{% block app_navigation_toggle_override %}{% endblock %}
+
 {% block header_buttons %}
 <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Help">
   <a data-toggle="modal" data-target="#help-modal"><span class="glyphicon glyphicon-question-sign"></span></a>
@@ -14,7 +18,9 @@
     <div class="inline">
       <button id="btn-model-rep" class="btn btn-default model-btn" style="margin: 5px">Model Repository</button>
     </div>
-    <div class="inline"><p>Or, select a local file:<input type="file" id="load-from-local"></p></div>
+    <div class="inline">
+      <p>Or, select a local file:<input type="file" id="load-from-local"></p>
+    </div>
     <br class="clearBoth" />
   </div>
   <div id="loading-animation" hidden>
@@ -58,15 +64,18 @@
         <input id="chk-auto-update" type="checkbox" checked>
         <span class="slider round"></span>
       </label>
-      <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Updating the .inp file may take some time for larger models. Turn auto-udapte off if you run into issues. Turning it back on will update all of your changes to the .inp file immediately."></span>
+      <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip"
+        title="Updating the .inp file may take some time for larger models. Turn auto-udapte off if you run into issues. Turning it back on will update all of your changes to the .inp file immediately."></span>
       <button id="btn-run-model" class="btn btn-default" style="margin-right: 9px; width: 130px;">Run Model</button>
       <div id="grp-btn" class="btn-group dropdown" style="margin-right: 16px;">
-        <button id="btn-open-model" class="btn btn-default btn-update dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 127px;">
-          Save Model  <span class="caret"></span>
+        <button id="btn-open-model" class="btn btn-default btn-update dropdown-toggle" type="button"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 127px;">
+          Save Model <span class="caret"></span>
         </button>
         <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="btn-open-model">
           <li><a id="btn-open-model-viewer" class="dropdown-item" style="width: 172px;">Update Model File</a></li>
-          <li data-toggle="modal" data-target="#modal-upload"><a id="btn-open-city-water" class="dropdown-item">Save New Model File</a></li>
+          <li data-toggle="modal" data-target="#modal-upload"><a id="btn-open-city-water" class="dropdown-item">Save New
+              Model File</a></li>
         </ul>
         <div id="load-anim"></div>
       </div>
@@ -75,8 +84,10 @@
   <div id="model-view">
     <div style="position:absolute; right:0; margin-right: 23px">
       <button id="btn-edit-tools" class="btn btn-default" style="width: 125px;">Network Tools</button>
-      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px;" hidden>Animation Tools</button>
-      <button id="btn-query-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px; width: 125px;" hidden>Query Tools</button>
+      <button id="btn-animate-tools" class="btn btn-default ran-model" style="display: block; margin-top: 10px;"
+        hidden>Animation Tools</button>
+      <button id="btn-query-tools" class="btn btn-default ran-model"
+        style="display: block; margin-top: 10px; width: 125px;" hidden>Query Tools</button>
     </div>
     <div id="model-display">
       <div id="edit-toolbar" class="icon-bar hidden">
@@ -101,7 +112,8 @@
         <a data-toggle="tooltip" data-placement="top" title="Label" name="Label">
           <img src="/static/epanet_model_viewer/images/label.png" class="tool-icon">
         </a>
-        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="Select" name="Default">
+        <a id="btn-default-edit" class="active" data-toggle="tooltip" data-placement="top" title="Select"
+          name="Default">
           <img src="/static/epanet_model_viewer/images/cursor.png" style="width: 30px; height: 30px; margin-left: 5px;">
         </a>
         <a data-toggle="tooltip" data-placement="top" title="Drag Nodes" name="Drag">
@@ -110,7 +122,8 @@
         <a data-toggle="tooltip" data-placement="top" title="Full-Extent" name="Full-Extent">
           <span class="glyphicon glyphicon-fullscreen" style="color:#ffffff; font-size: 1.3em; margin-top:3px"></span>
         </a>
-        <a data-toggle="modal" data-target="#modal-search" data-toggle="tooltip" data-placement="top" title="Search for node/edge" name="Search">
+        <a data-toggle="modal" data-target="#modal-search" data-toggle="tooltip" data-placement="top"
+          title="Search for node/edge" name="Search">
           <span class="glyphicon glyphicon-search" style="color:#ffffff; font-size: 1.3em; margin-top:3px"></span>
         </a>
       </div>
@@ -139,22 +152,26 @@
         <br>
         <table class="table table-nonfluid" style="margin-bottom: 0px;">
           <tbody>
-          <tr>
-            <td>
-              <h6 style="display: inline-block; margin-bottom: 0;">Count:</h6>
-            </td>
-            <td>
-              <input id="query-count" type="number" style="font-size: medium; margin-top: 7px; border: none; width: 80px !important; background-color: transparent;" readonly>
-            </td>
-          <tr/>
-          <tr>
-            <td>
-              <h6 style="display: inline-block; margin-bottom: 0; font-size: small;">Time-step:</h6>
-            </td>
-            <td>
-              <input id="query-timestep" type="number" style="font-size: small; margin-top: 7px; border: none; width: 80px !important; background-color: transparent;" readonly>
-            </td>
-          </tr>
+            <tr>
+              <td>
+                <h6 style="display: inline-block; margin-bottom: 0;">Count:</h6>
+              </td>
+              <td>
+                <input id="query-count" type="number"
+                  style="font-size: medium; margin-top: 7px; border: none; width: 80px !important; background-color: transparent;"
+                  readonly>
+              </td>
+              <tr />
+            <tr>
+              <td>
+                <h6 style="display: inline-block; margin-bottom: 0; font-size: small;">Time-step:</h6>
+              </td>
+              <td>
+                <input id="query-timestep" type="number"
+                  style="font-size: small; margin-top: 7px; border: none; width: 80px !important; background-color: transparent;"
+                  readonly>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -212,20 +229,31 @@
         </div>
       </div>
       <div id="animate-tools">
-        <div id="btn-play" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-play"></span></div>
-        <div id="btn-stop" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-stop"></span></div>
-        <div id="btn-decrease" class="btn btn-danger btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-backward" data-toggle="tooltip" data-placement="right" title="Decrease fps"></span></div>
-        <div id="btn-increase" class="btn btn-success btn-group btn-xs" role="group"><span class="glyphicon glyphicon-fast-forward" data-toggle="tooltip" data-placement="right" title="Increase fps"></span></div>
+        <div class="btn-group" style="float:none !important">
+          <div id="btn-play" class="btn btn-success btn-group btn-xs" role="group"><span
+              class="glyphicon glyphicon-play"></span></div>
+          <div id="btn-stop" class="btn btn-danger btn-group btn-xs" role="group"><span
+              class="glyphicon glyphicon-stop"></span></div>
+          <div id="btn-decrease" class="btn btn-danger btn-group btn-xs" role="group"><span
+              class="glyphicon glyphicon-fast-backward" data-toggle="tooltip" data-placement="right"
+              title="Decrease fps"></span></div>
+          <div id="btn-increase" class="btn btn-success btn-group btn-xs" role="group"><span
+              class="glyphicon glyphicon-fast-forward" data-toggle="tooltip" data-placement="right"
+              title="Increase fps"></span></div>
+        </div>
         <div id="slider"></div>
         <div>
           <label id="speed-label" for="speed"> Animation Speed (fps):</label>
-          <input type="text" id="speed" readonly style="border:0; color:#f6931f; font-weight:normal; width: 18px; background: transparent;" value="1">
+          <input type="text" id="speed" readonly
+            style="border:0; color:#f6931f; font-weight:normal; width: 18px; background: transparent;" value="1">
         </div>
         <div>
           <label for="timestep">Time-step:</label>
-          <input type="text" id="timestep" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
+          <input type="text" id="timestep" readonly
+            style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
           <label for="total-timesteps">of </label>
-          <input type="text" id="total-timesteps" readonly style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
+          <input type="text" id="total-timesteps" readonly
+            style="border:0; color:#f6931f; font-weight:normal; width: 26px; background: transparent;">
         </div>
       </div>
     </div>
@@ -259,7 +287,8 @@
           <div id="nodes-results">
             <span style="margin-right: 10px; font-size: 20px; vertical-align: middle;">Nodes Results</span>
             <div class="button-group" style="display: inline-block;">
-              <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-th-list"> </span> <span class="caret"></span></button>
+              <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span
+                  class="glyphicon glyphicon-th-list"> </span> <span class="caret"></span></button>
               <ul class="dropdown-menu"></ul>
             </div>
             <div class="animate form-group" style="display: inline-block">
@@ -288,7 +317,8 @@
           <div class="col-lg-12">
             <span style="margin-right: 22px; font-size: 20px; vertical-align: middle;">Links Results</span>
             <div class="button-group" style="display: inline-block;">
-              <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-th-list"></span> <span class="caret"></span></button>
+              <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span
+                  class="glyphicon glyphicon-th-list"></span> <span class="caret"></span></button>
               <ul class="dropdown-menu"></ul>
             </div>
             <div class="animate form-group" style="display: inline-block">
@@ -319,127 +349,141 @@
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
           <table class="table table-nonfluid">
             <tbody>
-            <tr>
-              <td>Units:</td>
-              <td>
-                <div class="form-group">
-                  <select id="opt-units" class="form-control" disabled>
-                    <option value="CFS" data-toggle="tooltip" data-placement="right" title="cubic feet per second">CFS</option>
-                    <option value="GPM" data-toggle="tooltip" data-placement="right" title="gallons per minute">GPM</option>
-                    <option value="MGD" data-toggle="tooltip" data-placement="right" title="million gallons per day">MGD</option>
-                    <option value="IMGD" data-toggle="tooltip" data-placement="right" title="Imperial MGD">IMGD</option>
-                    <option value="AFD" data-toggle="tooltip" data-placement="right" title="acre-feet per day">AFD</option>
-                    <option value="LPS" data-toggle="tooltip" data-placement="right" title="liters per second">LPS</option>
-                    <option value="LPM" data-toggle="tooltip" data-placement="right" title="liters per minute">LPM</option>
-                    <option value="MLD" data-toggle="tooltip" data-placement="right" title="million liters per day">MLD</option>
-                    <option value="CMH" data-toggle="tooltip" data-placement="right" title="cubic meters per hour">CMH</option>
-                    <option value="CMD" data-toggle="tooltip" data-placement="right" title="cubic meters per day">CMD</option>
-                  </select>
-                  <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="example info tooltip that gets too long so what do you do?"></span>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>Headloss:</td>
-              <td>
-                <div class="form-group">
-                  <select id="opt-headloss" class="form-control" disabled>
-                    <option value="H-W" data-toggle="tooltip" data-placement="right" title=" Hazen-Williams">H-W</option>
-                    <option value="D-W" data-toggle="tooltip" data-placement="right" title="Darcy-Weisbach">D-W</option>
-                    <option value="C-M" data-toggle="tooltip" data-placement="right" title=" Chezy-Manning">C-M</option>
-                  </select>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>Hydraulics:</td>
-              <td>
-                <div class="form-group">
-                  <select id="opt-hydraulics1" class="form-control" disabled>
-                    <option value="" disabled selected value></option>
-                    <option value="use">Use</option>
-                    <option value="save">Save</option>
-                  </select>
-                </div>
-                <input type='text' id="opt-hydraulics2" class='model-options' placeholder="File Name" readonly>
-              </td>
-            </tr>
-            <tr>
-              <td>Quality:</td>
-              <td>
-                <input type='text' id="opt-quality1" class='model-options' readonly><br>
-                <input type='text' id="opt-quality2" class='model-options' readonly>
-              </td>
-            </tr>
-            <tr>
-              <td>Viscosity:</td>
-              <td><input type='number' id="opt-viscosity" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Diffusivity:</td>
-              <td><input type='number' id="opt-diffusivity" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Specific Gravity:</td>
-              <td><input type='number' id="opt-specific" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Trials:</td>
-              <td><input type='number' id="opt-trials" class="model-options" readonly></td>
-            </tr>
+              <tr>
+                <td>Units:</td>
+                <td>
+                  <div class="form-group">
+                    <select id="opt-units" class="form-control" disabled>
+                      <option value="CFS" data-toggle="tooltip" data-placement="right" title="cubic feet per second">CFS
+                      </option>
+                      <option value="GPM" data-toggle="tooltip" data-placement="right" title="gallons per minute">GPM
+                      </option>
+                      <option value="MGD" data-toggle="tooltip" data-placement="right" title="million gallons per day">
+                        MGD</option>
+                      <option value="IMGD" data-toggle="tooltip" data-placement="right" title="Imperial MGD">IMGD
+                      </option>
+                      <option value="AFD" data-toggle="tooltip" data-placement="right" title="acre-feet per day">AFD
+                      </option>
+                      <option value="LPS" data-toggle="tooltip" data-placement="right" title="liters per second">LPS
+                      </option>
+                      <option value="LPM" data-toggle="tooltip" data-placement="right" title="liters per minute">LPM
+                      </option>
+                      <option value="MLD" data-toggle="tooltip" data-placement="right" title="million liters per day">
+                        MLD</option>
+                      <option value="CMH" data-toggle="tooltip" data-placement="right" title="cubic meters per hour">CMH
+                      </option>
+                      <option value="CMD" data-toggle="tooltip" data-placement="right" title="cubic meters per day">CMD
+                      </option>
+                    </select>
+                    <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip"
+                      title="example info tooltip that gets too long so what do you do?"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Headloss:</td>
+                <td>
+                  <div class="form-group">
+                    <select id="opt-headloss" class="form-control" disabled>
+                      <option value="H-W" data-toggle="tooltip" data-placement="right" title=" Hazen-Williams">H-W
+                      </option>
+                      <option value="D-W" data-toggle="tooltip" data-placement="right" title="Darcy-Weisbach">D-W
+                      </option>
+                      <option value="C-M" data-toggle="tooltip" data-placement="right" title=" Chezy-Manning">C-M
+                      </option>
+                    </select>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Hydraulics:</td>
+                <td>
+                  <div class="form-group">
+                    <select id="opt-hydraulics1" class="form-control" disabled>
+                      <option value="" disabled selected value></option>
+                      <option value="use">Use</option>
+                      <option value="save">Save</option>
+                    </select>
+                  </div>
+                  <input type='text' id="opt-hydraulics2" class='model-options' placeholder="File Name" readonly>
+                </td>
+              </tr>
+              <tr>
+                <td>Quality:</td>
+                <td>
+                  <input type='text' id="opt-quality1" class='model-options' readonly><br>
+                  <input type='text' id="opt-quality2" class='model-options' readonly>
+                </td>
+              </tr>
+              <tr>
+                <td>Viscosity:</td>
+                <td><input type='number' id="opt-viscosity" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Diffusivity:</td>
+                <td><input type='number' id="opt-diffusivity" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Specific Gravity:</td>
+                <td><input type='number' id="opt-specific" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Trials:</td>
+                <td><input type='number' id="opt-trials" class="model-options" readonly></td>
+              </tr>
             </tbody>
           </table>
         </div>
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
           <table class="table table-nonfluid">
             <tbody>
-            <tr>
-              <td>Accuracy:</td>
-              <td><input type='number' id="opt-accuracy" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Unbalanced:</td>
-              <td>
-                <input type='text' id="opt-unbalanced1" class='model-options' readonly><br>
-                <input type='number' id="opt-unbalanced2" class='model-options' readonly>
-              </td>
-            </tr>
-            <tr>
-              <td>Pattern:</td>
-              <td>
-                <div class='form-group'>
-                  <select id='opt-pattern' class='form-control' disabled></select>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>Demand Multiplier:</td>
-              <td><input type='number' id="opt-demand" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Emitter Exponent:</td>
-              <td><input type='number' id="opt-emitter" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Tolerance:</td>
-              <td><input type='number' id="opt-tolerance" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>Map:</td>
-              <td><input type='text' id="opt-map" class="model-options" placeholder="File Name" readonly></td>
-            </tr>
-            <tr>
-              <td>CHECKFREQ:</td>
-              <td><input type='number' id="opt-checkfreq" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>MAXCHECK:</td>
-              <td><input type='number' id="opt-maxcheck" class="model-options" readonly></td>
-            </tr>
-            <tr>
-              <td>DAMPLIMIT:</td>
-              <td><input type='number' id="opt-damplimit" class="model-options" readonly></td>
-            </tr>
+              <tr>
+                <td>Accuracy:</td>
+                <td><input type='number' id="opt-accuracy" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Unbalanced:</td>
+                <td>
+                  <input type='text' id="opt-unbalanced1" class='model-options' readonly><br>
+                  <input type='number' id="opt-unbalanced2" class='model-options' readonly>
+                </td>
+              </tr>
+              <tr>
+                <td>Pattern:</td>
+                <td>
+                  <div class='form-group'>
+                    <select id='opt-pattern' class='form-control' disabled></select>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Demand Multiplier:</td>
+                <td><input type='number' id="opt-demand" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Emitter Exponent:</td>
+                <td><input type='number' id="opt-emitter" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Tolerance:</td>
+                <td><input type='number' id="opt-tolerance" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>Map:</td>
+                <td><input type='text' id="opt-map" class="model-options" placeholder="File Name" readonly></td>
+              </tr>
+              <tr>
+                <td>CHECKFREQ:</td>
+                <td><input type='number' id="opt-checkfreq" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>MAXCHECK:</td>
+                <td><input type='number' id="opt-maxcheck" class="model-options" readonly></td>
+              </tr>
+              <tr>
+                <td>DAMPLIMIT:</td>
+                <td><input type='number' id="opt-damplimit" class="model-options" readonly></td>
+              </tr>
             </tbody>
           </table>
           <span>Edit:</span>
@@ -453,62 +497,72 @@
         <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
           <table class="table table-nonfluid">
             <tbody>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-time" >Time Options</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-energy" >Energy Options</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-reactions" >Reactions Options</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-report" >Report Options</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-curve" >Curve Editor</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-pattern" >Pattern Editor</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-controls" >Controls Editor</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <button class="btn btn-default model-btn options-buttons" data-toggle="modal" data-target="#modal-rules" >Rules Editor</button>
-              </td>
-            </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-time">Time Options</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-energy">Energy Options</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-reactions">Reactions Options</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-report">Report Options</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-curve">Curve Editor</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-pattern">Pattern Editor</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-controls">Controls Editor</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button class="btn btn-default model-btn options-buttons" data-toggle="modal"
+                    data-target="#modal-rules">Rules Editor</button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
         <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
           <table class="table table-nonfluid">
             <tbody>
-            <tr>
-              <td>
-                <h6 style="display: inline-block">Node Count: </h6><h6 id="node-count"></h6>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <h6 style="display: inline-block">Edge Count: </h6><h6 id="edge-count"></h6>
-              </td>
-            </tr>
+              <tr>
+                <td>
+                  <h6 style="display: inline-block">Node Count: </h6>
+                  <h6 id="node-count"></h6>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <h6 style="display: inline-block">Edge Count: </h6>
+                  <h6 id="edge-count"></h6>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -556,24 +610,27 @@
   <div class="modal-dialog" id="upload-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="upload-modal-label">Model Properties</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Title:</b></td>
-            <td><input id="inp-upload-title" class="model-properties" name="upload-title" type='text'><br></td>
-          </tr>
-          <tr>
-            <td><b>Description:</b></td>
-            <td><input id="inp-upload-description" class="model-properties" name="upload-description" type='text'></td>
-          </tr>
-          <tr>
-            <td><b>Keywords:</b></td>
-            <td><input id="tagsinp-upload-keywords" class="model-properties" name="upload-keywords" type="text" data-role="tagsinput"></td>
-          </tr>
+            <tr>
+              <td><b>Title:</b></td>
+              <td><input id="inp-upload-title" class="model-properties" name="upload-title" type='text'><br></td>
+            </tr>
+            <tr>
+              <td><b>Description:</b></td>
+              <td><input id="inp-upload-description" class="model-properties" name="upload-description" type='text'>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Keywords:</b></td>
+              <td><input id="tagsinp-upload-keywords" class="model-properties" name="upload-keywords" type="text"
+                  data-role="tagsinput"></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -590,58 +647,59 @@
   <div class="modal-dialog" id="time-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="time-modal-label">Time Options</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Duration:</b></td>
-            <td><input id="duration" class="model-options" name="upload-title" type='text' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Hydraulic Timestep:</b></td>
-            <td><input id="hydraulic" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Quality Timestep:</b></td>
-            <td><input id="quality" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Pattern Timestep:</b></td>
-            <td><input id="pattern1" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Pattern Start:</b></td>
-            <td><input id="pattern2" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Report Timestep:</b></td>
-            <td><input id="report1" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Report Start:</b></td>
-            <td><input id="report2" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Start ClockTime:</b></td>
-            <td><input id="start" class="model-options" name="upload-description" type='text' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Statistic:</b></td>
-            <td>
-              <div class="animate form-group" style="display: inline-block">
-                <select id="statistic" class="form-control" disabled>
-                  <option value="AVERAGED">AVERAGED</option>
-                  <option value="MINIMUM">MINIMUM</option>
-                  <option value="MAXIMUM">MAXIMUM</option>
-                  <option value="RANGE">RANGE</option>
-                  <option value="NONE">NONE</option>
-                </select>
-              </div>
-            </td>
-          </tr>
+            <tr>
+              <td><b>Duration:</b></td>
+              <td><input id="duration" class="model-options" name="upload-title" type='text' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Hydraulic Timestep:</b></td>
+              <td><input id="hydraulic" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Quality Timestep:</b></td>
+              <td><input id="quality" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Pattern Timestep:</b></td>
+              <td><input id="pattern1" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Pattern Start:</b></td>
+              <td><input id="pattern2" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Report Timestep:</b></td>
+              <td><input id="report1" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Report Start:</b></td>
+              <td><input id="report2" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Start ClockTime:</b></td>
+              <td><input id="start" class="model-options" name="upload-description" type='text' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Statistic:</b></td>
+              <td>
+                <div class="animate form-group" style="display: inline-block">
+                  <select id="statistic" class="form-control" disabled>
+                    <option value="AVERAGED">AVERAGED</option>
+                    <option value="MINIMUM">MINIMUM</option>
+                    <option value="MAXIMUM">MAXIMUM</option>
+                    <option value="RANGE">RANGE</option>
+                    <option value="NONE">NONE</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -663,24 +721,25 @@
   <div class="modal-dialog" id="energy-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="energy-modal-label">Energy Options</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Global Efficiency:</b></td>
-            <td><input id="eng-efficiency" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Global Price:</b></td>
-            <td><input id="eng-price" class="model-options" type='number' readonly></td>
-          </tr>
-          <tr>
-            <td><b>Demand Charge:</b></td>
-            <td><input id="eng-charge" class="model-options" type='number' readonly></td>
-          </tr>
+            <tr>
+              <td><b>Global Efficiency:</b></td>
+              <td><input id="eng-efficiency" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Global Price:</b></td>
+              <td><input id="eng-price" class="model-options" type='number' readonly></td>
+            </tr>
+            <tr>
+              <td><b>Demand Charge:</b></td>
+              <td><input id="eng-charge" class="model-options" type='number' readonly></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -702,40 +761,41 @@
   <div class="modal-dialog" id="reactions-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="reactions-modal-label">Reactions Options</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Order Bulk:</b></td>
-            <td><input id="rea-obulk" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Order Tank:</b></td>
-            <td><input id="rea-otank" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Order Wall:</b></td>
-            <td><input id="rea-owall" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Global Bulk:</b></td>
-            <td><input id="rea-gbulk" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Global Wall:</b></td>
-            <td><input id="rea-gwall" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Limiting Potential:</b></td>
-            <td><input id="rea-lpotential" class="model-options" type='number' readonly><br></td>
-          </tr>
-          <tr>
-            <td><b>Roughness Correlation:</b></td>
-            <td><input id="rea-rcorrelation" class="model-options" type='number' readonly><br></td>
-          </tr>
+            <tr>
+              <td><b>Order Bulk:</b></td>
+              <td><input id="rea-obulk" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Order Tank:</b></td>
+              <td><input id="rea-otank" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Order Wall:</b></td>
+              <td><input id="rea-owall" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Global Bulk:</b></td>
+              <td><input id="rea-gbulk" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Global Wall:</b></td>
+              <td><input id="rea-gwall" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Limiting Potential:</b></td>
+              <td><input id="rea-lpotential" class="model-options" type='number' readonly><br></td>
+            </tr>
+            <tr>
+              <td><b>Roughness Correlation:</b></td>
+              <td><input id="rea-rcorrelation" class="model-options" type='number' readonly><br></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -757,38 +817,39 @@
   <div class="modal-dialog" id="report-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="report-modal-label">Report Options</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Status:</b></td>
-            <td>
-              <div class="form-group" style="display: inline-block; width: 166px !important;">
-                <select id="rep-status" class="form-control" disabled>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Summary:</b></td>
-            <td>
-              <div class="form-group" style="display: inline-block; width: 166px !important;">
-                <select id="rep-summary" class="form-control" disabled>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Page:</b></td>
-            <td><input id="rep-page" class="model-options" type='number' readonly></td>
-          </tr>
+            <tr>
+              <td><b>Status:</b></td>
+              <td>
+                <div class="form-group" style="display: inline-block; width: 166px !important;">
+                  <select id="rep-status" class="form-control" disabled>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Summary:</b></td>
+              <td>
+                <div class="form-group" style="display: inline-block; width: 166px !important;">
+                  <select id="rep-summary" class="form-control" disabled>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Page:</b></td>
+              <td><input id="rep-page" class="model-options" type='number' readonly></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -810,38 +871,40 @@
   <div class="modal-dialog" id="curve-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="curve-modal-label">Curve Editor</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Id:</b></td>
-            <td>
-              <div id="curve-select" class="animate form-group" style="display: inline-block">
-                <select class="form-control">
-                </select>
-              </div>
-              <input type='text' id='inp-curve-id' class='model-options' hidden>
-              <div id="btn-add-curve" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Curve">
-                <span class="glyphicon glyphicon-plus"></span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Curve Type:</b></td>
-            <td>
-              <div class="animate form-group" style="display: inline-block">
-                <select id="slc-curve-type" class="form-control" disabled>
-                  <option value="PUMP">PUMP</option>
-                  <option value="EFFICIENCY">EFFICIENCY</option>
-                  <option value="VOLUME">VOLUME</option>
-                  <option value="HEADLOSS">HEADLOSS</option>
-                </select>
-              </div>
-            </td>
-          </tr>
+            <tr>
+              <td><b>Id:</b></td>
+              <td>
+                <div id="curve-select" class="animate form-group" style="display: inline-block">
+                  <select class="form-control">
+                  </select>
+                </div>
+                <input type='text' id='inp-curve-id' class='model-options' hidden>
+                <div id="btn-add-curve" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip"
+                  title="New Curve">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Curve Type:</b></td>
+              <td>
+                <div class="animate form-group" style="display: inline-block">
+                  <select id="slc-curve-type" class="form-control" disabled>
+                    <option value="PUMP">PUMP</option>
+                    <option value="EFFICIENCY">EFFICIENCY</option>
+                    <option value="VOLUME">VOLUME</option>
+                    <option value="HEADLOSS">HEADLOSS</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
         <table id="curve-points"></table>
@@ -866,29 +929,32 @@
   <div class="modal-dialog" id="pattern-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="pattern-modal-label">Pattern Editor</h5>
       </div>
       <div class="modal-body">
         <table class="table table-nonfluid">
           <tbody>
-          <tr>
-            <td><b>Id:</b></td>
-            <td>
-              <div id="pattern-select" class="animate form-group" style="display: inline-block">
-                <select class="form-control">
-                </select>
-              </div>
-              <input type='text' id='inp-pattern-id' class='model-options' hidden>
-              <div id="btn-add-pattern" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Pattern">
-                <span class="glyphicon glyphicon-plus"></span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Multipliers:</b></td>
-            <td style="white-space: normal !important;"><input id="tagsinp-pattern-mults" class="model-options" type="text" disabled></td>
-          </tr>
+            <tr>
+              <td><b>Id:</b></td>
+              <td>
+                <div id="pattern-select" class="animate form-group" style="display: inline-block">
+                  <select class="form-control">
+                  </select>
+                </div>
+                <input type='text' id='inp-pattern-id' class='model-options' hidden>
+                <div id="btn-add-pattern" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip"
+                  title="New Pattern">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Multipliers:</b></td>
+              <td style="white-space: normal !important;"><input id="tagsinp-pattern-mults" class="model-options"
+                  type="text" disabled></td>
+            </tr>
           </tbody>
         </table>
         <div id="pattern-display"></div>
@@ -912,7 +978,8 @@
   <div class="modal-dialog" id="controls-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="controls-modal-label">Controls Options</h5>
       </div>
       <div class="modal-body">
@@ -924,12 +991,15 @@
             <option value="AT CLOCKTIME">CLOCKTIME</option>
           </select>
         </div>
-        <div id="btn-add-control" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Control">
+        <div id="btn-add-control" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip"
+          title="New Control">
           <span class="glyphicon glyphicon-plus"></span>
         </div>
         <div id="add-control"></div>
         <h4 style="border-bottom: 1px solid #cccccc;">Controls</h4>
-        <table class="table table-nonfluid" style="width: 100% !important;"><tbody id="controls-container"></tbody></table>
+        <table class="table table-nonfluid" style="width: 100% !important;">
+          <tbody id="controls-container"></tbody>
+        </table>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
@@ -949,20 +1019,25 @@
   <div class="modal-dialog" id="rules-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="rules-modal-label">Rules Editor</h5>
       </div>
       <div class="modal-body">
         <b class="rule-add hidden">Id:</b>
         <input type='text' id='inp-rule-id' class='model-options' hidden>
-        <div id="btn-add-rule" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip" title="New Control">
+        <div id="btn-add-rule" class="btn btn-success btn-group btn-xs" role="group" data-toggle="tooltip"
+          title="New Control">
           <span class="glyphicon glyphicon-plus"></span>
         </div>
-        <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="This editor doesn't ensure correct syntax. Please refer to the EPANET User's manual for instructions on how to format rules. Entering incorrect rules will result in run errors."></span>
+        <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip"
+          title="This editor doesn't ensure correct syntax. Please refer to the EPANET User's manual for instructions on how to format rules. Entering incorrect rules will result in run errors."></span>
         <br><br>
         <textarea id="inp-rule-body" cols="58" rows="5" hidden></textarea>
         <h4 style="border-bottom: 1px solid #cccccc;">Rules</h4>
-        <table class="table table-nonfluid" style="width: 100% !important;"><tbody id="rules-container"></tbody></table>
+        <table class="table table-nonfluid" style="width: 100% !important;">
+          <tbody id="rules-container"></tbody>
+        </table>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
@@ -982,14 +1057,17 @@
   <div class="modal-dialog" id="node-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="modal-node-label" style="display: inline-block;">Node Properties</h5>
         <div style="float:right; margin-right: 15px;">
-          <div id="btn-node-left" class="btn btn-group" role="group" data-toggle="tooltip" title="Previous Node">
-            <span class="glyphicon glyphicon-chevron-left" style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
-          </div>
           <div id="btn-node-right" class="btn btn-group" role="group" data-toggle="tooltip" title="Next Node">
-            <span class="glyphicon glyphicon-chevron-right" style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
+            <span class="glyphicon glyphicon-chevron-right"
+              style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
+          </div>
+          <div id="btn-node-left" class="btn btn-group" role="group" data-toggle="tooltip" title="Previous Node">
+            <span class="glyphicon glyphicon-chevron-left"
+              style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
           </div>
         </div>
       </div>
@@ -1018,7 +1096,8 @@
             </div>
           </div>
         </div>
-        <div id="node-x" hidden></div><div id="node-y" hidden></div>
+        <div id="node-x" hidden></div>
+        <div id="node-y" hidden></div>
       </div>
       <div class="modal-footer">
         <span>Edit:</span>
@@ -1039,14 +1118,17 @@
   <div class="modal-dialog" id="edge-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h5 class="modal-title" id="modal-edge-label" style="display: inline-block;">Edge Properties</h5>
         <div style="float:right; margin-right: 15px;">
-          <div id="btn-edge-left" class="btn btn-group" role="group" data-toggle="tooltip" title="Previous Node">
-            <span class="glyphicon glyphicon-chevron-left" style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
+          <div id="btn-edge-right" class="btn btn-group" role="group" data-toggle="tooltip" title="Next Edge">
+            <span class="glyphicon glyphicon-chevron-right"
+              style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
           </div>
-          <div id="btn-edge-right" class="btn btn-group" role="group" data-toggle="tooltip" title="Next Node">
-            <span class="glyphicon glyphicon-chevron-right" style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
+          <div id="btn-edge-left" class="btn btn-group" role="group" data-toggle="tooltip" title="Previous Edge">
+            <span class="glyphicon glyphicon-chevron-left"
+              style="color:#666666; font-size: 1.5em; margin-top:2px"></span>
           </div>
         </div>
       </div>
@@ -1095,19 +1177,30 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="help-modal-label">Help</h4>
       </div>
       <div class="modal-body">
         <p><b>Welcome to the EPANET Model Viwer App</b></p>
         <h5>You can do the following:</h5>
         <ol>
-          <li class="welcome-step">Thing one
-            <p><b>Click on filters or search using the search bar</b></p>
+          <li class="welcome-step">View and Edit EPANET Models
+            <p><b>Use the model viewer window, with its accompanying toolbars, and the other various tabs to view and
+                edit the model.</b></p>
+            <p><b>Click on different sedments of the model to view and edit their properties.</b></p>
           </li>
-          <li class="welcome-step">Download a Model File
-            <p><b>Select a model and click "Download"</b></p>
-            <p><b>The file will be in your "Downloads" folder when download is complete</b></p>
+          <li class="welcome-step">Run the EPANET Model Simulation
+            <p><b>Click "Run Model"</b></p>
+            <p><b>Once complete, a few more tabs and toolbars will be available to view results of the simulation.</b>
+            </p>
+          </li>
+          <li class="welcome-step">Save the Model
+            <p><b>Click "Save Model"</b></p>
+            <p><b>If you are the owner of the resource in Hydroshare you can click "Update Model File" to update it.</b>
+            </p>
+            <p><b>Click "Save New Model File" to save it as a new resource to connected to your Hydroshare account</b>
+            </p>
           </li>
           <li class="welcome-step">Click the 'X' in the top-right of the app to return to the NCIMM Apps Library</li>
         </ol>
@@ -1115,9 +1208,10 @@
       <div class="modal-footer">
         <div id="byu-logo-container">
           <span><i>Developed at the BYU Hydroinformatics Lab</i></span>
-          <img src='/static/epanet_model_viewer/images/byu-medallion.png'/>
+          <img src='/static/epanet_model_viewer/images/byu-medallion.png' />
         </div>
-        <a href="https://github.com/tylorbayer/tethysapp-epanet_model_viewer" target="_blank" class="btn btn-default">View Code</a>
+        <a href="https://github.com/tylorbayer/tethysapp-epanet_model_viewer" target="_blank"
+          class="btn btn-default">View Code</a>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
