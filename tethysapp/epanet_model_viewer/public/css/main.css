@@ -242,7 +242,7 @@ input[type="radio"] {
 
 #modal-node .modal-dialog, #modal-edge .modal-dialog {
     position: absolute;
-    width: 315px;
+    width: 350px;
     height: 620px;
 }
 

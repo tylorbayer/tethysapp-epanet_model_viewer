@@ -2080,7 +2080,7 @@
 
         $('#node-view-tab').click(function () {
             $modalNode.find('.modal-dialog').css('left', nodeModalLeft);
-            $modalNode.find('.modal-dialog').css('width', '315px');
+            $modalNode.find('.modal-dialog').css('width', '350px');
             $modalNode.find('.modal-dialog').css('height', '550px');
         });
 
@@ -2299,7 +2299,7 @@
 
         $('#edge-view-tab').click(function () {
             $modalEdge.find('.modal-dialog').css('left', edgeModalLeft);
-            $modalEdge.find('.modal-dialog').css('width', '315px');
+            $modalEdge.find('.modal-dialog').css('width', '350px');
             $modalEdge.find('.modal-dialog').css('height', '550px');
         });
 
