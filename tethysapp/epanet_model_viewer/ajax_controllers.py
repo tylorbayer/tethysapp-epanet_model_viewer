@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 
-import os, tempfile
+import os
+import tempfile
 
 from multiprocessing import Process, Lock
 
@@ -9,7 +10,8 @@ from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
 from epanettools.epanettools import EPANetSimulation, Node, Link, Control
 
-import uuid, time
+import uuid
+import time
 
 message_template_wrong_req_method = 'This request can only be made through a "{method}" AJAX call.'
 message_template_param_unfilled = 'The required "{param}" parameter was not fulfilled.'
@@ -27,14 +29,16 @@ def get_epanet_model(request):
 
     if request.is_ajax() and request.method == 'GET':
         if not request.GET.get('model_id'):
-            return_obj['message'] = message_template_param_unfilled.format(param='model_id')
+            return_obj['message'] = message_template_param_unfilled.format(
+                param='model_id')
         else:
             model_id = request.GET['model_id']
 
             try:
                 hs = get_oauth_hs(request)
             except:
-                hs = HydroShare()
+                return_obj['message'] = 'You must be logged in through HydroShare to view resources.'
+                return JsonResponse(return_obj)
 
             metadata_json = hs.getScienceMetadata(model_id)
             return_obj['metadata'] = metadata_json
@@ -51,7 +55,8 @@ def get_epanet_model(request):
                 return_obj['success'] = True
 
     else:
-        return_obj['message'] = message_template_wrong_req_method.format(method="POST")
+        return_obj['message'] = message_template_wrong_req_method.format(
+            method="POST")
 
     return JsonResponse(return_obj)
 
@@ -67,12 +72,14 @@ def upload_epanet_model(request):
         try:
             hs = get_oauth_hs(request)
         except:
-            hs = HydroShare()
+            return_obj['message'] = 'You must be logged in through HydroShare to view resources.'
+            return JsonResponse(return_obj)
 
         model_title = request.POST['model_title']
         resource_filename = model_title + ".inp"
 
-        abstract = request.POST['model_description'] + '\n{%EPANET Model Repository%}'
+        abstract = request.POST['model_description'] + \
+            '\n{%EPANET Model Repository%}'
         title = model_title
 
         user_keywords = ["EPANET_2.0"]
@@ -88,9 +95,11 @@ def upload_epanet_model(request):
             tmp.write(request.POST['model_file'])
             fpath = path
 
-        metadata = '[{"creator":{"name":"' + hs.getUserInfo()['first_name'] + ' ' + hs.getUserInfo()['last_name'] + '"}}]'
+        metadata = '[{"creator":{"name":"' + hs.getUserInfo()['first_name'] + \
+            ' ' + hs.getUserInfo()['last_name'] + '"}}]'
 
-        resource_id = hs.createResource(rtype, title, resource_file=fpath, resource_filename=resource_filename, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
+        resource_id = hs.createResource(rtype, title, resource_file=fpath, resource_filename=resource_filename,
+                                        keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
 
         hs.setAccessRules(resource_id, public=True)
 
@@ -98,7 +107,8 @@ def upload_epanet_model(request):
         return_obj['success'] = True
 
     else:
-        return_obj['message'] = message_template_wrong_req_method.format(method="GET")
+        return_obj['message'] = message_template_wrong_req_method.format(
+            method="GET")
 
     return JsonResponse(return_obj)
 
@@ -143,7 +153,8 @@ def run_epanet_model(request):
             node_range = 500
             print("getNodeRes")
             if len(n) > node_range:
-                process = Process(target=getNodeResults, args=(n, range(1, node_range), nodes))
+                process = Process(target=getNodeResults, args=(
+                    n, range(1, node_range), nodes))
                 process.start()
                 node_threads.append(process)
 
@@ -153,7 +164,8 @@ def run_epanet_model(request):
                     else:
                         r = range(node_range, node_range + 500)
 
-                    process = Process(target=getNodeResults, args=(n, r, nodes))
+                    process = Process(target=getNodeResults,
+                                      args=(n, r, nodes))
                     process.start()
                     node_threads.append(process)
 
@@ -167,7 +179,8 @@ def run_epanet_model(request):
             link_threads = []
             link_range = 500
             if len(l) > link_range:
-                process = Process(target=getLinkResults, args=(l, range(1, link_range), links))
+                process = Process(target=getLinkResults, args=(
+                    l, range(1, link_range), links))
                 process.start()
                 link_threads.append(process)
 
@@ -177,7 +190,8 @@ def run_epanet_model(request):
                     else:
                         r = range(link_range, link_range + 500)
 
-                    process = Process(target=getLinkResults, args=(l, r, links))
+                    process = Process(target=getLinkResults,
+                                      args=(l, r, links))
                     process.start()
                     link_threads.append(process)
 
@@ -213,7 +227,8 @@ def run_epanet_model(request):
             os.remove(temp)
 
     else:
-        return_obj['message'] = message_template_wrong_req_method.format(method="POST")
+        return_obj['message'] = message_template_wrong_req_method.format(
+            method="POST")
 
     print("Returning obj")
     return JsonResponse(return_obj)

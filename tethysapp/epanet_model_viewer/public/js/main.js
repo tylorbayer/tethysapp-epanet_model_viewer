@@ -244,7 +244,7 @@
                     '<a href="https://www.hydroshare.org/resource/' + modelId + '" target="_blank">' +
                     modelId + '</a>. An app admin has been notified.';
 
-                addLogEntry('danger', message);
+                addLogEntry('danger', message, true);
             },
             success: function (response) {
                 let message;
@@ -261,10 +261,10 @@
                                 modelId + '</a>. An app admin has been notified.';
                         }
 
-                        addLogEntry('danger', message);
+                        addLogEntry('danger', message, true);
                     } else {
                         if (message) {
-                            addLogEntry('warning', message);
+                            addLogEntry('warning', message, true);
                         }
                         if (response.hasOwnProperty('results')) {
                             file_text = response.results;
@@ -1086,7 +1086,7 @@
             error: function () {
                 let message = 'An unexpected error occurred while uploading the model ';
 
-                addLogEntry('danger', message);
+                addLogEntry('danger', message, true);
             },
             success: function (response) {
                 let message;
@@ -1103,10 +1103,10 @@
                             message = 'An unexpected error occurred while uploading the model';
                         }
 
-                        addLogEntry('danger', message);
+                        addLogEntry('danger', message, true);
                     } else {
                         if (message) {
-                            addLogEntry('warning', message);
+                            addLogEntry('warning', message, true);
                         }
                         alert("Model has successfully been uploaded to HydroShare.");
                     }
